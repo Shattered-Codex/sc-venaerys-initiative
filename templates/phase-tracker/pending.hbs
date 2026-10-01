@@ -1,0 +1,19 @@
+<div class="svi-pending-part">
+  {{#if hasPending}}
+  <div class="svi-pending">
+    <div class="svi-pending-title"><i class="fa-solid fa-dice-d20" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll"}}</div>
+    {{#if youPending}}
+    <div class="svi-you-pending" role="status"><i class="fa-solid fa-circle-info" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Tracker.YouPending"}}</span></div>
+    {{/if}}
+    <ul class="svi-chips">
+      {{#each pending}}
+      <li class="svi-chip">
+        {{#if img}}<img class="svi-portrait svi-small" src="{{img}}" alt="" loading="lazy">{{/if}}
+        <span>{{name}}</span>
+        <span class="svi-muted"><i class="fa-solid fa-dice" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll"}}</span>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+</div>

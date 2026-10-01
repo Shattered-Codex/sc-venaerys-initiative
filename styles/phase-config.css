@@ -1,0 +1,110 @@
+/* Configuration screen: General, Phases and Help tabs. */
+
+.sc-venaerys-initiative.svi-config .window-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  background: var(--svi-window-bg);
+  color: var(--svi-text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Tabs */
+.sc-venaerys-initiative .svi-tabs { display: flex; gap: 4px; margin: 0; padding: 0 10px; border-bottom: 1px solid var(--svi-line); }
+.sc-venaerys-initiative .svi-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: 36px;
+  margin: 0 0 -1px;
+  padding: 0 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--svi-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-tab.active { border-bottom-color: var(--svi-accent); color: var(--svi-text); }
+.sc-venaerys-initiative .svi-tab-panel { display: none; flex-direction: column; gap: 14px; padding: 14px 14px 12px; }
+.sc-venaerys-initiative .svi-tab-panel.active { display: flex; }
+
+/* General */
+.sc-venaerys-initiative .svi-section { display: flex; flex-direction: column; gap: 2px; }
+.sc-venaerys-initiative .svi-section-title { margin: 0 0 4px; border: 0; font-size: 11px; font-weight: 500; color: var(--svi-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.sc-venaerys-initiative .svi-setting { display: flex; align-items: center; gap: 12px; min-height: var(--svi-row-h); padding: 4px 0; }
+.sc-venaerys-initiative .svi-setting-text { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.sc-venaerys-initiative .svi-setting-hint { font-size: 12px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-setting-scope { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-footer { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--svi-line); }
+
+/* Phases */
+.sc-venaerys-initiative .svi-intro { margin: 0; font-size: 12px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-phase-list { display: flex; flex-direction: column; gap: 2px; max-height: 60vh; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.sc-venaerys-initiative .svi-band-label { display: flex; align-items: center; gap: 6px; height: 22px; padding-left: 22px; font-size: 11px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-phase-item { display: flex; flex-direction: column; gap: 2px; border-radius: var(--svi-radius-sm); }
+.sc-venaerys-initiative .svi-phase-item.svi-in-band { box-shadow: inset 2px 0 0 var(--svi-neutral-600); background: color-mix(in srgb, var(--svi-neutral-800) 35%, transparent); }
+.sc-venaerys-initiative .svi-phase-item.svi-flash { outline: 1px solid var(--svi-danger); }
+.sc-venaerys-initiative .svi-phase-item.svi-dragging { opacity: 0.5; }
+.sc-venaerys-initiative .svi-phase-item.svi-drop-before { box-shadow: inset 0 2px 0 var(--svi-accent); }
+.sc-venaerys-initiative .svi-phase-item.svi-drop-after { box-shadow: inset 0 -2px 0 var(--svi-accent); }
+.sc-venaerys-initiative .svi-phase-line { position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--svi-row-h); padding: 0 4px 0 10px; }
+.sc-venaerys-initiative .svi-drag { display: grid; place-items: center; width: 18px; height: 28px; color: var(--svi-muted); cursor: grab; }
+.sc-venaerys-initiative .svi-phase-line .svi-phase-icon { width: 28px; height: 28px; font-size: 12px; }
+.sc-venaerys-initiative .svi-builtin-name { flex: 1; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 8px; }
+.sc-venaerys-initiative .svi-phase-name-input { flex: 1; height: 30px; padding: 4px 8px; font-size: 13px; }
+.sc-venaerys-initiative .svi-phase-name-input.svi-invalid { border-color: var(--svi-danger); }
+.sc-venaerys-initiative .svi-icon-spacer { width: 30px; }
+.sc-venaerys-initiative .svi-error { display: flex; align-items: center; gap: 4px; margin: 0; padding-left: 64px; font-size: 12px; color: var(--svi-danger); }
+.sc-venaerys-initiative .svi-unsaved { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--svi-accent-300); white-space: nowrap; }
+.sc-venaerys-initiative .svi-unsaved[hidden] { display: none; }
+.sc-venaerys-initiative .svi-unsaved .fa-circle { font-size: 7px; color: var(--svi-accent); }
+
+/* Icon and color picker */
+.sc-venaerys-initiative .svi-look { position: relative; }
+.sc-venaerys-initiative .svi-look > summary { list-style: none; cursor: pointer; border: 1px solid var(--svi-line); }
+.sc-venaerys-initiative .svi-look > summary::-webkit-details-marker { display: none; }
+.sc-venaerys-initiative .svi-look[open] > summary { border-color: var(--svi-accent); }
+.sc-venaerys-initiative .svi-look-popover {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 300px;
+  padding: 10px;
+  border-radius: var(--svi-radius-md);
+  background: var(--svi-surface);
+  box-shadow: var(--svi-shadow-lg);
+}
+.sc-venaerys-initiative .svi-look-title { font-size: 11px; color: var(--svi-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.sc-venaerys-initiative .svi-look-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.sc-venaerys-initiative .svi-look-grid button {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-neutral-200);
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-look-grid button[aria-checked="true"] { border-color: var(--svi-accent); background: var(--svi-accent-900); }
+.sc-venaerys-initiative .svi-look-grid .svi-swatch { height: 26px; border: 2px solid transparent; background: var(--svi-swatch); color: var(--svi-bg); }
+.sc-venaerys-initiative .svi-look-grid .svi-swatch[aria-checked="true"] { border-color: var(--svi-text); background: var(--svi-swatch); }
+.sc-venaerys-initiative .svi-look-grid .svi-swatch:not([aria-checked="true"]) .fa-check { visibility: hidden; }
+
+/* Help */
+.sc-venaerys-initiative .svi-help-topic { border-bottom: 1px solid var(--svi-line); }
+.sc-venaerys-initiative .svi-help-topic:last-child { border-bottom: 0; }
+.sc-venaerys-initiative .svi-help-topic > summary { display: flex; align-items: center; gap: 8px; min-height: var(--svi-row-h); font-weight: 500; cursor: pointer; }
+.sc-venaerys-initiative .svi-help-topic > p { margin: 0 0 10px 24px; color: var(--svi-neutral-200); }

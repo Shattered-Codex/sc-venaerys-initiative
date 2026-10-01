@@ -1,0 +1,455 @@
+/* Phase window, start dialog and the shared controls of the module's screens. */
+
+/* ---------- Window frame ---------- */
+.sc-venaerys-initiative.svi-phase-window,
+.sc-venaerys-initiative.svi-config,
+.sc-venaerys-initiative.svi-start-dialog {
+  --svi-phase-color: var(--svi-accent);
+  font-family: var(--svi-font-body);
+}
+
+.sc-venaerys-initiative.svi-phase-window .window-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--svi-window-bg);
+  color: var(--svi-text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* ---------- Shared bits ---------- */
+/* Core styles every focused or active button with an outline and a glow; ours use :focus-visible only. */
+.sc-venaerys-initiative .svi-tab,
+.sc-venaerys-initiative .svi-btn,
+.sc-venaerys-initiative .svi-icon-btn,
+.sc-venaerys-initiative .svi-switch,
+.sc-venaerys-initiative .svi-done-btn,
+.sc-venaerys-initiative .svi-skip-btn,
+.sc-venaerys-initiative .svi-chevron,
+.sc-venaerys-initiative .svi-tracker-button {
+  outline: none;
+  box-shadow: none;
+}
+
+.sc-venaerys-initiative .svi-spacer { flex: 1; }
+.sc-venaerys-initiative .svi-muted { color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--svi-muted);
+}
+.sc-venaerys-initiative .svi-hint-block { display: flex; margin: 0; }
+
+.sc-venaerys-initiative button:focus-visible,
+.sc-venaerys-initiative select:focus-visible,
+.sc-venaerys-initiative input:focus-visible,
+.sc-venaerys-initiative summary:focus-visible {
+  outline: 2px solid var(--svi-accent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.sc-venaerys-initiative .svi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-text);
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-btn:hover:not(:disabled) { background: var(--svi-hover); }
+.sc-venaerys-initiative .svi-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.sc-venaerys-initiative .svi-btn-primary { border-color: var(--svi-accent); color: var(--svi-accent-200); }
+.sc-venaerys-initiative .svi-btn-primary.svi-strong { background: color-mix(in srgb, var(--svi-accent) 22%, transparent); }
+.sc-venaerys-initiative .svi-btn-danger { border-color: color-mix(in srgb, var(--svi-danger) 50%, transparent); color: var(--svi-danger); }
+.sc-venaerys-initiative .svi-btn.svi-small { height: 28px; font-size: 12px; align-self: flex-start; }
+.sc-venaerys-initiative .svi-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-neutral-300);
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-btn.svi-icon-btn { border: 1px solid var(--svi-line); }
+.sc-venaerys-initiative .svi-icon-btn:hover:not(:disabled) { background: var(--svi-hover); color: var(--svi-text); }
+.sc-venaerys-initiative .svi-icon-btn:disabled { opacity: 0.35; cursor: default; }
+.sc-venaerys-initiative .svi-icon-btn.svi-danger { color: var(--svi-danger); }
+
+.sc-venaerys-initiative .svi-flag { display: inline-flex; align-items: center; gap: 3px; color: var(--svi-muted); font-size: 13px; }
+.sc-venaerys-initiative .svi-flag-danger { color: var(--svi-danger); }
+.sc-venaerys-initiative .svi-flag-accent { color: var(--svi-accent-300); }
+
+/* Switch */
+.sc-venaerys-initiative .svi-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--svi-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-switch:disabled { opacity: 0.45; cursor: not-allowed; }
+.sc-venaerys-initiative .svi-switch-track {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 30px;
+  height: 18px;
+  border: 1px solid var(--svi-line);
+  border-radius: 9px;
+  background: var(--svi-neutral-800);
+}
+.sc-venaerys-initiative .svi-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--svi-neutral-400);
+  transition: left 120ms var(--svi-ease);
+}
+.sc-venaerys-initiative .svi-switch[aria-checked="true"] .svi-switch-track { border-color: var(--svi-accent); background: var(--svi-accent-800); }
+.sc-venaerys-initiative .svi-switch[aria-checked="true"] .svi-switch-knob { left: 14px; background: var(--svi-accent-200); }
+.sc-venaerys-initiative .svi-switch-state { min-width: 52px; text-align: right; font-size: 12px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-switch[aria-checked="true"] .svi-switch-state { color: var(--svi-accent-200); }
+
+/* Stepper */
+.sc-venaerys-initiative .svi-stepper {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+}
+.sc-venaerys-initiative .svi-stepper button {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--svi-muted);
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-stepper button:hover { color: var(--svi-text); }
+.sc-venaerys-initiative .svi-stepper input {
+  width: 44px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--svi-text);
+  font-family: var(--svi-font-mono);
+  font-size: 13px;
+  text-align: center;
+}
+.sc-venaerys-initiative .svi-stepper-value { display: inline-flex; align-items: center; gap: 2px; padding-left: 4px; font-size: 11px; }
+
+/* ---------- Header and GM panel ---------- */
+.sc-venaerys-initiative .svi-header { flex: none; display: flex; flex-direction: column; }
+.sc-venaerys-initiative .svi-round-row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 8px; }
+.sc-venaerys-initiative .svi-round { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+.sc-venaerys-initiative .svi-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--svi-neutral-800);
+  color: var(--svi-neutral-200);
+  font-size: 12px;
+}
+.sc-venaerys-initiative .svi-dc-badge {
+  padding: 2px 8px;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+  font-family: var(--svi-font-mono);
+  font-size: 12px;
+}
+.sc-venaerys-initiative .svi-gm-panel { display: flex; flex-direction: column; gap: 8px; padding: 0 10px 10px; }
+.sc-venaerys-initiative .svi-gm-line { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.sc-venaerys-initiative .svi-switch-wrap { display: flex; flex-direction: column; gap: 1px; }
+.sc-venaerys-initiative .svi-switch-wrap .svi-hint { padding-left: 38px; }
+.sc-venaerys-initiative .svi-gm-controls { display: flex; align-items: center; gap: 6px; }
+.sc-venaerys-initiative .svi-gm-controls .svi-btn:not(.svi-icon-btn) { flex: 1; }
+.sc-venaerys-initiative .svi-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--svi-accent-700);
+  border-radius: var(--svi-radius-sm);
+  background: var(--svi-warn-bg);
+}
+.sc-venaerys-initiative .svi-warning-title { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--svi-accent-200); }
+.sc-venaerys-initiative .svi-warning-hint { margin: 0; font-size: 12px; color: var(--svi-muted); }
+
+/* ---------- Phases ---------- */
+.sc-venaerys-initiative .svi-phases {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 8px 8px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--svi-neutral-700) transparent;
+}
+.sc-venaerys-initiative .svi-empty { margin: 8px 4px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-waiting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px dashed var(--svi-phase-current);
+  border-radius: var(--svi-radius-md);
+  background: var(--svi-phase-current-bg);
+  color: var(--svi-accent-200);
+  font-weight: 500;
+}
+.sc-venaerys-initiative .svi-phase {
+  flex: none;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-md);
+  background: var(--svi-card);
+}
+.sc-venaerys-initiative .svi-phase.svi-state-current {
+  border-color: var(--svi-phase-current);
+  background: var(--svi-phase-current-bg);
+  animation: svi-phase-in 240ms var(--svi-ease);
+}
+.sc-venaerys-initiative .svi-phase.svi-state-past { opacity: 0.8; }
+.sc-venaerys-initiative .svi-phase.svi-phase-empty { opacity: 0.6; background: transparent; }
+.sc-venaerys-initiative .svi-phase-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--svi-radius-md);
+  background: inherit;
+}
+.sc-venaerys-initiative .svi-phase-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--svi-radius-sm);
+  background: color-mix(in srgb, var(--svi-phase-color) 18%, transparent);
+  color: var(--svi-phase-color);
+  font-size: 11px;
+}
+.sc-venaerys-initiative .svi-phase-name { font-weight: 500; }
+.sc-venaerys-initiative .svi-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border: 1px solid var(--svi-phase-current);
+  border-radius: var(--svi-radius-sm);
+  color: var(--svi-accent-200);
+  font-size: 11px;
+}
+.sc-venaerys-initiative .svi-empty-label { font-size: 11px; font-style: italic; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-gm-only { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-count,
+.sc-venaerys-initiative .svi-group-count { font-family: var(--svi-font-mono); font-size: 11px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-compact {
+  margin: 0;
+  padding: 0 10px 8px 38px;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--svi-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sc-venaerys-initiative .svi-chevron {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--svi-muted);
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-rows { display: flex; flex-direction: column; padding: 0 2px 4px; }
+.sc-venaerys-initiative .svi-children { display: flex; flex-direction: column; margin-left: 16px; padding-left: 6px; border-left: 1px solid var(--svi-line); }
+
+/* Rows */
+.sc-venaerys-initiative .svi-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--svi-row-h);
+  padding: 0 6px;
+  border-radius: var(--svi-radius-sm);
+}
+.sc-venaerys-initiative .svi-row:hover { background: color-mix(in srgb, var(--svi-text) 4%, transparent); }
+.sc-venaerys-initiative .svi-portrait {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--svi-radius-sm);
+  background: var(--svi-neutral-800);
+  object-fit: cover;
+}
+.sc-venaerys-initiative .svi-portrait.svi-small { width: 22px; height: 22px; }
+.sc-venaerys-initiative .svi-name-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sc-venaerys-initiative .svi-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sc-venaerys-initiative .svi-group-row .svi-name { flex: 1; min-width: 0; }
+.sc-venaerys-initiative .svi-sub { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-sub.svi-deferred { color: var(--svi-accent-300); }
+.sc-venaerys-initiative .svi-row.svi-hidden .svi-name-col,
+.sc-venaerys-initiative .svi-row.svi-hidden .svi-portrait,
+.sc-venaerys-initiative .svi-row.svi-defeated .svi-name-col,
+.sc-venaerys-initiative .svi-row.svi-defeated .svi-portrait { opacity: 0.55; }
+.sc-venaerys-initiative .svi-row.svi-defeated .svi-name { text-decoration: line-through; }
+.sc-venaerys-initiative .svi-init {
+  min-width: 38px;
+  font-family: var(--svi-font-mono);
+  font-size: 12px;
+  text-align: right;
+  color: var(--svi-neutral-300);
+}
+
+/* Done state lives on the row: the toggle and status swap their halves. */
+.sc-venaerys-initiative .svi-row:not(.svi-done) .svi-when-done,
+.sc-venaerys-initiative .svi-row.svi-done .svi-when-todo { display: none; }
+.sc-venaerys-initiative .svi-done-btn,
+.sc-venaerys-initiative .svi-skip-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: 26px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-done-btn:hover,
+.sc-venaerys-initiative .svi-skip-btn:hover { border-color: var(--svi-accent); color: var(--svi-accent-200); }
+.sc-venaerys-initiative .svi-done-btn[aria-pressed="true"],
+.sc-venaerys-initiative .svi-skip-btn[aria-pressed="true"] { border-color: var(--svi-accent-700); background: var(--svi-done-bg); color: var(--svi-done); }
+.sc-venaerys-initiative .svi-done-btn.svi-big { height: 30px; padding: 0 12px; border-color: var(--svi-accent); color: var(--svi-accent-200); font-size: 13px; font-weight: 500; }
+.sc-venaerys-initiative .svi-skip-btn { padding: 0 6px; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-status { display: inline-flex; min-width: 58px; font-size: 12px; }
+.sc-venaerys-initiative .svi-status > span { display: inline-flex; align-items: center; gap: 4px; }
+.sc-venaerys-initiative .svi-status .svi-when-done { color: var(--svi-done); }
+.sc-venaerys-initiative .svi-status .svi-when-todo { color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-phase-select {
+  flex: none;
+  width: 30px;
+  height: 24px;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-phase-select:hover,
+.sc-venaerys-initiative .svi-phase-select:focus-visible { width: 120px; border-color: var(--svi-line); color: var(--svi-text); }
+.sc-venaerys-initiative .svi-phase-select option { background: var(--svi-surface); color: var(--svi-text); }
+
+/* ---------- Pending strip ---------- */
+.sc-venaerys-initiative .svi-pending-part { flex: none; }
+.sc-venaerys-initiative .svi-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--svi-line);
+  background: var(--svi-window-header);
+}
+.sc-venaerys-initiative .svi-pending-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--svi-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.sc-venaerys-initiative .svi-you-pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--svi-accent);
+  border-radius: var(--svi-radius-sm);
+  background: var(--svi-warn-bg);
+  color: var(--svi-accent-100);
+}
+.sc-venaerys-initiative .svi-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sc-venaerys-initiative .svi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px 0 3px;
+  border: 1px dashed var(--svi-pending);
+  border-radius: var(--svi-radius-sm);
+}
+.sc-venaerys-initiative .svi-chip .svi-muted { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; }
+
+/* ---------- Start confirmation ---------- */
+.sc-venaerys-initiative.svi-start-dialog .svi-start-lead { color: var(--svi-text); font-weight: 500; }
+.sc-venaerys-initiative.svi-start-dialog .svi-start-note { font-style: italic; }
+
+/* ---------- Native tracker button ---------- */
+.sc-venaerys-initiative.svi-tracker-bar { display: flex; justify-content: center; padding: 4px 0 2px; }
+.sc-venaerys-initiative .svi-tracker-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: 26px;
+  margin: 0;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+}

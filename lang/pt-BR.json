@@ -1,0 +1,199 @@
+{
+  "SC_VENAERYS_INITIATIVE": {
+    "Title": "SC - Venaerys's Initiative",
+    "Phase": {
+      "EpicBoss": "Chefe Épico",
+      "Boss": "Chefe",
+      "MiniBoss": "Subchefe",
+      "Fast": "Rápida",
+      "Enemies": "Inimigos",
+      "Slow": "Lenta",
+      "New": "Nova fase"
+    },
+    "Settings": {
+      "enabledByDefault": {
+        "Name": "Usar fases em combates novos",
+        "Hint": "Combates novos começam com a iniciativa em fases ligada. Dá para trocar em cada combate antes de ele começar."
+      },
+      "autoAdvance": {
+        "Name": "Avançar a fase automaticamente quando todos marcarem Feito",
+        "Hint": "Desligado, o Mestre avança cada fase na mão."
+      },
+      "defaultDc": {
+        "Name": "DC padrão",
+        "Hint": "A DC com que um combate novo começa. Quem atinge a DC age em Rápida."
+      },
+      "showDcToPlayers": {
+        "Name": "Mostrar a DC aos jogadores",
+        "Hint": "Desligado, só o Mestre vê a DC do combate."
+      },
+      "openOnStart": {
+        "Name": "Abrir a janela de fases no início do combate",
+        "Hint": "Abre a janela de fases neste cliente sempre que um combate com fases começa."
+      },
+      "phaseTemplate": {
+        "Name": "Modelo de fases",
+        "Hint": "As fases, em ordem, que cada combate novo copia."
+      }
+    },
+    "Config": {
+      "MenuName": "Fases e configurações",
+      "MenuLabel": "Configurar",
+      "MenuHint": "Ordem das fases, DC e as outras opções do SC - Venaerys's Initiative.",
+      "Title": "SC - Venaerys's Initiative · Configuração",
+      "Tabs": {
+        "general": "Geral",
+        "phases": "Fases",
+        "help": "Ajuda"
+      },
+      "Sections": {
+        "combat": "Combate",
+        "dc": "DC",
+        "window": "Janela"
+      },
+      "ScopeWorld": "Mundo · só o Mestre",
+      "ScopeClient": "Por usuário",
+      "Range": "{min} a {max}",
+      "On": "Ligado",
+      "Off": "Desligado",
+      "Decrease": "Diminuir {name}",
+      "Increase": "Aumentar {name}",
+      "Save": "Salvar",
+      "Saved": "Configurações salvas.",
+      "Phases": {
+        "Intro": "Ordem das fases em cada rodada. Combates em andamento não mudam.",
+        "Band": "Turno do grupo: fases extras aqui agem no meio dele",
+        "Drag": "Arrastar {name}",
+        "Icon": "Ícone de {name}",
+        "IconTitle": "Ícone",
+        "ColorTitle": "Cor",
+        "MoveUp": "Mover {name} para cima",
+        "MoveDown": "Mover {name} para baixo",
+        "Delete": "Apagar {name}",
+        "NameLabel": "Nome da fase",
+        "NamePlaceholder": "Nome da fase",
+        "Builtin": "Embutida",
+        "BuiltinHint": "Fase embutida: não pode ser apagada nem renomeada",
+        "NameEmpty": "Dê um nome à fase.",
+        "Add": "Adicionar fase",
+        "Restore": "Restaurar padrão",
+        "Unsaved": "Alterações não salvas",
+        "Saved": "Fases salvas.",
+        "OrderRefused": "{fast}, {enemies} e {slow} mantêm essa ordem.",
+        "RestoreTitle": "Restaurar fases padrão",
+        "RestoreBody": "Restaurar as fases padrão? As fases extras que você criou e os nomes que você mudou serão perdidos. Combates em andamento não mudam.",
+        "RestoreConfirm": "Restaurar",
+        "DeleteTitle": "Apagar fase",
+        "DeleteBody": "Apagar a fase '{name}'? Combates em andamento não mudam.",
+        "DeleteConfirm": "Apagar",
+        "Cancel": "Cancelar"
+      }
+    },
+    "Help": {
+      "TurnEvents": {
+        "Title": "Eventos de turno",
+        "Body": "O início de turno automático (recargas, dano contínuo, reação) acontece para todos os membros no começo da fase. O fim de turno automático só acontece para o membro destacado, no fim da fase. Os demais resolvem os efeitos de fim de turno (testes de resistência, efeitos que duram até o fim do próximo turno) à mão, ao marcar Feito."
+      },
+      "Unconfirmed": {
+        "Title": "Início sem confirmação",
+        "Body": "Quando um jogador inicia o combate, um jogador usa Próximo turno na rodada 0, ou uma macro ou integração o inicia com a opção de confirmado, não há diálogo de confirmação: quem ainda não rolou vai direto para Lenta nesta rodada."
+      },
+      "Pending": {
+        "Title": "Pendentes",
+        "Body": "Quem não rolou iniciativa fica no fim da ordem do Foundry e recebe os eventos de turno do sistema na virada de rodada. Ao rolar, entra na fase que o resultado indicar."
+      },
+      "Conflicts": {
+        "Title": "Módulos com opções que atrapalham",
+        "Body": "midi-qol: \"rerrolar iniciativa a cada rodada\" e \"registrar ataques de oportunidade\". Combat Tracker Dock: \"esconder inimigos até o primeiro turno\". Recomendamos desligar essas opções em combates com fases."
+      },
+      "Movement": {
+        "Title": "Foundry v14",
+        "Body": "No v14, o histórico de movimento de todos os combatentes é limpo a cada início de turno. Com fases, isso acontece no começo de cada fase."
+      }
+    },
+    "Tracker": {
+      "Title": "Fases do combate",
+      "OpenButton": "Fases",
+      "OpenLabel": "Abrir a janela de fases",
+      "Round": "Rodada {round}",
+      "NotStarted": "Não iniciado",
+      "InCombat": "Em combate",
+      "Dc": "DC {dc}",
+      "DcShort": "DC",
+      "NoCombat": "Nenhum combate ativo.",
+      "PhasesOff": "A iniciativa em fases está desligada neste combate.",
+      "Now": "Agora",
+      "Past": "Fase concluída",
+      "DoneCount": "{done}/{total} feitos",
+      "NoCombatants": "sem combatentes",
+      "GmOnly": "só o Mestre vê",
+      "Done": "Feito",
+      "MarkDone": "Marcar feito",
+      "MarkDoneLabel": "Marcar {name} como feito em {phase}",
+      "UnmarkDoneLabel": "Desmarcar {name} como feito em {phase}",
+      "Acting": "Agindo",
+      "Hidden": "Oculto",
+      "Defeated": "Derrotado",
+      "Pinned": "Fase fixada pelo Mestre",
+      "NextRound": "Na próxima rodada: {phase}",
+      "NoRoll": "Sem rolagem",
+      "NoInitiative": "Não rola iniciativa",
+      "Skip": "Pular nesta rodada",
+      "SkipLabel": "Pular {name} nesta rodada",
+      "UnskipLabel": "Deixar de pular {name} nesta rodada",
+      "Skipped": "Pulado nesta rodada",
+      "PhaseSelectLabel": "Fase de {name} neste combate",
+      "Automatic": "Automático",
+      "AwaitingRoll": "Aguardando rolagem",
+      "YouPending": "Você ainda não rolou iniciativa. Role pelo tracker ou pela ficha.",
+      "WaitingForGm": "Aguardando o Mestre",
+      "Expand": "Expandir {name}",
+      "Collapse": "Recolher {name}",
+      "PastLocked": "Só o Mestre desmarca uma fase concluída."
+    },
+    "Gm": {
+      "PhasesOn": "Fases ligadas",
+      "PhasesOff": "Fases desligadas",
+      "PhasesToggle": "Iniciativa em fases neste combate",
+      "PhasesLocked": "Só antes de iniciar o combate",
+      "PhasesLockedHint": "As fases só podem ser ligadas ou desligadas na rodada 0.",
+      "DcDown": "Diminuir a DC",
+      "DcUp": "Aumentar a DC",
+      "DcInput": "DC deste combate",
+      "Advance": "Avançar fase",
+      "AdvanceLabel": "Avançar de {phase} para a próxima fase",
+      "Complete": "Concluir fase",
+      "CompleteLabel": "Marcar todos de {phase} como feitos e avançar",
+      "Back": "Voltar fase",
+      "BackLabel": "Voltar de {phase} para a fase anterior",
+      "Help": "Ajuda",
+      "NotStartedHint": "Disponível depois que o combate começar.",
+      "AwaitingRollsOne": "Aguardando 1 rolagem",
+      "AwaitingRollsMany": "Aguardando {count} rolagens",
+      "AdvanceAnyway": "Avançar mesmo assim",
+      "AdvanceAnywayHint": "Quem não rolou age em {slow} nesta rodada; se rolar e passar na DC antes do fim de {fast}, entra em {fast} na hora.",
+      "DialogWait": "Avanço aguardando: diálogo aberto",
+      "DialogWaitHint": "A fase está completa. Feche o diálogo ou avance agora.",
+      "PhaseComplete": "Fase completa",
+      "PhaseCompleteHint": "O avanço automático está desligado. Avance quando a mesa estiver pronta.",
+      "NoPhases": "Nenhuma fase com combatentes",
+      "NoPhasesHint": "Todos os combatentes estão derrotados ou sem fase. A rodada não vira sozinha."
+    },
+    "Start": {
+      "Title": "Iniciar combate",
+      "PendingOne": "1 ainda não rolou iniciativa: {names}.",
+      "PendingMany": "{count} ainda não rolaram iniciativa: {names}.",
+      "More": "e mais {count}",
+      "IfStartOne": "Se iniciar agora, ele age em {slow} nesta rodada. Se rolar e passar na DC antes do fim de {fast}, entra em {fast} na hora.",
+      "IfStartMany": "Se iniciar agora, eles agem em {slow} nesta rodada. Quem rolar e passar na DC antes do fim de {fast} entra em {fast} na hora.",
+      "FastEmpty": "Ninguém do grupo está em {fast} ainda: ela será pulada nesta rodada.",
+      "StartAnyway": "Iniciar mesmo assim",
+      "Wait": "Aguardar rolagens"
+    },
+    "Notifications": {
+      "NoEarlierPhase": "Não há fase anterior: o combate começou nesta fase. Para mudar quem age agora, mova o combatente para a fase atual.",
+      "OnlyGmBack": "Só o Mestre pode voltar fases.",
+      "Error": "SC - Venaerys's Initiative encontrou um erro e voltou ao comportamento nativo nesta ação. Detalhes no console."
+    }
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "SC_VENAERYS_INITIATIVE": {
+    "Title": "SC - Venaerys's Initiative",
+    "Phase": {
+      "EpicBoss": "Epic Boss",
+      "Boss": "Boss",
+      "MiniBoss": "Mini-Boss",
+      "Fast": "Fast",
+      "Enemies": "Enemies",
+      "Slow": "Slow",
+      "New": "New phase"
+    },
+    "Settings": {
+      "enabledByDefault": {
+        "Name": "Use phases in new combats",
+        "Hint": "New combats start with phased initiative turned on. It can be switched per combat before it starts."
+      },
+      "autoAdvance": {
+        "Name": "Advance the phase automatically when everyone marks Done",
+        "Hint": "When off, the GM advances every phase by hand."
+      },
+      "defaultDc": {
+        "Name": "Default DC",
+        "Hint": "The DC a new combat starts with. Characters who meet it act in Fast."
+      },
+      "showDcToPlayers": {
+        "Name": "Show the DC to players",
+        "Hint": "When off, only the GM sees the combat's DC."
+      },
+      "openOnStart": {
+        "Name": "Open the phase window when combat starts",
+        "Hint": "Opens the phase window on this client whenever a phased combat begins."
+      },
+      "phaseTemplate": {
+        "Name": "Phase template",
+        "Hint": "The ordered phases each new combat copies."
+      }
+    },
+    "Config": {
+      "MenuName": "Phases and settings",
+      "MenuLabel": "Configure",
+      "MenuHint": "Phase order, DC and the other options of SC - Venaerys's Initiative.",
+      "Title": "SC - Venaerys's Initiative · Settings",
+      "Tabs": {
+        "general": "General",
+        "phases": "Phases",
+        "help": "Help"
+      },
+      "Sections": {
+        "combat": "Combat",
+        "dc": "DC",
+        "window": "Window"
+      },
+      "ScopeWorld": "World · GM only",
+      "ScopeClient": "Per user",
+      "Range": "{min} to {max}",
+      "On": "On",
+      "Off": "Off",
+      "Decrease": "Decrease {name}",
+      "Increase": "Increase {name}",
+      "Save": "Save",
+      "Saved": "Settings saved.",
+      "Phases": {
+        "Intro": "Order of the phases in each round. Combats in progress don't change.",
+        "Band": "Party turn: extra phases here act in the middle of it",
+        "Drag": "Drag {name}",
+        "Icon": "Icon of {name}",
+        "IconTitle": "Icon",
+        "ColorTitle": "Color",
+        "MoveUp": "Move {name} up",
+        "MoveDown": "Move {name} down",
+        "Delete": "Delete {name}",
+        "NameLabel": "Name of the phase",
+        "NamePlaceholder": "Phase name",
+        "Builtin": "Built-in",
+        "BuiltinHint": "Built-in phase: can't be deleted or renamed",
+        "NameEmpty": "Give the phase a name.",
+        "Add": "Add phase",
+        "Restore": "Restore defaults",
+        "Unsaved": "Unsaved changes",
+        "Saved": "Phases saved.",
+        "OrderRefused": "{fast}, {enemies} and {slow} keep this order.",
+        "RestoreTitle": "Restore default phases",
+        "RestoreBody": "Restore the default phases? The extra phases you created and the names you changed will be lost. Combats in progress don't change.",
+        "RestoreConfirm": "Restore",
+        "DeleteTitle": "Delete phase",
+        "DeleteBody": "Delete the phase '{name}'? Combats in progress don't change.",
+        "DeleteConfirm": "Delete",
+        "Cancel": "Cancel"
+      }
+    },
+    "Help": {
+      "TurnEvents": {
+        "Title": "Turn events",
+        "Body": "Automatic start-of-turn effects (recharges, ongoing damage, reaction) happen for every member at the start of the phase. Automatic end-of-turn effects only happen for the highlighted member, at the end of the phase. Everyone else resolves end-of-turn effects (saving throws, effects that last until the end of their next turn) by hand when marking Done."
+      },
+      "Unconfirmed": {
+        "Title": "Starting without confirmation",
+        "Body": "When a player starts the combat, a player uses Next turn in round 0, or a macro or integration starts it with the confirmed option, there is no confirmation dialog: anyone who has not rolled goes straight to Slow this round."
+      },
+      "Pending": {
+        "Title": "Pending combatants",
+        "Body": "Anyone who hasn't rolled initiative sits at the end of Foundry's order and gets the system's turn events at the round change. Once they roll, they join the phase their result gives."
+      },
+      "Conflicts": {
+        "Title": "Modules with conflicting options",
+        "Body": "midi-qol: \"reroll initiative each round\" and \"record attacks of opportunity\". Combat Tracker Dock: \"hide enemies until their first turn\". We recommend turning these options off in combats with phases."
+      },
+      "Movement": {
+        "Title": "Foundry v14",
+        "Body": "In v14, the movement history of every combatant is cleared at each turn start. With phases, that happens at the start of each phase."
+      }
+    },
+    "Tracker": {
+      "Title": "Combat Phases",
+      "OpenButton": "Phases",
+      "OpenLabel": "Open the phase window",
+      "Round": "Round {round}",
+      "NotStarted": "Not started",
+      "InCombat": "In combat",
+      "Dc": "DC {dc}",
+      "DcShort": "DC",
+      "NoCombat": "No active combat.",
+      "PhasesOff": "Phased initiative is off in this combat.",
+      "Now": "Now",
+      "Past": "Phase finished",
+      "DoneCount": "{done}/{total} done",
+      "NoCombatants": "no combatants",
+      "GmOnly": "GM only",
+      "Done": "Done",
+      "MarkDone": "Mark done",
+      "MarkDoneLabel": "Mark {name} done in {phase}",
+      "UnmarkDoneLabel": "Unmark {name} as done in {phase}",
+      "Acting": "Acting",
+      "Hidden": "Hidden",
+      "Defeated": "Defeated",
+      "Pinned": "Phase pinned by the GM",
+      "NextRound": "Next round: {phase}",
+      "NoRoll": "No roll",
+      "NoInitiative": "Doesn't roll initiative",
+      "Skip": "Skip this round",
+      "SkipLabel": "Skip {name} this round",
+      "UnskipLabel": "Stop skipping {name} this round",
+      "Skipped": "Skipped this round",
+      "PhaseSelectLabel": "Phase of {name} in this combat",
+      "Automatic": "Automatic",
+      "AwaitingRoll": "Awaiting roll",
+      "YouPending": "You haven't rolled initiative yet. Roll from the tracker or your sheet.",
+      "WaitingForGm": "Waiting for the GM",
+      "Expand": "Expand {name}",
+      "Collapse": "Collapse {name}",
+      "PastLocked": "Only the GM can unmark a finished phase."
+    },
+    "Gm": {
+      "PhasesOn": "Phases on",
+      "PhasesOff": "Phases off",
+      "PhasesToggle": "Phased initiative in this combat",
+      "PhasesLocked": "Only before the combat starts",
+      "PhasesLockedHint": "Phases can only be turned on or off in round 0.",
+      "DcDown": "Lower the DC",
+      "DcUp": "Raise the DC",
+      "DcInput": "DC of this combat",
+      "Advance": "Next phase",
+      "AdvanceLabel": "Advance from {phase} to the next phase",
+      "Complete": "Complete phase",
+      "CompleteLabel": "Mark everyone in {phase} done and advance",
+      "Back": "Previous phase",
+      "BackLabel": "Go back from {phase} to the previous phase",
+      "Help": "Help",
+      "NotStartedHint": "Available once the combat starts.",
+      "AwaitingRollsOne": "Awaiting 1 roll",
+      "AwaitingRollsMany": "Awaiting {count} rolls",
+      "AdvanceAnyway": "Advance anyway",
+      "AdvanceAnywayHint": "Whoever hasn't rolled acts in {slow} this round; if they roll and beat the DC before {fast} ends, they join {fast} right away.",
+      "DialogWait": "Advance waiting: dialog open",
+      "DialogWaitHint": "The phase is complete. Close the dialog or advance now.",
+      "PhaseComplete": "Phase complete",
+      "PhaseCompleteHint": "Automatic advance is off. Advance when the table is ready.",
+      "NoPhases": "No phase with combatants",
+      "NoPhasesHint": "Every combatant is defeated or has no phase. The round won't turn by itself."
+    },
+    "Start": {
+      "Title": "Start combat",
+      "PendingOne": "1 hasn't rolled initiative yet: {names}.",
+      "PendingMany": "{count} haven't rolled initiative yet: {names}.",
+      "More": "and {count} more",
+      "IfStartOne": "If you start now, they act in {slow} this round. If they roll and beat the DC before {fast} ends, they join {fast} right away.",
+      "IfStartMany": "If you start now, they act in {slow} this round. Anyone who rolls and beats the DC before {fast} ends joins {fast} right away.",
+      "FastEmpty": "Nobody from the party is in {fast} yet: it will be skipped this round.",
+      "StartAnyway": "Start anyway",
+      "Wait": "Wait for rolls"
+    },
+    "Notifications": {
+      "NoEarlierPhase": "There is no previous phase: the combat started in this phase. To change who acts now, move the combatant to the current phase.",
+      "OnlyGmBack": "Only the GM can go back phases.",
+      "Error": "SC - Venaerys's Initiative hit an error and fell back to native behavior for this action. Details in the console."
+    }
+  }
+}

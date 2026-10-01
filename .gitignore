@@ -1,0 +1,33 @@
+# Local agent instructions and configuration (never public)
+.claude/
+.agents/
+.codex/
+AGENTS.md
+CLAUDE.md
+
+# Local project documentation: specs and Design project references (never public)
+docs/
+
+# Dependencies, build output, and coverage
+node_modules/
+dist/
+build/
+coverage/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+.cache/
+.tmp/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
+.env.*
+!.env.example

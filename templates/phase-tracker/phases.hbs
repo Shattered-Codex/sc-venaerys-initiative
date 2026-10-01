@@ -1,0 +1,60 @@
+<div class="svi-phases">
+  {{#if hasCombat}}
+  {{#unless enabled}}<p class="svi-empty">{{localize "SC_VENAERYS_INITIATIVE.Tracker.PhasesOff"}}</p>{{/unless}}
+  {{#each phases}}
+  {{#if waitingForGm}}
+  <div class="svi-waiting" role="status"><i class="fa-solid fa-hourglass-half" inert></i><span>{{label}}</span></div>
+  {{else}}
+  <section class="svi-phase svi-state-{{state}}{{#if isEmpty}} svi-phase-empty{{/if}}{{#if complete}} svi-complete{{/if}}" data-phase-id="{{id}}"
+           style="--svi-phase-color: {{color}}" aria-label="{{name}}"{{#if isCurrent}} aria-current="step"{{/if}}>
+    <header class="svi-phase-header">
+      <span class="svi-phase-icon" aria-hidden="true"><i class="{{icon}}"></i></span>
+      <span class="svi-phase-name">{{name}}</span>
+      {{#if isCurrent}}<span class="svi-now"><i class="fa-solid fa-play" inert></i>{{nowLabel}}</span>{{/if}}
+      {{#if isPast}}{{#unless isEmpty}}<span class="svi-flag" role="img" aria-label="{{pastLabel}}" data-tooltip="{{pastLabel}}"><i class="fa-solid fa-circle-check" inert></i></span>{{/unless}}{{/if}}
+      {{#if isEmpty}}<span class="svi-empty-label">{{emptyLabel}}</span>{{/if}}
+      <span class="svi-spacer"></span>
+      {{#if isEmpty}}<span class="svi-gm-only"><i class="fa-solid fa-eye" inert></i>{{gmOnlyLabel}}</span>{{/if}}
+      {{#if count}}<span class="svi-count" data-phase-count="{{id}}">{{count}}</span>{{/if}}
+      {{#if pastToggle}}
+      <button type="button" class="svi-chevron" data-action="toggleExpand" data-key="{{pastToggle.key}}"
+              aria-expanded="{{pastToggle.expanded}}" aria-label="{{pastToggle.label}}" data-tooltip="{{pastToggle.label}}">
+        <i class="fa-solid {{#if pastToggle.expanded}}fa-chevron-up{{else}}fa-chevron-down{{/if}}" inert></i>
+      </button>
+      {{/if}}
+    </header>
+    {{#if compact}}
+    <p class="svi-compact">{{compact}}</p>
+    {{else}}
+    {{#unless isEmpty}}
+    <div class="svi-rows">
+      {{#each rows}}
+      {{#if isGroup}}
+      <div class="svi-group" data-group-key="{{key}}">
+        <div class="svi-row svi-group-row">
+          <button type="button" class="svi-chevron" data-action="toggleExpand" data-key="{{key}}"
+                  aria-expanded="{{expanded}}" aria-label="{{toggleLabel}}" data-tooltip="{{toggleLabel}}">
+            <i class="fa-solid {{#if expanded}}fa-chevron-down{{else}}fa-chevron-right{{/if}}" inert></i>
+          </button>
+          {{#if img}}<img class="svi-portrait" src="{{img}}" alt="" loading="lazy">{{else}}<span class="svi-portrait" aria-hidden="true"></span>{{/if}}
+          <span class="svi-name">{{name}}</span>
+          <span class="svi-group-count">{{count}}</span>
+        </div>
+        {{#if expanded}}
+        <div class="svi-children">{{#each children}}{{> "modules/sc-venaerys-initiative/templates/phase-tracker/row.hbs"}}{{/each}}</div>
+        {{/if}}
+      </div>
+      {{else}}
+      {{> "modules/sc-venaerys-initiative/templates/phase-tracker/row.hbs"}}
+      {{/if}}
+      {{/each}}
+    </div>
+    {{/unless}}
+    {{/if}}
+  </section>
+  {{/if}}
+  {{/each}}
+  {{else}}
+  <p class="svi-empty">{{localize "SC_VENAERYS_INITIATIVE.Tracker.NoCombat"}}</p>
+  {{/if}}
+</div>

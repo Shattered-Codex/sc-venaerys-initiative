@@ -1,0 +1,322 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_discord:
+        description: "Não anunciar esta versão no Discord"
+        type: boolean
+        default: false
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set module ID
+        run: echo "MODULE_ID=${GITHUB_REPOSITORY##*/}" >> "$GITHUB_ENV"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify module
+        shell: bash
+        run: |
+          python3 -m json.tool module.json >/dev/null
+          python3 -m json.tool module-tiers.json >/dev/null
+          python3 -m json.tool lang/en.json >/dev/null
+          python3 -m json.tool lang/pt-BR.json >/dev/null
+          npm run verify
+
+      - name: Verify release assets
+        shell: bash
+        run: |
+          test -s module-tiers.json
+          test -f README.md
+          test -f scripts/module.js
+
+      - name: Detect merged branch
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SKIP_DISCORD_INPUT: ${{ github.event.inputs.skip_discord }}
+          DISCORD_LABEL: skip-discord
+        run: |
+          if PR_JSON=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" 2>/dev/null); then
+            PR_LOOKUP=ok
+          else
+            PR_LOOKUP=failed
+            PR_JSON='[]'
+          fi
+          MERGED_BRANCH=$(jq -r \
+            '[.[] | select(.base.ref == "main" and .merged_at != null)][0].head.ref // ""' \
+            <<< "$PR_JSON")
+          if [[ -z "$MERGED_BRANCH" ]]; then
+            MERGED_BRANCH="patch/unknown"
+          fi
+
+          BUMP_TYPE=$(echo "$MERGED_BRANCH" | cut -d'/' -f1)
+          if [[ "$BUMP_TYPE" != "major" && "$BUMP_TYPE" != "minor" && "$BUMP_TYPE" != "patch" ]]; then
+            BUMP_TYPE="patch"
+          fi
+
+          echo "BUMP_TYPE=$BUMP_TYPE" >> "$GITHUB_ENV"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "${SKIP_DISCORD_INPUT:-false}" == "true" ]]; then
+              NOTIFY_DISCORD=false
+            else
+              NOTIFY_DISCORD=true
+            fi
+          elif [[ "$PR_LOOKUP" == "failed" ]]; then
+            echo "::warning::Could not read the merged PR; suppressing the Discord notification."
+            NOTIFY_DISCORD=false
+          elif jq -e --arg label "$DISCORD_LABEL" \
+            '[.[] | select(.base.ref == "main" and .merged_at != null)][0].labels | map(.name) | index($label)' \
+            <<< "$PR_JSON" >/dev/null; then
+            NOTIFY_DISCORD=false
+          else
+            NOTIFY_DISCORD=true
+          fi
+
+          echo "NOTIFY_DISCORD=$NOTIFY_DISCORD" >> "$GITHUB_ENV"
+          echo "Discord notification enabled: $NOTIFY_DISCORD (label '$DISCORD_LABEL' on PR from '$MERGED_BRANCH')"
+
+      - name: Calculate semantic version
+        id: tag_version
+        shell: bash
+        run: |
+          LATEST_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n1)
+          LATEST_PARENT=$(git rev-parse "${LATEST_TAG}^" 2>/dev/null || true)
+
+          if [[ -n "$LATEST_TAG" && "$LATEST_PARENT" == "$GITHUB_SHA" ]]; then
+            REUSE_RELEASE=true
+            NEW_TAG="$LATEST_TAG"
+            NEW_VERSION="${LATEST_TAG#v}"
+            PREVIOUS_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | sed -n '2p')
+          else
+            REUSE_RELEASE=false
+            PREVIOUS_TAG="$LATEST_TAG"
+            if [[ -n "$PREVIOUS_TAG" ]]; then
+              BASE_VERSION="${PREVIOUS_TAG#v}"
+            else
+              BASE_VERSION=$(python3 -c 'import json; print(json.load(open("module.json"))["version"])')
+            fi
+
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
+            if [[ ! "$MAJOR" =~ ^[0-9]+$ || ! "$MINOR" =~ ^[0-9]+$ || ! "$PATCH" =~ ^[0-9]+$ ]]; then
+              echo "Invalid base version: $BASE_VERSION" >&2
+              exit 1
+            fi
+
+            case "$BUMP_TYPE" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              *)     PATCH=$((PATCH + 1)) ;;
+            esac
+
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            NEW_TAG="v${NEW_VERSION}"
+
+            if git rev-parse --verify "refs/tags/${NEW_TAG}" >/dev/null 2>&1; then
+              echo "Tag already exists: $NEW_TAG" >&2
+              exit 1
+            fi
+          fi
+
+          {
+            echo "previous_tag=$PREVIOUS_TAG"
+            echo "new_version=$NEW_VERSION"
+            echo "new_tag=$NEW_TAG"
+            echo "reuse_release=$REUSE_RELEASE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        shell: bash
+        env:
+          PREVIOUS_TAG: ${{ steps.tag_version.outputs.previous_tag }}
+        run: |
+          if [[ -z "$PREVIOUS_TAG" ]]; then
+            git log --pretty=format:"* %s" > CHANGELOG.md
+          else
+            git log "$PREVIOUS_TAG"..HEAD --pretty=format:"* %s" > CHANGELOG.md
+          fi
+          if [[ ! -s CHANGELOG.md ]]; then
+            echo "* Maintenance release." > CHANGELOG.md
+          fi
+
+      - name: Update module manifest
+        shell: bash
+        env:
+          VERSION: ${{ steps.tag_version.outputs.new_version }}
+          TAG: ${{ steps.tag_version.outputs.new_tag }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          repository = os.environ["GITHUB_REPOSITORY"]
+          module_id = os.environ["MODULE_ID"]
+          tag = os.environ["TAG"]
+
+          with open("module.json", encoding="utf-8") as handle:
+              manifest = json.load(handle)
+
+          manifest["id"] = module_id
+          manifest["version"] = os.environ["VERSION"]
+          manifest["url"] = f"https://github.com/{repository}"
+          manifest["download"] = f"https://github.com/{repository}/releases/download/{tag}/{module_id}.zip"
+          manifest["manifest"] = f"https://github.com/{repository}/releases/latest/download/module.json"
+          manifest.setdefault("flags", {})["hotReload"] = False
+
+          with open("module.json", "w", encoding="utf-8") as handle:
+              json.dump(manifest, handle, indent=2, ensure_ascii=False)
+              handle.write("\n")
+          PY
+
+      - name: Create ZIP archive
+        shell: bash
+        run: |
+          FILES=(module.json module-tiers.json lang scripts styles templates README.md CHANGELOG.md)
+          if [[ -f LICENSE ]]; then FILES+=(LICENSE); fi
+          zip -r "./${MODULE_ID}.zip" "${FILES[@]}"
+
+      - name: Validate package assets
+        shell: bash
+        run: |
+          unzip -l "./${MODULE_ID}.zip" | grep -q "module-tiers.json"
+          unzip -l "./${MODULE_ID}.zip" | grep -q "scripts/module.js"
+          unzip -l "./${MODULE_ID}.zip" | grep -q "templates/phase-tracker/phases.hbs"
+
+      - name: Commit manifest and publish tag
+        if: steps.tag_version.outputs.reuse_release != 'true'
+        shell: bash
+        env:
+          TAG: ${{ steps.tag_version.outputs.new_tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add module.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: sync module manifest to ${{ steps.tag_version.outputs.new_version }}"
+          fi
+          git tag "$TAG"
+          git push --atomic \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" \
+            "HEAD:${GITHUB_REF#refs/heads/}" \
+            "refs/tags/${TAG}"
+
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          bodyFile: CHANGELOG.md
+          allowUpdates: true
+          artifacts: ./module.json,./${{ env.MODULE_ID }}.zip,./CHANGELOG.md,./module-tiers.json
+          token: ${{ github.token }}
+
+      - name: Upload artifacts to R2
+        if: success()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_EC2_METADATA_DISABLED: true
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          TAG: ${{ steps.tag_version.outputs.new_tag }}
+        shell: bash
+        run: |
+          if [[ -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" || -z "$R2_ACCOUNT_ID" || -z "$R2_BUCKET" ]]; then
+            echo "R2 secrets are not fully configured. Skipping artifact upload."
+            exit 0
+          fi
+          ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          TARGET="s3://${R2_BUCKET}/modules/${MODULE_ID}/${TAG}"
+          aws s3 cp module.json "${TARGET}/module.json" --endpoint-url "${ENDPOINT}"
+          aws s3 cp module-tiers.json "${TARGET}/module-tiers.json" --endpoint-url "${ENDPOINT}"
+          aws s3 cp "./${MODULE_ID}.zip" "${TARGET}/${MODULE_ID}.zip" --endpoint-url "${ENDPOINT}"
+
+      - name: Publish to Foundry Package API
+        if: success()
+        env:
+          RELEASE_TOKEN: ${{ secrets.FOUNDRY_RELEASE_TOKEN }}
+          VERSION: ${{ steps.tag_version.outputs.new_version }}
+          TAG: ${{ steps.tag_version.outputs.new_tag }}
+        shell: bash
+        run: |
+          if [[ -z "$RELEASE_TOKEN" ]]; then
+            echo "FOUNDRY_RELEASE_TOKEN is not configured. Skipping Foundry Package API publication."
+            exit 0
+          fi
+          payload=$(jq -n \
+            --arg id "$MODULE_ID" \
+            --arg version "$VERSION" \
+            --arg manifest "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/module.json" \
+            --arg notes "https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}" \
+            --arg min "$(python3 -c 'import json; print(json.load(open("module.json"))["compatibility"]["minimum"])')" \
+            --arg verified "$(python3 -c 'import json; print(json.load(open("module.json"))["compatibility"]["verified"])')" \
+            '{id:$id,release:{version:$version,manifest:$manifest,notes:$notes,compatibility:{minimum:$min,verified:$verified}}}')
+          curl -sSf -X POST -H "Content-Type: application/json" -H "Authorization: ${RELEASE_TOKEN}" -d "${payload}" https://foundryvtt.com/_api/packages/release_version/
+
+      - name: Notify Discord
+        if: success() && env.NOTIFY_DISCORD == 'true'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          VERSION: ${{ steps.tag_version.outputs.new_version }}
+        shell: bash
+        run: |
+          if [[ -z "${DISCORD_WEBHOOK_URL// }" ]]; then
+            echo "DISCORD_WEBHOOK_URL is not configured. Skipping Discord notification."
+            exit 0
+          fi
+
+          MODULE_TITLE=$(python3 -c 'import json; print(json.load(open("module.json"))["title"])')
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B "${GITHUB_SHA}" 2>/dev/null || true)
+          if [[ -z "${COMMIT_MESSAGE//[[:space:]]/}" ]]; then COMMIT_MESSAGE="Release published"; fi
+          COMMIT_MESSAGE=$(printf '%s' "$COMMIT_MESSAGE" | head -c 3500)
+
+          payload=$(jq -n \
+            --arg title "${MODULE_TITLE} v${VERSION}" \
+            --arg version "${VERSION}" \
+            --arg commit "${COMMIT_MESSAGE}" \
+            '{content:"@everyone", allowed_mentions:{parse:["everyone"]}, embeds:[{title:$title, url:"https://app.shattered-codex.com/", description:("**A new release has been published.**\n\n**Version:** `" + $version + "`\n\n" + $commit), color:16096779}]}')
+
+          response_file=$(mktemp)
+          trap 'rm -f "$response_file"' EXIT
+          if [[ "$DISCORD_WEBHOOK_URL" == *\?* ]]; then
+            discord_wait_url="${DISCORD_WEBHOOK_URL}&wait=true"
+          else
+            discord_wait_url="${DISCORD_WEBHOOK_URL}?wait=true"
+          fi
+          curl -sSf \
+            -o "$response_file" \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$discord_wait_url"
+
+          jq -e '.embeds[0].title' "$response_file" >/dev/null

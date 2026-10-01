@@ -1,0 +1,51 @@
+<div class="tab svi-tab-panel {{tab.cssClass}}" data-group="primary" data-tab="phases" role="tabpanel">
+  <p class="svi-intro">{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Intro"}}</p>
+  <ol class="svi-phase-list">
+    {{#each phases}}
+    {{#if bandStart}}<li class="svi-band-label" aria-hidden="true"><i class="fa-solid fa-people-group" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Band"}}</li>{{/if}}
+    <li class="svi-phase-item{{#if inBand}} svi-in-band{{/if}}{{#if flash}} svi-flash{{/if}}" data-id="{{id}}">
+      <div class="svi-phase-line" style="--svi-phase-color: {{color}}">
+        <span class="svi-drag" role="img" aria-label="{{dragLabel}}" data-tooltip="{{dragLabel}}"><i class="fa-solid fa-grip-vertical" inert></i></span>
+        {{#if builtin}}
+        <span class="svi-phase-icon" aria-hidden="true"><i class="{{icon}}"></i></span>
+        <span class="svi-builtin-name">{{name}}
+          <span class="svi-flag" role="img" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Builtin"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.BuiltinHint"}}"><i class="fa-solid fa-lock" inert></i></span>
+        </span>
+        {{else}}
+        <details class="svi-look">
+          <summary class="svi-phase-icon" aria-label="{{iconLabel}}" data-tooltip="{{iconLabel}}"><i class="{{icon}}" inert></i></summary>
+          <div class="svi-look-popover">
+            <span class="svi-look-title">{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.IconTitle"}}</span>
+            <div class="svi-look-grid" role="radiogroup" aria-label="{{iconLabel}}">
+              {{#each icons}}
+              <button type="button" role="radio" aria-checked="{{selected}}" data-action="pickIcon" data-icon="{{cls}}" aria-label="{{cls}}" data-tooltip="{{cls}}"><i class="{{cls}}" inert></i></button>
+              {{/each}}
+            </div>
+            <span class="svi-look-title">{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.ColorTitle"}}</span>
+            <div class="svi-look-grid" role="radiogroup" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.ColorTitle"}}">
+              {{#each colors}}
+              <button type="button" role="radio" class="svi-swatch" aria-checked="{{selected}}" data-action="pickColor" data-color="{{hex}}" aria-label="{{hex}}" data-tooltip="{{hex}}" style="--svi-swatch: {{hex}}"><i class="fa-solid fa-check" inert></i></button>
+              {{/each}}
+            </div>
+          </div>
+        </details>
+        <input type="text" class="svi-phase-name-input{{#if error}} svi-invalid{{/if}}" value="{{name}}" placeholder="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.NamePlaceholder"}}"
+               aria-label="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.NameLabel"}}" {{#if error}}aria-invalid="true" aria-describedby="svi-error-{{id}}"{{/if}}>
+        {{/if}}
+        <button type="button" class="svi-icon-btn" data-action="movePhase" data-step="-1" aria-label="{{upLabel}}" data-tooltip="{{upLabel}}" {{#unless canUp}}disabled{{/unless}}><i class="fa-solid fa-arrow-up" inert></i></button>
+        <button type="button" class="svi-icon-btn" data-action="movePhase" data-step="1" aria-label="{{downLabel}}" data-tooltip="{{downLabel}}" {{#unless canDown}}disabled{{/unless}}><i class="fa-solid fa-arrow-down" inert></i></button>
+        {{#if builtin}}<span class="svi-icon-spacer" aria-hidden="true"></span>
+        {{else}}<button type="button" class="svi-icon-btn svi-danger" data-action="deletePhase" aria-label="{{deleteLabel}}" data-tooltip="{{deleteLabel}}"><i class="fa-solid fa-trash" inert></i></button>{{/if}}
+      </div>
+      {{#if error}}<p class="svi-error" id="svi-error-{{id}}" role="alert"><i class="fa-solid fa-circle-exclamation" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.NameEmpty"}}</p>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <footer class="svi-footer">
+    <button type="button" class="svi-btn" data-action="addPhase"><i class="fa-solid fa-plus" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Add"}}</span></button>
+    <button type="button" class="svi-btn svi-btn-danger" data-action="restorePhases"><i class="fa-solid fa-rotate-left" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Restore"}}</span></button>
+    <span class="svi-spacer"></span>
+    <span class="svi-unsaved" role="status" {{#unless dirty}}hidden{{/unless}}><i class="fa-solid fa-circle" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Unsaved"}}</span>
+    <button type="button" class="svi-btn svi-btn-primary" data-action="savePhases"><i class="fa-solid fa-floppy-disk" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Save"}}</span></button>
+  </footer>
+</div>

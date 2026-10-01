@@ -1,0 +1,76 @@
+/*
+ * Ember theme over the Nocturne palette of the SC design system.
+ * Scoped to the module's own windows: nothing here reaches Foundry's UI.
+ * Every visual value the module uses comes from these --svi-* variables.
+ */
+.sc-venaerys-initiative {
+  /* Nocturne roles */
+  --svi-bg: #161826;
+  --svi-surface: #232532;
+  --svi-text: #e9e9ed;
+  --svi-divider: color-mix(in srgb, #e9e9ed 16%, transparent);
+  --svi-neutral-200: #e4e7f5;
+  --svi-neutral-300: #cfd3e5;
+  --svi-neutral-400: #b2b6ca;
+  --svi-neutral-600: #75798c;
+  --svi-neutral-700: #595d6c;
+  --svi-neutral-800: #3f424d;
+  --svi-neutral-900: #292b31;
+
+  /* Ember accent ramp */
+  --svi-accent: #d68a3a;
+  --svi-accent-100: oklch(0.970 0.018 62);
+  --svi-accent-200: oklch(0.925 0.045 62);
+  --svi-accent-300: oklch(0.865 0.080 62);
+  --svi-accent-700: oklch(0.480 0.098 62);
+  --svi-accent-800: oklch(0.370 0.070 62);
+  --svi-accent-900: oklch(0.270 0.040 62);
+
+  /* Shape and type */
+  --svi-radius-sm: 4px;
+  --svi-radius-md: 8px;
+  --svi-shadow-md: 0 0 0 1px #595d6c, 0 6px 18px rgba(0, 0, 0, 0.55);
+  --svi-shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65);
+  --svi-font-body: var(--font-primary, "Signika"), system-ui, sans-serif;
+  --svi-font-mono: var(--font-mono, ui-monospace), ui-monospace, monospace;
+  --svi-row-h: 36px;
+  --svi-ease: cubic-bezier(0.4, 0.1, 0.2, 1);
+
+  /* Domain roles */
+  --svi-window-bg: color-mix(in oklch, var(--svi-bg) 70%, var(--svi-surface));
+  --svi-window-header: var(--svi-bg);
+  --svi-card: var(--svi-surface);
+  --svi-line: var(--svi-divider);
+  --svi-muted: color-mix(in srgb, var(--svi-text) 62%, transparent);
+  --svi-hover: color-mix(in srgb, var(--svi-text) 8%, transparent);
+  --svi-phase-current: var(--svi-accent);
+  --svi-phase-current-bg: color-mix(in oklch, var(--svi-accent-900) 55%, var(--svi-surface));
+  --svi-done: var(--svi-accent-200);
+  --svi-done-bg: var(--svi-accent-800);
+  --svi-pending: var(--svi-neutral-400);
+  --svi-danger: oklch(0.700 0.150 25);
+  --svi-danger-bg: oklch(0.300 0.070 25);
+  --svi-warn-bg: color-mix(in oklch, var(--svi-accent-900) 80%, var(--svi-surface));
+
+  /* Phase palette: the chosen swatch is stored as #rrggbb */
+  --svi-phase-color-1: #c9503c;
+  --svi-phase-color-2: #d68a3a;
+  --svi-phase-color-3: #c9b23c;
+  --svi-phase-color-4: #6fa35a;
+  --svi-phase-color-5: #3fa3a0;
+  --svi-phase-color-6: #5b86c9;
+  --svi-phase-color-7: #9184d9;
+  --svi-phase-color-8: #b56fb0;
+}
+
+@keyframes svi-phase-in {
+  from { background-color: var(--svi-accent-800); }
+  to { background-color: var(--svi-phase-current-bg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-venaerys-initiative * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

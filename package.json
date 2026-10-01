@@ -1,0 +1,15 @@
+{
+  "name": "sc-venaerys-initiative",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Development tooling for the SC - Venaerys's Initiative Foundry VTT module. Foundry itself loads scripts/ directly and never reads this file.",
+  "scripts": {
+    "check": "node tools/check-syntax.mjs",
+    "test": "node --test test/*.test.js",
+    "verify": "npm run check && npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

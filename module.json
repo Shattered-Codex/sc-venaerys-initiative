@@ -1,0 +1,43 @@
+{
+  "id": "sc-venaerys-initiative",
+  "title": "SC - Venaerys's Initiative",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "flags": {
+    "canUpload": true
+  },
+  "description": "Phased initiative for any system: characters roll against a DC and act together in Fast or Slow, enemies act together between them, and the GM places bosses in their own phases.",
+  "authors": [
+    {
+      "name": "Gustavo Bacelar",
+      "url": "https://github.com/Shattered-Codex/sc-venaerys-initiative",
+      "discord": "gubacelar"
+    }
+  ],
+  "esmodules": [
+    "scripts/module.js"
+  ],
+  "styles": [
+    "styles/tokens.css",
+    "styles/phase-tracker.css",
+    "styles/phase-config.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "pt-BR",
+      "name": "Português (Brasil)",
+      "path": "lang/pt-BR.json"
+    }
+  ],
+  "socket": true,
+  "url": "https://github.com/Shattered-Codex/sc-venaerys-initiative",
+  "manifest": "https://github.com/Shattered-Codex/sc-venaerys-initiative/releases/latest/download/module.json"
+}
