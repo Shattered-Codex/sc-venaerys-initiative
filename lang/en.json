@@ -90,6 +90,15 @@
       "rollFormula": {
         "Name": "Formula",
         "Hint": "Dice plus @ references to the actor's data, e.g. 1d20 + @abilities.dex.mod. Empty uses the system's default shown in the field."
+      },
+      "splitPhases": {
+        "Name": "Movement and actions",
+        "Hint": "Splits each phase in two: everyone moves first and marks Moved, then everyone acts and marks Done. Leftover movement cannot be used in the actions half. Event phases never split. Applies to new combats.",
+        "Choices": {
+          "off": "Off",
+          "players": "Players' phases",
+          "all": "All creature phases"
+        }
       }
     },
     "Config": {
@@ -112,8 +121,6 @@
         "roll": "Roll against the DC"
       },
       "Range": "{min} to {max}",
-      "Decrease": "Decrease {name}",
-      "Increase": "Increase {name}",
       "Save": "Save",
       "Saved": "Settings saved.",
       "Phases": {
@@ -159,9 +166,8 @@
       "Close": "Close",
       "UnsavedTab": "{tab}: unsaved changes",
       "Appearance": {
-        "Current": "Current",
         "Previewing": "Previewing {theme} on this computer only. Close without saving to go back to {saved}.",
-        "Specimen": "Sample"
+        "PreviewTitle": "Combat tracker"
       }
     },
     "Help": {
@@ -233,7 +239,18 @@
       "Roll": "Roll",
       "RollFor": "Roll initiative for {name}",
       "RollNow": "Roll now",
-      "DcNamed": "DC {name} ({dc})"
+      "DcNamed": "DC {name} ({dc})",
+      "HalfName": "{phase} · {half}",
+      "Half": {
+        "move": "Movement",
+        "act": "Actions"
+      },
+      "MovedCount": "{done}/{total} moved",
+      "MarkMoved": "Mark moved",
+      "Moved": "Moved",
+      "MarkMovedLabel": "Mark that {name} finished moving in {phase}",
+      "UnmarkMovedLabel": "Unmark {name}'s movement in {phase}",
+      "Moving": "Moving"
     },
     "Gm": {
       "PhasesOn": "Phases on",
@@ -287,8 +304,8 @@
       "TrackerReplaced": "Another module replaced the combat tracker: the phases are not shown in it. The phase rules keep running."
     },
     "Theme": {
-      "ember": "Ember",
       "verdant": "Verdant",
+      "ember": "Ember",
       "arcane": "Arcane",
       "tide": "Tide",
       "forge": "Forge",
@@ -296,14 +313,14 @@
       "midnight": "Midnight",
       "bloodmoon": "Bloodmoon",
       "neon": "Neon",
+      "light": "Light",
+      "sepia": "Sepia",
+      "parchment": "Parchment",
       "stoneforge": "Stoneforge",
       "catacomb": "Catacomb",
       "sanctuary": "Sanctuary",
       "underworld": "Underworld",
       "moss": "Moss",
-      "light": "Light",
-      "sepia": "Sepia",
-      "parchment": "Parchment",
       "holo": "Hologram",
       "phosphor": "Phosphor",
       "cyber": "Cyber",
@@ -316,11 +333,9 @@
     },
     "ThemeFamily": {
       "Dark": "Dark",
-      "Stone": "Stone",
       "Light": "Light",
-      "Scifi": "Sci-fi",
-      "System": "Game systems",
-      "Special": "Special"
+      "Stone": "Stone",
+      "Legacy": "Previously saved theme"
     },
     "Automation": {
       "Title": "Actions when it starts",

@@ -17,6 +17,8 @@ export default class CombatSetup {
       [COMBAT_FLAGS.plan]: getSetting(SETTINGS.phaseTemplate),
       [COMBAT_FLAGS.dc]: CombatSetup.initialDc(),
       [COMBAT_FLAGS.suspendedAdvance]: null,
+      // Like the plan, the split is the combat's own: changing the setting never splits a fight in progress.
+      [COMBAT_FLAGS.split]: getSetting(SETTINGS.splitPhases),
     };
   }
 

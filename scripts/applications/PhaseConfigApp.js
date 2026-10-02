@@ -15,7 +15,7 @@ import {
   restylePhase,
 } from "../helpers/phase-plan.js";
 import { CONSEQUENCE_KINDS, CONSEQUENCE_KIND_IDS, normalizeConsequence, normalizeConsequences } from "../helpers/consequence-kinds.js";
-import { THEME_FAMILIES, normalizeTheme } from "../helpers/themes.js";
+import { THEME_FAMILIES, isLegacyTheme, normalizeTheme } from "../helpers/themes.js";
 import { getSetting, registeredDefault, setSetting } from "../hooks/register-settings.js";
 import ThemeApplier from "../services/ThemeApplier.js";
 import SortableList from "./SortableList.js";
@@ -50,10 +50,9 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     classes: [MODULE_ID, "svi-config"],
     tag: "section",
     window: { title: T("Config.Title"), icon: "fa-solid fa-layer-group", resizable: true },
-    position: { width: 720, height: 560 },
+    position: { width: 900, height: 640 },
     actions: {
       sviTab: PhaseConfigApp.#onTab,
-      sviStep: PhaseConfigApp.#onStep,
       sviResetTab: PhaseConfigApp.#onResetTab,
       sviClose: PhaseConfigApp.#onClose,
       sviSave: PhaseConfigApp.#onSave,
@@ -141,6 +140,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     part.tab = { id: tab.id, active: tab.id === this.#activeTab, title: T(`Config.Tabs.${tab.id}`), hint: T(`Config.TabHints.${tab.id}`) };
     part.sections = tab.settings && tab.id !== "appearance" ? this.#sections(tab.id) : [];
     part.families = tab.id === "appearance" ? this.#themeFamilies() : [];
+    part.themeDefault = registeredDefault(SETTINGS.theme);
     part.phases = tab.id === "phases" ? this.#phaseRows() : [];
     part.help = tab.id === "help" ? HELP_TOPICS.map((topic, index) => ({ ...topic, open: index === 0, title: T(`Help.${topic.key}.Title`), body: T(`Help.${topic.key}.Body`) })) : [];
     return part;
@@ -209,9 +209,8 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
   #sections(tabId) {
     const localize = (key) => game.i18n.localize(key);
     const entries = SETTINGS_SCHEMA.filter((e) => e.tab === tabId && (e.scope === "client" || game.user.isGM));
-    return SETTING_SECTIONS.map((section) => ({
+    const sections = SETTING_SECTIONS.map((section) => ({
       title: T(`Config.Sections.${section}`),
-      callout: section === "dc",
       rows: entries
         .filter((e) => e.section === section)
         .map((entry) => {
@@ -235,20 +234,25 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
             min: entry.range?.min,
             max: entry.range?.max,
             step: entry.range?.step ?? 1,
-            decreaseLabel: game.i18n.format(T("Config.Decrease"), { name }),
-            increaseLabel: game.i18n.format(T("Config.Increase"), { name }),
           };
         }),
     })).filter((section) => section.rows.length);
+    // A tab with a single section needs no heading under its own title.
+    return sections.map((section) => ({ ...section, showTitle: sections.length > 1 }));
   }
 
   #themeFamilies() {
     const saved = normalizeTheme(getSetting(SETTINGS.theme));
     const shown = ThemeApplier.current();
-    return THEME_FAMILIES.map((family) => ({
+    const families = THEME_FAMILIES.map((family) => ({
       label: T(`ThemeFamily.${family.id}`),
-      themes: family.themes.map((id) => ({ id, label: T(`Theme.${id}`), current: id === saved, checked: id === shown })),
+      themes: family.themes.map((id) => ({ id, label: T(`Theme.${id}`), current: id === saved, selected: id === shown })),
     }));
+    if (isLegacyTheme(saved)) families.push({
+      label: T("ThemeFamily.Legacy"),
+      themes: [{ id: saved, label: T(`Theme.${saved}`), current: true, selected: saved === shown }],
+    });
+    return families;
   }
 
   #phaseRows() {
@@ -423,7 +427,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     const note = this.element.querySelector(".svi-preview-note");
     if (!note) return;
     note.hidden = !ThemeApplier.previewing;
-    note.replaceChildren(
+    note.querySelector(".svi-preview-note-label")?.replaceChildren(
       game.i18n.format(T("Config.Appearance.Previewing"), {
         theme: game.i18n.localize(T(`Theme.${ThemeApplier.current()}`)),
         saved: game.i18n.localize(T(`Theme.${normalizeTheme(getSetting(SETTINGS.theme))}`)),
@@ -531,13 +535,6 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     this.#showTab(target.dataset.tab);
   }
 
-  static #onStep(event, target) {
-    const input = target.closest(".svi-stepper")?.querySelector("input");
-    if (!input) return;
-    input.value = coerceSetting(schemaEntry(input.dataset.setting), Number(input.value) + Number(target.dataset.step));
-    this.#refreshState();
-  }
-
   /** The active tab back to the registered defaults, unsaved; on Phases, the default phases after a confirmation. */
   static async #onResetTab() {
     const tab = this.#activeTab;
@@ -552,7 +549,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
       if (field.type === "checkbox") field.checked = fallback === "true";
       else if (field.type === "radio") field.checked = field.value === fallback;
       else field.value = fallback;
-      if (field.dataset.setting === SETTINGS.theme && field.checked) this.#previewTheme(field.value);
+      if (field.dataset.setting === SETTINGS.theme && (field.type !== "radio" || field.checked)) this.#previewTheme(field.value);
     }
     this.#refreshState();
   }

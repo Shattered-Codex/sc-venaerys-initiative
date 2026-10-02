@@ -1,4 +1,4 @@
-import { DC_RANGE, DC_SOURCES, NATURAL_RULES, ROLL_SOURCES, SETTINGS } from "./module-constants.js";
+import { DC_RANGE, DC_SOURCES, NATURAL_RULES, ROLL_SOURCES, SETTINGS, SPLIT_MODES } from "./module-constants.js";
 import { DEFAULT_PHASES } from "./default-phases.js";
 import { normalizePlan } from "../helpers/phase-plan.js";
 import { DEFAULT_THEME, THEMES, normalizeTheme } from "../helpers/themes.js";
@@ -27,6 +27,7 @@ export const SETTING_SECTIONS = Object.freeze(["combat", "roll", "dc", "window",
 export const SETTINGS_SCHEMA = Object.freeze([
   { key: SETTINGS.enabledByDefault, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
   { key: SETTINGS.autoAdvance, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: "view" },
+  { key: SETTINGS.splitPhases, scope: "world", type: "choice", choices: Object.values(SPLIT_MODES), default: SPLIT_MODES.off, tab: "world", section: "combat", react: null },
   { key: SETTINGS.suggestFromSheet, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
   { key: SETTINGS.rollSource, scope: "world", type: "choice", choices: Object.values(ROLL_SOURCES), default: ROLL_SOURCES.system, tab: "world", section: "roll", react: null },
   // Empty means the system adapter's own default formula.

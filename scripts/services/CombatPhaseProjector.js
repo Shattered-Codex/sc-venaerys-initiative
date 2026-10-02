@@ -1,11 +1,14 @@
-import { BUILTIN_PHASE_IDS, DC_SOURCES, I18N_ROOT, SIDES } from "../constants/module-constants.js";
+import { BUILTIN_PHASE_IDS, DC_SOURCES, HALVES, I18N_ROOT, SIDES } from "../constants/module-constants.js";
 import { canEnterPhase, displayName, isEventPhase, phaseById } from "../helpers/phase-plan.js";
 import {
   advanceTarget,
   canToggleDone,
+  currentHalf,
   currentPhaseId,
   firstBlockingPhase,
+  hasMoved,
   hasNoRoll,
+  isMovementComplete,
   isPhaseComplete,
   pendingOf,
 } from "../helpers/phase-progression.js";
@@ -38,11 +41,14 @@ export default class CombatPhaseProjector {
     const visible = visibleCombat(view, { isGM, showDcToPlayers: settings.showDcToPlayers });
     const phaseName = (id) => displayName(phaseById(view.plan, id), localize);
     const current = currentPhaseId(view);
-    const currentName = current ? phaseName(current) : "";
+    const half = currentHalf(view);
+    // A split phase is named with its running half: "Fast · Movement", "Fast · Actions".
+    const halfName = (name) => (half ? format(T("Tracker.HalfName"), { phase: name, half: localize(T(`Tracker.Half.${half}`)) }) : name);
+    const currentName = current ? halfName(phaseName(current)) : "";
     const shown = [...visible.phases.flatMap((p) => p.members ?? []), ...visible.pending];
     const places = shown.some((c) => Number.isFinite(c.initiative) && !Number.isInteger(c.initiative)) ? decimals : 0;
     const pointerId = isGM && current ? view.combatants[view.turn]?.id ?? null : null;
-    const ctx = { view, isGM, localize, format, places, phaseName, expanded, pointerId };
+    const ctx = { view, isGM, localize, format, places, phaseName, expanded, pointerId, half, halfName };
 
     const phases = visible.phases.map((entry) => {
       if (entry.waitingForGm) return { key: "waiting", waitingForGm: true, label: localize(T("Tracker.WaitingForGm")) };
@@ -77,14 +83,16 @@ export default class CombatPhaseProjector {
   static #phase(entry, ctx) {
     const { view, isGM, localize, format, phaseName, expanded } = ctx;
     const { phase, state, members } = entry;
-    const name = phaseName(phase.id);
+    const half = state === "current" ? ctx.half : null;
+    const name = state === "current" ? ctx.halfName(phaseName(phase.id)) : phaseName(phase.id);
     const alive = members.filter((c) => !c.isDefeated);
-    const done = alive.filter((c) => c.done === view.round).length;
+    const moving = half === HALVES.move;
+    const done = alive.filter((c) => (moving ? hasMoved(c, view.round) : c.done === view.round)).length;
     const total = alive.length;
     const isPast = state === "past";
     const showCount = view.started && state !== "future" && members.length > 0;
     const pastKey = `past:${phase.id}`;
-    const rows = CombatPhaseProjector.#rows(members, { ...ctx, phase, name, state });
+    const rows = CombatPhaseProjector.#rows(members, { ...ctx, phase, name, state, half });
     return {
       key: phase.id,
       id: phase.id,
@@ -96,8 +104,9 @@ export default class CombatPhaseProjector {
       isCurrent: state === "current",
       isPast,
       isEmpty: members.length === 0,
-      count: showCount ? format(T("Tracker.DoneCount"), { done: isPast ? total : done, total }) : null,
-      complete: state === "current" && isPhaseComplete(view, phase.id),
+      count: showCount ? format(T(moving ? "Tracker.MovedCount" : "Tracker.DoneCount"), { done: isPast ? total : done, total }) : null,
+      complete: state === "current" && (moving ? isMovementComplete(view, phase.id) : isPhaseComplete(view, phase.id)),
+      half,
       compact: isPast && !(isGM && expanded.has(pastKey)) ? members.map((c) => c.name).join(", ") : null,
       pastToggle: isPast && isGM && members.length > 0 ? { key: pastKey, expanded: expanded.has(pastKey), label: format(T(expanded.has(pastKey) ? "Tracker.Collapse" : "Tracker.Expand"), { name }) } : null,
       rows,
@@ -127,6 +136,8 @@ export default class CombatPhaseProjector {
       const children = twins.map((c) => CombatPhaseProjector.#row(c, ctx));
       const alive = twins.filter((c) => !c.isDefeated);
       const isOpen = expanded.has(groupKey);
+      // In the movement half a group counts, and completes, its movement.
+      const finished = (c) => (ctx.half === HALVES.move ? hasMoved(c, ctx.view.round) : c.done === ctx.view.round);
       const group = {
         isGroup: true,
         key: groupKey,
@@ -134,8 +145,8 @@ export default class CombatPhaseProjector {
         img: twins[0].img,
         expanded: isOpen,
         toggleLabel: ctx.format(T(isOpen ? "Tracker.Collapse" : "Tracker.Expand"), { name: twins[0].name }),
-        count: `${alive.filter((c) => c.done === ctx.view.round).length}/${alive.length}`,
-        completeButton: ctx.isGM && ctx.state === "current" && alive.some((c) => c.done !== ctx.view.round)
+        count: `${alive.filter(finished).length}/${alive.length}`,
+        completeButton: ctx.isGM && ctx.state === "current" && alive.some((c) => !finished(c))
           ? { label: ctx.format(T("Tracker.CompleteGroupLabel"), { name: twins[0].name, phase: ctx.name }) }
           : null,
         children,
@@ -147,8 +158,10 @@ export default class CombatPhaseProjector {
   }
 
   static #row(c, ctx) {
-    const { view, isGM, localize, format, places, phaseName, name: phase, state, pointerId } = ctx;
+    const { view, isGM, localize, format, places, phaseName, name: phase, state, pointerId, half } = ctx;
     const done = c.done === view.round;
+    const moving = half === HALVES.move;
+    const moved = hasMoved(c, view.round);
     const canToggle = canToggleDone(view, c, { isGM });
     const current = state === "current";
     const marker = c.side === SIDES.event;
@@ -173,8 +186,14 @@ export default class CombatPhaseProjector {
       noRoll: isGM && hasNoRoll(c),
       skipped: state === "future" && done,
       // Done controls: a toggle for whoever may mark this row in the current phase (or a GM in a finished one).
-      doneButton: canToggle && !c.isDefeated && (current || (isGM && state === "past")) ? { pressed: done, label: doneLabel, big: !isGM && c.isOwner } : null,
-      doneStatus: current && !canToggle && !c.isDefeated,
+      // In the movement half of a split phase the toggle is "Moved" instead.
+      doneButton: canToggle && !c.isDefeated && !moving && (current || (isGM && state === "past")) ? { pressed: done, label: doneLabel, big: !isGM && c.isOwner } : null,
+      movedButton: canToggle && !c.isDefeated && moving && current
+        ? { pressed: moved, label: format(T(moved ? "Tracker.UnmarkMovedLabel" : "Tracker.MarkMovedLabel"), { name: c.name, phase }), big: !isGM && c.isOwner }
+        : null,
+      moved: moving && moved,
+      doneStatus: current && !canToggle && !c.isDefeated && !moving,
+      movedStatus: current && moving && !canToggle && !c.isDefeated ? { moved } : null,
       skipButton: isGM && view.started && state === "future" && !c.isDefeated ? { pressed: done, label: format(T(done ? "Tracker.UnskipLabel" : "Tracker.SkipLabel"), { name: c.name }) } : null,
       rollButton: c.side === SIDES.players && !Number.isFinite(c.initiative) && (isGM || c.isOwner)
         ? { label: format(T("Tracker.RollFor"), { name: c.name }) }
@@ -218,7 +237,7 @@ export default class CombatPhaseProjector {
       });
     }
     if (waitingForDialog) warnings.push({ icon: "fa-solid fa-comment-dots", text: localize(T("Gm.DialogWait")), hint: localize(T("Gm.DialogWaitHint")), action: null });
-    const complete = current !== null && isPhaseComplete(view, current);
+    const complete = current !== null && (currentHalf(view) === HALVES.move ? isMovementComplete(view, current) : isPhaseComplete(view, current));
     if (complete && !settings.autoAdvance && !target?.waitRolls) {
       warnings.push({ icon: "fa-solid fa-flag-checkered", text: localize(T("Gm.PhaseComplete")), hint: localize(T("Gm.PhaseCompleteHint")), action: null });
     }

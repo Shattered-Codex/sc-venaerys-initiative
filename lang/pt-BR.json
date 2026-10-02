@@ -90,6 +90,15 @@
       "rollFormula": {
         "Name": "Fórmula",
         "Hint": "Dados mais referências @ aos dados do ator, ex.: 1d20 + @abilities.dex.mod. Vazia usa o padrão do sistema mostrado no campo."
+      },
+      "splitPhases": {
+        "Name": "Movimento e ações",
+        "Hint": "Divide cada fase em duas: todos se movem primeiro e marcam Moveu, depois todos agem e marcam Feito. O deslocamento que sobrou não pode ser usado na metade de ações. Fases de evento nunca são divididas. Vale para combates novos.",
+        "Choices": {
+          "off": "Desligada",
+          "players": "Fases dos jogadores",
+          "all": "Todas as fases de criaturas"
+        }
       }
     },
     "Config": {
@@ -112,8 +121,6 @@
         "roll": "Rolagem contra a DC"
       },
       "Range": "{min} a {max}",
-      "Decrease": "Diminuir {name}",
-      "Increase": "Aumentar {name}",
       "Save": "Salvar",
       "Saved": "Configurações salvas.",
       "Phases": {
@@ -159,9 +166,8 @@
       "Close": "Fechar",
       "UnsavedTab": "{tab}: alterações não salvas",
       "Appearance": {
-        "Current": "Atual",
         "Previewing": "Pré-visualizando {theme} só neste computador. Feche sem salvar para voltar a {saved}.",
-        "Specimen": "Amostra"
+        "PreviewTitle": "Tracker de combate"
       }
     },
     "Help": {
@@ -233,7 +239,18 @@
       "Roll": "Rolar",
       "RollFor": "Rolar a iniciativa de {name}",
       "RollNow": "Rolar agora",
-      "DcNamed": "DC {name} ({dc})"
+      "DcNamed": "DC {name} ({dc})",
+      "HalfName": "{phase} · {half}",
+      "Half": {
+        "move": "Movimento",
+        "act": "Ações"
+      },
+      "MovedCount": "{done}/{total} moveram",
+      "MarkMoved": "Marcar movimento",
+      "Moved": "Moveu",
+      "MarkMovedLabel": "Marcar que {name} terminou de se mover em {phase}",
+      "UnmarkMovedLabel": "Desmarcar o movimento de {name} em {phase}",
+      "Moving": "Movendo"
     },
     "Gm": {
       "PhasesOn": "Fases ligadas",
@@ -287,8 +304,8 @@
       "TrackerReplaced": "Outro módulo substituiu o tracker de combate: as fases não aparecem nele. As regras das fases continuam valendo."
     },
     "Theme": {
-      "ember": "Brasa",
       "verdant": "Verdejante",
+      "ember": "Brasa",
       "arcane": "Arcano",
       "tide": "Maré",
       "forge": "Forja",
@@ -296,14 +313,14 @@
       "midnight": "Meia-noite",
       "bloodmoon": "Lua de Sangue",
       "neon": "Neon",
+      "light": "Claro",
+      "sepia": "Sépia",
+      "parchment": "Pergaminho",
       "stoneforge": "Forja de Pedra",
       "catacomb": "Catacumba",
       "sanctuary": "Santuário",
       "underworld": "Submundo",
       "moss": "Musgo",
-      "light": "Claro",
-      "sepia": "Sépia",
-      "parchment": "Pergaminho",
       "holo": "Holograma",
       "phosphor": "Fósforo",
       "cyber": "Cibernético",
@@ -316,11 +333,9 @@
     },
     "ThemeFamily": {
       "Dark": "Escuros",
-      "Stone": "Pedra",
       "Light": "Claros",
-      "Scifi": "Sci-fi",
-      "System": "Sistemas de jogo",
-      "Special": "Especiais"
+      "Stone": "Pedra",
+      "Legacy": "Tema salvo anteriormente"
     },
     "Automation": {
       "Title": "Ações ao começar",

@@ -1,4 +1,4 @@
-import { BUILTIN_PHASE_IDS, SIDES, START_NAMES_SHOWN } from "../constants/module-constants.js";
+import { BUILTIN_PHASE_IDS, HALVES, PHASE_TYPES, PLAYER_PHASE_TYPES, SIDES, SPLIT_MODES, START_NAMES_SHOWN } from "../constants/module-constants.js";
 import { firstPlayerPhaseRank, phaseRank } from "./phase-plan.js";
 
 /**
@@ -49,6 +49,8 @@ import { firstPlayerPhaseRank, phaseRank } from "./phase-plan.js";
  * @property {number} dc
  * @property {{source: "manual"|"baseCr", base: number|null, referenceCr: number|null}} dcRule
  * @property {string|null} suspendedAdvance
+ * @property {"off"|"players"|"all"} [split]      which phases split into movement and actions
+ * @property {string|null} [actionsHalf]          key of the phase whose actions half is running
  * @property {CombatantView[]} combatants        in the order of combat.turns
  */
 
@@ -101,14 +103,49 @@ export function isPhaseComplete(view, phaseId) {
   return lastBlockingIndex(view, phaseId) === -1;
 }
 
-export function suspensionKey(round, phaseId) {
-  return `${round}:${phaseId}`;
+/** A phase in a round, and the half of it when it splits. */
+export function suspensionKey(round, phaseId, half = null) {
+  return half ? `${round}:${phaseId}:${half}` : `${round}:${phaseId}`;
 }
 
-/** After "Previous phase" the automatic advance waits for the next mark in that phase. */
-export function isAdvanceSuspended(view) {
+/** Whether a phase splits into a movement half and an actions half in this combat; event phases never do. */
+export function isSplitPhase(view, phaseId) {
+  const phase = view.plan.find((p) => p.id === phaseId);
+  if (!phase || phase.type === PHASE_TYPES.event) return false;
+  if (view.split === SPLIT_MODES.all) return true;
+  return view.split === SPLIT_MODES.players && PLAYER_PHASE_TYPES.includes(phase.type);
+}
+
+/**
+ * The running half of the current phase, or null when it does not split. A
+ * split phase starts in its movement half; the actions half runs while
+ * `actionsHalf` holds this round's key of the phase, so a stale key from
+ * another phase or round never carries over.
+ */
+export function currentHalf(view) {
   const current = currentPhaseId(view);
-  return current !== null && view.suspendedAdvance === suspensionKey(view.round, current);
+  if (current === null || !isSplitPhase(view, current)) return null;
+  return view.actionsHalf === suspensionKey(view.round, current) ? HALVES.act : HALVES.move;
+}
+
+/** The key of where the combat is: round, phase and, in a split phase, the half. */
+export function currentKey(view) {
+  const current = currentPhaseId(view);
+  return current === null ? null : suspensionKey(view.round, current, currentHalf(view));
+}
+
+/** Marked "moved" this round; a member marked done has moved too. */
+export const hasMoved = (combatant, round) => combatant.moved === round || isDone(combatant, round);
+
+/** The movement half of a phase is over when every living member has moved. */
+export function isMovementComplete(view, phaseId) {
+  return !memberIndexes(view, phaseId).some((i) => !view.combatants[i].isDefeated && !hasMoved(view.combatants[i], view.round));
+}
+
+/** After "Previous phase" the automatic advance waits for the next mark in that phase (or half). */
+export function isAdvanceSuspended(view) {
+  const key = currentKey(view);
+  return key !== null && view.suspendedAdvance === key;
 }
 
 /** The first phase of a round with someone to block it, from `fromRank` on. */
@@ -127,15 +164,18 @@ export function roundStartTarget(view, round) {
   return first ? { turn: first.turn, phaseId: first.phaseId } : null;
 }
 
-/** Automatic advance is due: the current phase is complete and not suspended. */
+/** Automatic advance is due: the current phase (or its movement half) is complete and not suspended. */
 export function shouldAutoAdvance(view) {
   const current = currentPhaseId(view);
   if (current === null || isAdvanceSuspended(view)) return false;
+  if (currentHalf(view) === HALVES.move && isMovementComplete(view, current)) return true;
   return isPhaseComplete(view, current);
 }
 
 /**
  * Where "advance" goes from the current phase:
+ * - `{half: "act", phaseId}`: from the movement half of a split phase to its
+ *   actions half, the pointer staying where it is (unless everyone is done);
  * - `{turn, phaseId}`: the next phase with someone to block, this round;
  * - `{round, turn, phaseId}`: the round turns over;
  * - `{waitRolls: true}`: round 1 with pending players, and the advance would
@@ -145,6 +185,7 @@ export function shouldAutoAdvance(view) {
 export function advanceTarget(view) {
   const current = currentPhaseId(view);
   if (current === null) return { none: true };
+  if (currentHalf(view) === HALVES.move && !isPhaseComplete(view, current)) return { half: HALVES.act, phaseId: current };
   const currentRank = phaseRank(view.plan, current);
   const lockRank = view.round === 1 && pendingOf(view).length ? firstPlayerPhaseRank(view.plan) : Infinity;
   const locked = currentRank < lockRank;
@@ -167,6 +208,8 @@ function lastActiveIndex(view, phaseId) {
 
 /**
  * Where "previous phase" goes:
+ * - `{half: "move", phaseId, suspend}` from the actions half of a split
+ *   phase back to its movement half;
  * - `{turn, phaseId, suspend}` in the same round, keeping its done marks;
  * - `{round, turn, phaseId, suspend, clear}` into the previous round, where
  *   `clear` lists the marks to wipe: that phase's marks of the previous round
@@ -174,15 +217,22 @@ function lastActiveIndex(view, phaseId) {
  * - `{refuse: "noEarlierPhase"}` in round 1 with nothing before: the combat
  *   never goes back to round 0;
  * - `{none: true}` with no current phase.
+ * Going back into an earlier phase that splits lands in its actions half
+ * (`half: "act"`): "Previous phase" goes back half a phase.
  */
 export function backTarget(view) {
   const current = currentPhaseId(view);
   if (current === null) return { none: true };
   const round = view.round;
+  if (currentHalf(view) === HALVES.act) return { half: HALVES.move, phaseId: current, suspend: suspensionKey(round, current, HALVES.move) };
+  const landing = (targetRound, phaseId) => {
+    if (!isSplitPhase(view, phaseId)) return { suspend: suspensionKey(targetRound, phaseId) };
+    return { half: HALVES.act, suspend: suspensionKey(targetRound, phaseId, HALVES.act) };
+  };
   for (let rank = phaseRank(view.plan, current) - 1; rank >= 0; rank--) {
     const phaseId = view.plan[rank].id;
     const turn = lastActiveIndex(view, phaseId);
-    if (turn !== -1) return { turn, phaseId, suspend: suspensionKey(round, phaseId) };
+    if (turn !== -1) return { turn, phaseId, ...landing(round, phaseId) };
   }
   if (round <= 1) return { refuse: "noEarlierPhase" };
   for (let rank = view.plan.length - 1; rank >= 0; rank--) {
@@ -197,7 +247,7 @@ export function backTarget(view) {
         return Object.keys(data).length ? { id: c.id, ...data } : null;
       })
       .filter(Boolean);
-    return { round: round - 1, turn, phaseId, suspend: suspensionKey(round - 1, phaseId), clear };
+    return { round: round - 1, turn, phaseId, ...landing(round - 1, phaseId), clear };
   }
   return { refuse: "noEarlierPhase" };
 }

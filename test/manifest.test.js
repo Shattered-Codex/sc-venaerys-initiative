@@ -50,7 +50,7 @@ describe("stylesheets", () => {
       for (const selector of selectors(css)) {
         assert.ok(selector.startsWith(".sc-venaerys-initiative"), `${file}: ${selector}`);
         for (const cls of selector.matchAll(/\.([a-zA-Z][\w-]*)/g)) {
-          assert.ok(cls[1] === "sc-venaerys-initiative" || cls[1].startsWith("svi-") || cls[1].startsWith("fa-") || ["active", "window-content"].includes(cls[1]), `${file}: class .${cls[1]}`);
+          assert.ok(cls[1] === "sc-venaerys-initiative" || cls[1].startsWith("svi-") || cls[1].startsWith("fa-") || ["active", "window-content", "window-header", "header-control"].includes(cls[1]), `${file}: class .${cls[1]}`);
         }
       }
       for (const variable of css.matchAll(/(--[\w-]+)\s*:/g)) {

@@ -181,6 +181,12 @@ export default class PhasedCombatTracker {
             if (!combat || !combatantId) return;
             services().doneMarkers.setDone(combat, combatantId, target.getAttribute("aria-pressed") !== "true");
           },
+          sviToggleMoved(event, target) {
+            const combat = combatOf(this);
+            const combatantId = target.closest("[data-combatant-id]")?.dataset.combatantId;
+            if (!combat || !combatantId) return;
+            services().doneMarkers.setMoved(combat, combatantId, target.getAttribute("aria-pressed") !== "true");
+          },
           sviAdvance(event, target) {
             if (!target.disabled) services().commands.execute("advance", combatOf(this), { force: true });
           },

@@ -35,7 +35,7 @@ describe("settings schema", () => {
       showDcToPlayers: ["world", false],
       autoAdvance: ["world", true],
       openOnStart: ["client", true],
-      theme: ["world", "ember"],
+      theme: ["world", "verdant"],
       dcSource: ["world", "manual"],
       dcBase: ["world", 10],
       natural20: ["world", "autoSuccess"],
@@ -44,6 +44,7 @@ describe("settings schema", () => {
       rollPrompt: ["client", true],
       rollSource: ["world", "system"],
       rollFormula: ["world", ""],
+      splitPhases: ["world", "off"],
     };
     assert.deepEqual(SETTINGS_SCHEMA.map((e) => e.key).sort(), Object.keys(expected).sort());
     for (const [key, [scope, value]] of Object.entries(expected)) {

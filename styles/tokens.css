@@ -1,23 +1,35 @@
 /*
  * Design tokens of the module, scoped to its own roots: nothing here reaches
- * Foundry's UI. The base block is the "ember" theme over the Nocturne
- * palette; every other theme (styles/themes.css) redefines only the palette
- * variables of the first group, and everything else is derived from them, so
- * light and dark themes both read correctly.
+ * Foundry's UI. The base block is the "verdant" theme over the Shattered
+ * Codex surfaces (the same values as SC Simple Sockets and SC Jump Scare);
+ * every other theme (styles/themes.css) redefines only the palette variables
+ * of the first group, and everything else is derived from them, so light and
+ * dark themes both read correctly.
  */
 .sc-venaerys-initiative {
   /* Palette: what a theme sets */
-  --svi-accent: #d68a3a;
-  --svi-bg: #161826;
-  --svi-bg-1: #1d1f2c;
-  --svi-bg-2: #232532;
-  --svi-bg-3: #3f424d;
-  --svi-bg-hover: #2f3241;
-  --svi-border: color-mix(in srgb, #e9e9ed 16%, transparent);
-  --svi-border-strong: #595d6c;
-  --svi-text: #e9e9ed;
-  --svi-text-dim: #b2b6ca;
-  --svi-text-mute: #9397ab;
+  --svi-accent: #1fa971;
+  --svi-accent-soft: #1fa97122;
+  --svi-accent-dim: #14573e;
+  --svi-text-on-acc: #06231a;
+  --svi-bg: #15181a;
+  --svi-bg-1: #1b1f22;
+  --svi-bg-2: #232830;
+  --svi-bg-3: #2c333b;
+  --svi-bg-hover: #2f3741;
+  --svi-border: #2e353d;
+  --svi-border-soft: #232a32;
+  --svi-border-strong: #4a5560;
+  --svi-text: #e6e8ea;
+  --svi-text-dim: #9aa3ad;
+  --svi-text-mute: #6b7480;
+
+  /* Status, as the suite's design guide sets them */
+  --svi-warn: #d09b3c;
+  --svi-warn-soft: #d09b3c22;
+  --svi-success: #4ab87a;
+  --svi-success-soft: #4ab87a22;
+  --svi-info: #4a8cd1;
 
   /* Accent ramp, derived (mixing toward the text gets stronger, toward the background softer) */
   --svi-accent-100: color-mix(in oklch, var(--svi-accent) 25%, var(--svi-text));
@@ -42,8 +54,13 @@
   --svi-radius-md: 8px;
   --svi-shadow-md: 0 0 0 1px var(--svi-border-strong), 0 6px 18px rgba(0, 0, 0, 0.55);
   --svi-shadow-lg: 0 0 0 1px var(--svi-text-mute), 0 16px 40px rgba(0, 0, 0, 0.65);
+  --svi-radius-lg: 10px;
+  --svi-glow-accent: 0 0 0 1px var(--svi-accent), 0 0 16px var(--svi-accent-soft);
+  /* The tracker keeps Foundry's own font; the module's windows use the suite's. */
   --svi-font-body: var(--font-primary, "Signika"), system-ui, sans-serif;
-  --svi-font-mono: var(--font-mono, ui-monospace), ui-monospace, monospace;
+  --svi-font-ui: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --svi-font-display: "Cinzel", "IM Fell English SC", "Trajan Pro", serif;
+  --svi-font-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
   --svi-row-h: 36px;
   --svi-ease: cubic-bezier(0.4, 0.1, 0.2, 1);
 
@@ -59,7 +76,7 @@
   --svi-done: var(--svi-accent-200);
   --svi-done-bg: var(--svi-accent-800);
   --svi-pending: var(--svi-text-mute);
-  --svi-danger: oklch(0.650 0.160 25);
+  --svi-danger: #c94f4f;
   --svi-danger-bg: oklch(0.300 0.070 25);
   --svi-warn-bg: color-mix(in oklch, var(--svi-accent-900) 80%, var(--svi-surface));
 

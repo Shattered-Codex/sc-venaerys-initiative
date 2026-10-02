@@ -71,7 +71,10 @@ export default class CombatWatcher {
   }
 
   onUpdateCombatant(combatant, changes) {
-    if (!CombatWatcher.isDoneOnly(changes) || combatant.parent !== CombatWatcher.tracker?.viewed) return;
+    if (combatant.parent !== CombatWatcher.tracker?.viewed) return;
+    // A "moved" mark changes buttons and the half's counter: the tracker is rendered, not patched.
+    if (foundry.utils.hasProperty(changes ?? {}, `flags.${MODULE_ID}.${COMBATANT_FLAGS.moved}`)) return this.render();
+    if (!CombatWatcher.isDoneOnly(changes)) return;
     this.#patches.add(combatant.id);
     this.scheduler.schedule();
   }

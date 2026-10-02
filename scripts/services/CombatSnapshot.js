@@ -1,8 +1,9 @@
-import { COMBATANT_FLAGS, COMBAT_FLAGS, CRITICALS, DC_SOURCES, MODULE_ID, SIDES } from "../constants/module-constants.js";
+import { COMBATANT_FLAGS, COMBAT_FLAGS, CRITICALS, DC_SOURCES, MODULE_ID, SIDES, SPLIT_MODES } from "../constants/module-constants.js";
 import { schemaEntry } from "../constants/settings-schema.js";
 import { validatePlan } from "../helpers/phase-plan.js";
 
 const SIDE_VALUES = new Set(Object.values(SIDES));
+const SPLIT_VALUES = new Set(Object.values(SPLIT_MODES));
 const DEFAULT_DC = schemaEntry("defaultDc").default;
 
 /**
@@ -91,6 +92,8 @@ export default class CombatSnapshot {
       dc: CombatSnapshot.dcOf(combat),
       dcRule: CombatSnapshot.dcRuleOf(combat),
       suspendedAdvance: typeof suspended === "string" ? suspended : null,
+      split: SPLIT_VALUES.has(flags[COMBAT_FLAGS.split]) ? flags[COMBAT_FLAGS.split] : SPLIT_MODES.off,
+      actionsHalf: typeof flags[COMBAT_FLAGS.actionsHalf] === "string" ? flags[COMBAT_FLAGS.actionsHalf] : null,
       combatants: (combat.turns ?? []).map((combatant) => CombatSnapshot.combatant(combatant, phaseIds, adapter)),
     };
   }

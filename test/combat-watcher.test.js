@@ -103,6 +103,14 @@ describe("CombatWatcher", () => {
     assert.equal(tracker.renders, 1);
   });
 
+  it("renders on a moved mark instead of patching: the buttons and the half's counter change", async () => {
+    const { combat, tracker, frames, watcher, patches } = build();
+    watcher.onUpdateCombatant({ id: "a", parent: combat }, { _id: "a", flags: { [KEY]: { moved: 2 } } });
+    await frames.run();
+    assert.equal(tracker.renders, 1);
+    assert.deepEqual(patches, []);
+  });
+
   it("tells done-only changes apart", () => {
     assert.equal(CombatWatcher.isDoneOnly({ _id: "a", flags: { [KEY]: { done: 1 } } }), true);
     assert.equal(CombatWatcher.isDoneOnly(done("a")), true);

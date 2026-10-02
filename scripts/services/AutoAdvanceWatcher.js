@@ -46,7 +46,8 @@ export default class AutoAdvanceWatcher {
     const combat = combatant.parent;
     // Only a mark in the current phase lifts a suspension there.
     const phaseOf = (c) => c?.flags?.[MODULE_ID]?.phase ?? null;
-    const markedHere = "done" in (changes.flags?.[MODULE_ID] ?? {}) && phaseOf(combatant) === phaseOf(combat?.combatant);
+    const marks = changes.flags?.[MODULE_ID] ?? {};
+    const markedHere = ("done" in marks || "moved" in marks) && phaseOf(combatant) === phaseOf(combat?.combatant);
     this.mark(combat, { anchor: !options?.[OPERATION_KEY], doneChanged: markedHere });
   }
 

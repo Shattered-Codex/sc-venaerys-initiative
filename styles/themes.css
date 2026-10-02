@@ -1,39 +1,210 @@
 /*
- * Themes of the suite's catalog (same palettes as the SC puzzle engine). Each
+ * The Shattered Codex themes, with the palettes SC Jump Scare ships. Each
  * block redefines only palette variables; tokens.css derives the rest. The
- * base block of tokens.css is "ember". Dark themes change the accent and keep
- * the Nocturne surfaces; the others also change surfaces, borders and text.
+ * base block of tokens.css is "verdant". Dark themes change the accent and
+ * keep the shared surfaces; light and stone themes also change surfaces,
+ * borders and text.
  */
+
 
 /* Dark */
 .sc-venaerys-initiative[data-theme="verdant"] {
   --svi-accent: #1fa971;
+  --svi-accent-soft: #1fa97122;
+  --svi-accent-dim: #14573e;
+  --svi-text-on-acc: #06231a;
+}
+.sc-venaerys-initiative[data-theme="ember"] {
+  --svi-accent: #d68a3a;
+  --svi-accent-soft: #d68a3a22;
+  --svi-accent-dim: #6e4218;
+  --svi-text-on-acc: #2a1a07;
 }
 .sc-venaerys-initiative[data-theme="arcane"] {
   --svi-accent: #9c6cd8;
+  --svi-accent-soft: #9c6cd822;
+  --svi-accent-dim: #4a2e6e;
+  --svi-text-on-acc: #1d0f30;
 }
 .sc-venaerys-initiative[data-theme="tide"] {
   --svi-accent: #33937f;
+  --svi-accent-soft: #33937f22;
+  --svi-accent-dim: #154038;
+  --svi-text-on-acc: #052621;
 }
 .sc-venaerys-initiative[data-theme="forge"] {
   --svi-accent: #b07a4a;
+  --svi-accent-soft: #b07a4a22;
+  --svi-accent-dim: #5e3d24;
+  --svi-text-on-acc: #2a1a08;
 }
 .sc-venaerys-initiative[data-theme="ash"] {
   --svi-accent: #8a949e;
+  --svi-accent-soft: #8a949e22;
+  --svi-accent-dim: #3d4651;
+  --svi-text-on-acc: #0d1216;
 }
 .sc-venaerys-initiative[data-theme="midnight"] {
   --svi-accent: #4a8cd1;
+  --svi-accent-soft: #4a8cd122;
+  --svi-accent-dim: #1f3d5c;
+  --svi-text-on-acc: #04111d;
   --svi-bg: #0d1018;
   --svi-bg-1: #131724;
   --svi-bg-2: #1b2030;
   --svi-bg-3: #232a3d;
-  --svi-bg-hover: #2a3248;
   --svi-border: #28304a;
+  --svi-border-soft: #1d2336;
   --svi-border-strong: #4a5575;
 }
 .sc-venaerys-initiative[data-theme="bloodmoon"] {
   --svi-accent: #c94f4f;
+  --svi-accent-soft: #c94f4f22;
+  --svi-accent-dim: #5c2424;
+  --svi-text-on-acc: #1d0606;
 }
+
+/* Light */
+.sc-venaerys-initiative[data-theme="light"] {
+  --svi-accent: #117a52;
+  --svi-accent-soft: #117a5218;
+  --svi-accent-dim: #0d5538;
+  --svi-text-on-acc: #ffffff;
+  --svi-bg: #eaecef;
+  --svi-bg-1: #ffffff;
+  --svi-bg-2: #e0e4e9;
+  --svi-bg-3: #d1d6dc;
+  --svi-bg-hover: #c4cad1;
+  --svi-border: #d4d8dd;
+  --svi-border-soft: #e5e8ec;
+  --svi-border-strong: #8b95a1;
+  --svi-text: #0a0d11;
+  --svi-text-dim: #2e3640;
+  --svi-text-mute: #5a6470;
+}
+.sc-venaerys-initiative[data-theme="sepia"] {
+  --svi-accent: #6e4416;
+  --svi-accent-soft: #6e441618;
+  --svi-accent-dim: #3e2510;
+  --svi-text-on-acc: #fff4e6;
+  --svi-bg: #e3d6b8;
+  --svi-bg-1: #f0e4c4;
+  --svi-bg-2: #d8c9a8;
+  --svi-bg-3: #c8b58e;
+  --svi-bg-hover: #b8a47c;
+  --svi-border: #c4b390;
+  --svi-border-soft: #d6c8a8;
+  --svi-border-strong: #6b5832;
+  --svi-text: #1c1004;
+  --svi-text-dim: #3e2a10;
+  --svi-text-mute: #6b5028;
+}
+.sc-venaerys-initiative[data-theme="parchment"] {
+  --svi-accent: #553811;
+  --svi-accent-soft: #55381118;
+  --svi-accent-dim: #2e1d08;
+  --svi-text-on-acc: #fbf3df;
+  --svi-bg: #ecdfb8;
+  --svi-bg-1: #f7ebc8;
+  --svi-bg-2: #ddcc9c;
+  --svi-bg-3: #c8b780;
+  --svi-bg-hover: #b8a566;
+  --svi-border: #c8b181;
+  --svi-border-soft: #ddc99c;
+  --svi-border-strong: #6e5520;
+  --svi-text: #181004;
+  --svi-text-dim: #3a2808;
+  --svi-text-mute: #5e4818;
+}
+
+/* Stone */
+.sc-venaerys-initiative[data-theme="stoneforge"] {
+  --svi-accent: #c89853;
+  --svi-accent-soft: #c8985322;
+  --svi-accent-dim: #6e5125;
+  --svi-text-on-acc: #1c1308;
+  --svi-bg: #1a1815;
+  --svi-bg-1: #232019;
+  --svi-bg-2: #2d2922;
+  --svi-bg-3: #383229;
+  --svi-bg-hover: #443d31;
+  --svi-border: #3e3729;
+  --svi-border-soft: #2c2620;
+  --svi-border-strong: #6e6249;
+  --svi-text: #ece3cf;
+  --svi-text-dim: #b3a684;
+  --svi-text-mute: #786c52;
+}
+.sc-venaerys-initiative[data-theme="catacomb"] {
+  --svi-accent: #b54a3a;
+  --svi-accent-soft: #b54a3a22;
+  --svi-accent-dim: #5e2418;
+  --svi-text-on-acc: #1c0606;
+  --svi-bg: #14130f;
+  --svi-bg-1: #1d1c17;
+  --svi-bg-2: #26241e;
+  --svi-bg-3: #2f2c25;
+  --svi-bg-hover: #3a362d;
+  --svi-border: #34302a;
+  --svi-border-soft: #25221c;
+  --svi-border-strong: #5b554a;
+  --svi-text: #d8d0bd;
+  --svi-text-dim: #968e7c;
+  --svi-text-mute: #635c4f;
+}
+.sc-venaerys-initiative[data-theme="sanctuary"] {
+  --svi-accent: #d6a04a;
+  --svi-accent-soft: #d6a04a22;
+  --svi-accent-dim: #6e4f1d;
+  --svi-text-on-acc: #1d1305;
+  --svi-bg: #221d15;
+  --svi-bg-1: #2c261c;
+  --svi-bg-2: #3a3326;
+  --svi-bg-3: #463d2e;
+  --svi-bg-hover: #534838;
+  --svi-border: #4d4332;
+  --svi-border-soft: #3a3225;
+  --svi-border-strong: #80714d;
+  --svi-text: #f1e4c8;
+  --svi-text-dim: #c4af83;
+  --svi-text-mute: #8c7a55;
+}
+.sc-venaerys-initiative[data-theme="underworld"] {
+  --svi-accent: #e0683a;
+  --svi-accent-soft: #e0683a22;
+  --svi-accent-dim: #6e2f15;
+  --svi-text-on-acc: #1d0a04;
+  --svi-bg: #0e0d0c;
+  --svi-bg-1: #161514;
+  --svi-bg-2: #1f1d1b;
+  --svi-bg-3: #2a2724;
+  --svi-bg-hover: #353230;
+  --svi-border: #2e2a26;
+  --svi-border-soft: #201d1a;
+  --svi-border-strong: #564f48;
+  --svi-text: #e8d9c4;
+  --svi-text-dim: #9d8b76;
+  --svi-text-mute: #6a5d4d;
+}
+.sc-venaerys-initiative[data-theme="moss"] {
+  --svi-accent: #8aa64a;
+  --svi-accent-soft: #8aa64a22;
+  --svi-accent-dim: #44521e;
+  --svi-text-on-acc: #0e1a04;
+  --svi-bg: #161814;
+  --svi-bg-1: #1f221d;
+  --svi-bg-2: #292c25;
+  --svi-bg-3: #34372e;
+  --svi-bg-hover: #3f4338;
+  --svi-border: #383c30;
+  --svi-border-soft: #292c23;
+  --svi-border-strong: #62684d;
+  --svi-text: #e0e3cf;
+  --svi-text-dim: #9ba48a;
+  --svi-text-mute: #6a715a;
+}
+
+/* Themes saved before the current palette catalog. */
 .sc-venaerys-initiative[data-theme="neon"] {
   --svi-accent: #2de2e6;
   --svi-bg: #0b0a12;
@@ -47,116 +218,6 @@
   --svi-text-dim: #a29cd0;
   --svi-text-mute: #6d67a0;
 }
-
-/* Stone */
-.sc-venaerys-initiative[data-theme="stoneforge"] {
-  --svi-accent: #c89853;
-  --svi-bg: #1a1815;
-  --svi-bg-1: #232019;
-  --svi-bg-2: #2d2922;
-  --svi-bg-3: #383229;
-  --svi-bg-hover: #443d31;
-  --svi-border: #3e3729;
-  --svi-border-strong: #6e6249;
-  --svi-text: #ece3cf;
-  --svi-text-dim: #b3a684;
-  --svi-text-mute: #786c52;
-}
-.sc-venaerys-initiative[data-theme="catacomb"] {
-  --svi-accent: #b54a3a;
-  --svi-bg: #14130f;
-  --svi-bg-1: #1d1c17;
-  --svi-bg-2: #26241e;
-  --svi-bg-3: #2f2c25;
-  --svi-bg-hover: #3a362d;
-  --svi-border: #34302a;
-  --svi-border-strong: #5b554a;
-  --svi-text: #d8d0bd;
-  --svi-text-dim: #968e7c;
-  --svi-text-mute: #635c4f;
-}
-.sc-venaerys-initiative[data-theme="sanctuary"] {
-  --svi-accent: #d6a04a;
-  --svi-bg: #221d15;
-  --svi-bg-1: #2c261c;
-  --svi-bg-2: #3a3326;
-  --svi-bg-3: #463d2e;
-  --svi-bg-hover: #534838;
-  --svi-border: #4d4332;
-  --svi-border-strong: #80714d;
-  --svi-text: #f1e4c8;
-  --svi-text-dim: #c4af83;
-  --svi-text-mute: #8c7a55;
-}
-.sc-venaerys-initiative[data-theme="underworld"] {
-  --svi-accent: #e0683a;
-  --svi-bg: #0e0d0c;
-  --svi-bg-1: #161514;
-  --svi-bg-2: #1f1d1b;
-  --svi-bg-3: #2a2724;
-  --svi-bg-hover: #353230;
-  --svi-border: #2e2a26;
-  --svi-border-strong: #564f48;
-  --svi-text: #e8d9c4;
-  --svi-text-dim: #9d8b76;
-  --svi-text-mute: #6a5d4d;
-}
-.sc-venaerys-initiative[data-theme="moss"] {
-  --svi-accent: #8aa64a;
-  --svi-bg: #161814;
-  --svi-bg-1: #1f221d;
-  --svi-bg-2: #292c25;
-  --svi-bg-3: #34372e;
-  --svi-bg-hover: #3f4338;
-  --svi-border: #383c30;
-  --svi-border-strong: #62684d;
-  --svi-text: #e0e3cf;
-  --svi-text-dim: #9ba48a;
-  --svi-text-mute: #6a715a;
-}
-
-/* Light */
-.sc-venaerys-initiative[data-theme="light"] {
-  --svi-accent: #117a52;
-  --svi-bg: #eaecef;
-  --svi-bg-1: #ffffff;
-  --svi-bg-2: #e0e4e9;
-  --svi-bg-3: #d1d6dc;
-  --svi-bg-hover: #c4cad1;
-  --svi-border: #d4d8dd;
-  --svi-border-strong: #8b95a1;
-  --svi-text: #0a0d11;
-  --svi-text-dim: #2e3640;
-  --svi-text-mute: #5a6470;
-}
-.sc-venaerys-initiative[data-theme="sepia"] {
-  --svi-accent: #6e4416;
-  --svi-bg: #e3d6b8;
-  --svi-bg-1: #f0e4c4;
-  --svi-bg-2: #d8c9a8;
-  --svi-bg-3: #c8b58e;
-  --svi-bg-hover: #b8a47c;
-  --svi-border: #c4b390;
-  --svi-border-strong: #6b5832;
-  --svi-text: #1c1004;
-  --svi-text-dim: #3e2a10;
-  --svi-text-mute: #6b5028;
-}
-.sc-venaerys-initiative[data-theme="parchment"] {
-  --svi-accent: #553811;
-  --svi-bg: #ecdfb8;
-  --svi-bg-1: #f7ebc8;
-  --svi-bg-2: #ddcc9c;
-  --svi-bg-3: #c8b780;
-  --svi-bg-hover: #b8a566;
-  --svi-border: #c8b181;
-  --svi-border-strong: #6e5520;
-  --svi-text: #181004;
-  --svi-text-dim: #3a2808;
-  --svi-text-mute: #5e4818;
-}
-
-/* Sci-fi */
 .sc-venaerys-initiative[data-theme="holo"] {
   --svi-accent: #3fd6f0;
   --svi-bg: #070f15;
@@ -209,8 +270,6 @@
   --svi-text-dim: #7fb8c9;
   --svi-text-mute: #4f8b9d;
 }
-
-/* Game systems */
 .sc-venaerys-initiative[data-theme="dnd5e"] {
   --svi-accent: #d4bf8a;
   --svi-bg: #1b1d23;
@@ -263,8 +322,6 @@
   --svi-text-dim: #b8a98c;
   --svi-text-mute: #857a63;
 }
-
-/* Special */
 .sc-venaerys-initiative[data-theme="contrast"] {
   --svi-accent: #ffd400;
   --svi-bg: #000000;

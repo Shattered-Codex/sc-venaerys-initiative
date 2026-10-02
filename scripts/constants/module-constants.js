@@ -34,6 +34,7 @@ export const REASONS = Object.freeze({
   anchor: "anchor",
   natural: "natural",
   marker: "marker",
+  half: "half",
 });
 
 export const SETTINGS = Object.freeze({
@@ -52,6 +53,7 @@ export const SETTINGS = Object.freeze({
   rollPrompt: "rollPrompt",
   rollSource: "rollSource",
   rollFormula: "rollFormula",
+  splitPhases: "splitPhases",
 });
 
 /** Combat flags. */
@@ -60,6 +62,8 @@ export const COMBAT_FLAGS = Object.freeze({
   plan: "plan",
   dc: "dc",
   suspendedAdvance: "suspendedAdvance",
+  split: "split",
+  actionsHalf: "actionsHalf",
 });
 
 /** Combatant flags. */
@@ -113,6 +117,12 @@ export const NATURAL_RULES = Object.freeze({ none: "none", autoSuccess: "autoSuc
 
 /** A roll's extreme result, read by the system adapter (a natural 20 or 1, matching duality dice, a d100 01). */
 export const CRITICALS = Object.freeze({ critical: "critical", fumble: "fumble" });
+
+/** Which phases split into a movement half and an actions half; event phases never do. */
+export const SPLIT_MODES = Object.freeze({ off: "off", players: "players", all: "all" });
+
+/** The two halves of a split phase. */
+export const HALVES = Object.freeze({ move: "move", act: "act" });
 
 /** Where the roll against the DC comes from: the system's own initiative roll, or the GM's formula. */
 export const ROLL_SOURCES = Object.freeze({ system: "system", formula: "formula" });

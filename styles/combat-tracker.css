@@ -306,20 +306,65 @@
 .sc-venaerys-initiative .svi-group-row .svi-complete-group { width: 24px; height: 24px; color: inherit; }
 .sc-venaerys-initiative .svi-phase-header .svi-add-marker { width: 24px; height: 24px; }
 .sc-venaerys-initiative.svi-row-notes { display: flex; flex-direction: column; }
-.sc-venaerys-initiative.svi-row-controls { display: flex; flex: none; align-items: center; gap: 4px; color: var(--svi-text); }
+.sc-venaerys-initiative.svi-row-controls {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  color: var(--svi-text);
+}
+
+/*
+ * A phased row in two lines: portrait | name | initiative on top, and below
+ * the name one bar with the core's controls on the left and the module's on
+ * the right. The bar wraps when the sidebar is narrow; nothing is clipped.
+ */
+.sc-venaerys-initiative.svi-phase li.svi-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "img name res init"
+    "img bar bar bar";
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+}
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-img { grid-area: img; align-self: center; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-name { grid-area: name; align-self: end; min-width: 0; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-name strong { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-resource { grid-area: res; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-init { grid-area: init; align-self: center; height: 28px; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-bar {
+  grid-area: bar;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-bar > div:first-child { flex: none; }
+.sc-venaerys-initiative.svi-phase .svi-row-controls:not(:has(*)) { display: none; }
 .sc-venaerys-initiative .svi-sub { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--svi-muted); }
 .sc-venaerys-initiative .svi-sub.svi-deferred { color: var(--svi-accent-300); }
 
 /* Done state lives on the module's roots in the row: the toggle and status swap their halves. */
 .sc-venaerys-initiative:not(.svi-done) .svi-when-done,
 .sc-venaerys-initiative.svi-done .svi-when-todo { display: none; }
+/* The "Moved" toggle shows its own state: the row is not done while its owner has only moved. */
+.sc-venaerys-initiative .svi-moved-btn[aria-pressed="true"] .svi-when-done { display: inline; }
+.sc-venaerys-initiative .svi-moved-btn[aria-pressed="true"] .svi-when-todo { display: none; }
 .sc-venaerys-initiative .svi-done-btn,
 .sc-venaerys-initiative .svi-skip-btn {
   display: inline-flex;
   flex: none;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   width: auto;
+  min-width: 26px;
   height: 26px;
   margin: 0;
   padding: 0 8px;
@@ -337,24 +382,32 @@
 .sc-venaerys-initiative .svi-skip-btn[aria-pressed="true"] { border-color: var(--svi-accent-700); background: var(--svi-done-bg); color: var(--svi-done); }
 .sc-venaerys-initiative .svi-done-btn.svi-big { height: 30px; padding: 0 12px; border-color: var(--svi-accent); color: var(--svi-accent-200); font-size: 13px; font-weight: 500; }
 .sc-venaerys-initiative .svi-skip-btn { padding: 0 6px; color: var(--svi-muted); }
-.sc-venaerys-initiative .svi-status { display: inline-flex; min-width: 58px; font-size: 12px; }
+.sc-venaerys-initiative .svi-status { display: inline-flex; align-items: center; height: 26px; font-size: 12px; }
 .sc-venaerys-initiative .svi-status > span { display: inline-flex; align-items: center; gap: 4px; }
 .sc-venaerys-initiative .svi-status .svi-when-done { color: var(--svi-done); }
 .sc-venaerys-initiative .svi-status .svi-when-todo { color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-status .svi-status-moved,
+.sc-venaerys-initiative .svi-status .svi-status-moving { display: inline-flex; align-items: center; gap: 4px; }
+.sc-venaerys-initiative .svi-status .svi-status-moved { color: var(--svi-done); }
+.sc-venaerys-initiative .svi-status .svi-status-moving { color: var(--svi-muted); }
+/* The phase select shows the phase by name; it shrinks before anything else and wraps when it must. */
 .sc-venaerys-initiative .svi-phase-select {
-  flex: none;
-  width: 30px;
-  height: 24px;
-  padding: 0 2px;
-  border: 1px solid transparent;
+  flex: 0 1 9.5em;
+  width: auto;
+  min-width: 6.5em;
+  max-width: 100%;
+  height: 26px;
+  padding: 0 4px;
+  border: 1px solid var(--svi-line);
   border-radius: var(--svi-radius-sm);
   background: transparent;
-  color: var(--svi-muted);
+  color: var(--svi-text);
   font-size: 12px;
+  text-overflow: ellipsis;
   cursor: pointer;
 }
 .sc-venaerys-initiative .svi-phase-select:hover,
-.sc-venaerys-initiative .svi-phase-select:focus-visible { width: 120px; border-color: var(--svi-line); color: var(--svi-text); }
+.sc-venaerys-initiative .svi-phase-select:focus-visible { border-color: var(--svi-accent); }
 .sc-venaerys-initiative .svi-phase-select option { background: var(--svi-surface); color: var(--svi-text); }
 
 /* ---------- Pending strip ---------- */

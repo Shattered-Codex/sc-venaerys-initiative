@@ -57,7 +57,10 @@
               <span class="svi-action-name">{{localize label}}</span>
               <span class="svi-action-where">{{localize where}}</span>
               <span class="svi-spacer"></span>
-              <input type="checkbox" role="switch" class="svi-toggle" data-action-field="enabled" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Enabled"}}"{{#if enabled}} checked{{/if}}>
+              <label class="svi-check" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.Enabled"}}">
+                <input type="checkbox" data-action-field="enabled" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Enabled"}}"{{#if enabled}} checked{{/if}}>
+                <span class="svi-check-box" aria-hidden="true"><i class="fa-solid fa-check" inert></i></span>
+              </label>
               <button type="button" class="svi-icon-btn" data-action="moveAction" data-step="-1" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveUp"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveUp"}}" {{#unless canUp}}disabled{{/unless}}><i class="fa-solid fa-arrow-up" inert></i></button>
               <button type="button" class="svi-icon-btn" data-action="moveAction" data-step="1" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveDown"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveDown"}}" {{#unless canDown}}disabled{{/unless}}><i class="fa-solid fa-arrow-down" inert></i></button>
               <button type="button" class="svi-icon-btn svi-danger" data-action="deleteAction" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Delete"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.Delete"}}"><i class="fa-solid fa-trash" inert></i></button>
@@ -83,7 +86,7 @@
             </div>
           </div>
           {{/each}}
-          <select class="svi-add-action" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Add"}}">
+          <select class="svi-add-action svi-select" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Add"}}">
             <option value="">{{localize "SC_VENAERYS_INITIATIVE.Automation.Add"}}</option>
             {{#each actions.kinds}}<option value="{{id}}"{{#if disabled}} disabled title="{{title}}"{{/if}}>{{localize label}}{{#if disabled}} ({{title}}){{/if}}</option>{{/each}}
           </select>

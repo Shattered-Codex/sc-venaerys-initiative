@@ -12,8 +12,8 @@ import { fakeCombat, fakeCombatant } from "./helpers/fake-combat.js";
  * use them.
  */
 const STORED = {
-  settings: ["enabledByDefault", "phaseTemplate", "defaultDc", "showDcToPlayers", "autoAdvance", "openOnStart", "theme", "dcSource", "dcBase", "natural20", "natural1", "suggestFromSheet", "rollPrompt", "rollSource", "rollFormula"],
-  combatFlags: ["enabled", "plan", "dc", "suspendedAdvance"],
+  settings: ["enabledByDefault", "phaseTemplate", "defaultDc", "showDcToPlayers", "autoAdvance", "openOnStart", "theme", "dcSource", "dcBase", "natural20", "natural1", "suggestFromSheet", "rollPrompt", "rollSource", "rollFormula", "splitPhases"],
+  combatFlags: ["enabled", "plan", "dc", "suspendedAdvance", "split", "actionsHalf"],
   combatantFlags: ["side", "phase", "nextPhase", "pinned", "done", "moved", "natural"],
   hooks: ["sc-venaerys-initiative.phaseChange", "sc-venaerys-initiative.combatantDone"],
   keybindings: ["markOwnDone", "advancePhase", "previousPhase", "showTracker"],

@@ -1,13 +1,40 @@
-<li class="combatant {{ css }}{{#if svi.done}} svi-done{{/if}}" data-combatant-id="{{ id }}" data-action="activateCombatant"{{#if svi.select}} draggable="true"{{/if}}>
-    <img class="token-image" src="{{ img }}" alt="{{ name }}" loading="lazy">
+<li class="combatant svi-row {{ css }}{{#if svi.done}} svi-done{{/if}}{{#if svi.moved}} svi-moved{{/if}}" data-combatant-id="{{ id }}" data-action="activateCombatant"{{#if svi.select}} draggable="true"{{/if}}>
+    <img class="token-image svi-row-img" src="{{ img }}" alt="{{ name }}" loading="lazy">
 
-    <div class="token-name">
+    <div class="token-name svi-row-name">
         <strong class="name">{{ name }}</strong>
         <div class="sc-venaerys-initiative svi-row-notes{{#if svi.done}} svi-done{{/if}}" data-theme="{{ @root.sviTheme }}">
             {{#if svi.deferred}}<span class="svi-sub svi-deferred"><i class="fa-solid fa-clock-rotate-left" inert></i>{{ svi.deferred }}</span>{{/if}}
             {{#if svi.noRoll}}<span class="svi-sub"><i class="fa-solid fa-dice-d20" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.NoRoll" }}</span>{{/if}}
             {{#if svi.skipButton}}<span class="svi-sub svi-when-done"><i class="fa-solid fa-forward" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Skipped" }}</span>{{/if}}
         </div>
+    </div>
+
+    {{#if resource includeZero=true}}
+    <div class="token-resource svi-row-resource">
+        <span class="resource">{{ resource }}</span>
+    </div>
+    {{/if}}
+
+    <div class="token-initiative svi-row-init">
+        {{#if svi.initiativeLabel}}
+        <span class="svi-no-roll" role="img" aria-label="{{ svi.initiativeLabel }}" data-tooltip="{{ svi.initiativeLabel }}">—</span>
+        {{else if initiative includeZero=true}}
+        {{#if @root.hasDecimals}}
+        <span>{{ initiative }}</span>
+        {{else}}
+        <input type="text" class="initiative-input" inputmode="numeric" pattern="^[+=\-]?\d*" value="{{ initiative }}"
+               aria-label="{{ sviLabels.initiative }}" {{#unless @root.user.isGM}}readonly{{/unless}}>
+        {{/if}}
+        {{else if svi.rollButton}}
+        <button type="button" class="combatant-control roll" data-action="sviRoll" data-combatant-id="{{ id }}" data-tooltip
+                aria-label="{{ svi.rollButton.label }}"
+                style="--initiative-icon: url('{{ @root.initiativeIcon.icon }}'); --initiative-icon-hover: url('{{ @root.initiativeIcon.hover }}');"></button>
+        {{/if}}
+    </div>
+
+    {{!-- Second line: the core's controls and the module's, wrapping as the sidebar narrows. --}}
+    <div class="svi-row-bar">
         <div class="combatant-controls">
             {{#if @root.user.isGM}}
             <button type="button" class="inline-control combatant-control icon fa-solid fa-eye-slash {{#if hidden}}active{{/if}}"
@@ -29,58 +56,52 @@
                 {{/each}}
             </div>
         </div>
-    </div>
-
-    <div class="sc-venaerys-initiative svi-row-controls{{#if svi.done}} svi-done{{/if}}" data-theme="{{ @root.sviTheme }}">
-        {{#if svi.pointer}}<span class="svi-flag" role="img" aria-label="{{ svi.pointer.label }}" data-tooltip="{{ svi.pointer.label }}"><i class="fa-solid fa-hourglass-end" inert></i></span>{{/if}}
-        {{#if svi.pinned}}<span class="svi-flag svi-flag-accent" role="img" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Pinned" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Pinned" }}"><i class="fa-solid fa-thumbtack" inert></i></span>{{/if}}
-        {{#if svi.doneButton}}
-        <button type="button" class="svi-done-btn{{#if svi.doneButton.big}} svi-big{{/if}}" data-action="sviToggleDone" name="svi-done-{{ id }}"
-                aria-pressed="{{ svi.doneButton.pressed }}" aria-label="{{ svi.doneButton.label }}" data-tooltip="{{ svi.doneButton.label }}">
-            <i class="fa-regular fa-circle svi-when-todo" inert></i><i class="fa-solid fa-circle-check svi-when-done" inert></i>
-            {{#if svi.doneButton.big}}<span class="svi-when-todo">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.MarkDone" }}</span>{{/if}}
-            <span class="svi-when-done">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Done" }}</span>
-        </button>
-        {{/if}}
-        {{#if svi.doneStatus}}
-        <span class="svi-status">
-            <span class="svi-when-done"><i class="fa-solid fa-circle-check" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Done" }}</span>
-            <span class="svi-when-todo"><i class="fa-regular fa-circle" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Acting" }}</span>
-        </span>
-        {{/if}}
-        {{#if svi.skipButton}}
-        <button type="button" class="svi-skip-btn" data-action="sviToggleDone" name="svi-done-{{ id }}"
-                aria-pressed="{{ svi.skipButton.pressed }}" aria-label="{{ svi.skipButton.label }}" data-tooltip="{{ svi.skipButton.label }}">
-            <i class="fa-solid fa-forward" inert></i>
-        </button>
-        {{/if}}
-        {{#if svi.select}}
-        <select class="svi-phase-select" data-action="sviNoop" name="svi-phase-{{ id }}" aria-label="{{ svi.select.label }}" data-tooltip="{{ svi.select.label }}">
-            {{#each svi.select.options}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
-        </select>
-        {{/if}}
-    </div>
-
-    {{#if resource includeZero=true}}
-    <div class="token-resource">
-        <span class="resource">{{ resource }}</span>
-    </div>
-    {{/if}}
-
-    <div class="token-initiative">
-        {{#if svi.initiativeLabel}}
-        <span class="svi-no-roll" role="img" aria-label="{{ svi.initiativeLabel }}" data-tooltip="{{ svi.initiativeLabel }}">—</span>
-        {{else if initiative includeZero=true}}
-        {{#if @root.hasDecimals}}
-        <span>{{ initiative }}</span>
-        {{else}}
-        <input type="text" class="initiative-input" inputmode="numeric" pattern="^[+=\-]?\d*" value="{{ initiative }}"
-               aria-label="{{ sviLabels.initiative }}" {{#unless @root.user.isGM}}readonly{{/unless}}>
-        {{/if}}
-        {{else if svi.rollButton}}
-        <button type="button" class="combatant-control roll" data-action="sviRoll" data-combatant-id="{{ id }}" data-tooltip
-                aria-label="{{ svi.rollButton.label }}"
-                style="--initiative-icon: url('{{ @root.initiativeIcon.icon }}'); --initiative-icon-hover: url('{{ @root.initiativeIcon.hover }}');"></button>
-        {{/if}}
+        <div class="sc-venaerys-initiative svi-row-controls{{#if svi.done}} svi-done{{/if}}" data-theme="{{ @root.sviTheme }}">
+            {{#if svi.pointer}}<span class="svi-flag" role="img" aria-label="{{ svi.pointer.label }}" data-tooltip="{{ svi.pointer.label }}"><i class="fa-solid fa-hourglass-end" inert></i></span>{{/if}}
+            {{#if svi.pinned}}<span class="svi-flag svi-flag-accent" role="img" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Pinned" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Pinned" }}"><i class="fa-solid fa-thumbtack" inert></i></span>{{/if}}
+            {{#if svi.doneButton}}
+            <button type="button" class="svi-done-btn{{#if svi.doneButton.big}} svi-big{{/if}}" data-action="sviToggleDone" name="svi-done-{{ id }}"
+                    aria-pressed="{{ svi.doneButton.pressed }}" aria-label="{{ svi.doneButton.label }}" data-tooltip="{{ svi.doneButton.label }}">
+                <i class="fa-regular fa-circle svi-when-todo" inert></i><i class="fa-solid fa-circle-check svi-when-done" inert></i>
+                {{#if svi.doneButton.big}}<span class="svi-when-todo">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.MarkDone" }}</span>{{/if}}
+                <span class="svi-when-done">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Done" }}</span>
+            </button>
+            {{/if}}
+            {{#if svi.movedButton}}
+            <button type="button" class="svi-done-btn svi-moved-btn{{#if svi.movedButton.big}} svi-big{{/if}}" data-action="sviToggleMoved" name="svi-moved-{{ id }}"
+                    aria-pressed="{{ svi.movedButton.pressed }}" aria-label="{{ svi.movedButton.label }}" data-tooltip="{{ svi.movedButton.label }}">
+                <i class="fa-solid fa-person-walking svi-when-todo" inert></i><i class="fa-solid fa-person-walking-arrow-right svi-when-done" inert></i>
+                {{#if svi.movedButton.big}}<span class="svi-when-todo">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.MarkMoved" }}</span>{{/if}}
+                <span class="svi-when-done">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Moved" }}</span>
+            </button>
+            {{/if}}
+            {{#if svi.doneStatus}}
+            <span class="svi-status">
+                <span class="svi-when-done"><i class="fa-solid fa-circle-check" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Done" }}</span>
+                <span class="svi-when-todo"><i class="fa-regular fa-circle" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Acting" }}</span>
+            </span>
+            {{/if}}
+            {{#if svi.movedStatus}}
+            {{!-- The movement half reads the moved mark; a "moved" change renders the tracker, so no swap is needed. --}}
+            <span class="svi-status">
+                {{#if svi.movedStatus.moved}}
+                <span class="svi-status-moved"><i class="fa-solid fa-person-walking-arrow-right" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Moved" }}</span>
+                {{else}}
+                <span class="svi-status-moving"><i class="fa-solid fa-person-walking" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Moving" }}</span>
+                {{/if}}
+            </span>
+            {{/if}}
+            {{#if svi.skipButton}}
+            <button type="button" class="svi-skip-btn" data-action="sviToggleDone" name="svi-done-{{ id }}"
+                    aria-pressed="{{ svi.skipButton.pressed }}" aria-label="{{ svi.skipButton.label }}" data-tooltip="{{ svi.skipButton.label }}">
+                <i class="fa-solid fa-forward" inert></i>
+            </button>
+            {{/if}}
+            {{#if svi.select}}
+            <select class="svi-phase-select" data-action="sviNoop" name="svi-phase-{{ id }}" aria-label="{{ svi.select.label }}" data-tooltip="{{ svi.select.label }}">
+                {{#each svi.select.options}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
+            </select>
+            {{/if}}
+        </div>
     </div>
 </li>

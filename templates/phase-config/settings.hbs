@@ -4,34 +4,38 @@
     <p class="svi-panel-hint">{{ localize tab.hint }}</p>
   </header>
   {{#each sections}}
-  <section class="svi-section{{#if callout}} svi-callout{{/if}}">
-    <h3 class="svi-section-title">{{ localize title }}</h3>
+  {{#if showTitle}}<h3 class="svi-section-title">{{ localize title }}</h3>{{/if}}
+  <div class="svi-rows">
     {{#each rows}}
-    <div class="svi-setting">
-      <label class="svi-setting-text" for="svi-setting-{{ key }}">
+    <label class="svi-setting" for="svi-setting-{{ key }}">
+      <span class="svi-setting-text">
         <span class="svi-setting-name">{{ name }}</span>
         <span class="svi-setting-hint">{{ hint }}{{#if range}} · {{ range }}{{/if}}</span>
-      </label>
-      {{#if isToggle}}
-      <input type="checkbox" role="switch" class="svi-toggle" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}"{{#if value}} checked{{/if}}>
-      {{/if}}
-      {{#if isSelect}}
-      <select class="svi-select" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}">
-        {{#each choices}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
-      </select>
-      {{/if}}
-      {{#if isText}}
-      <input type="text" class="svi-text-input" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}" value="{{ value }}" placeholder="{{ placeholder }}" spellcheck="false">
-      {{/if}}
-      {{#if isNumber}}
-      <div class="svi-stepper" role="group" aria-label="{{ name }}">
-        <button type="button" data-action="sviStep" data-step="-{{ step }}" aria-label="{{ decreaseLabel }}"><i class="fa-solid fa-minus" inert></i></button>
-        <input type="number" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}" value="{{ value }}" min="{{ min }}" max="{{ max }}" step="{{ step }}">
-        <button type="button" data-action="sviStep" data-step="{{ step }}" aria-label="{{ increaseLabel }}"><i class="fa-solid fa-plus" inert></i></button>
-      </div>
-      {{/if}}
-    </div>
+      </span>
+      <span class="svi-setting-control">
+        {{#if isToggle}}
+        <span class="svi-check">
+          <input type="checkbox" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}"{{#if value}} checked{{/if}}>
+          <span class="svi-check-box" aria-hidden="true"><i class="fa-solid fa-check" inert></i></span>
+        </span>
+        {{/if}}
+        {{#if isSelect}}
+        <span class="svi-select-wrap">
+          <select class="svi-select" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}">
+            {{#each choices}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
+          </select>
+          <i class="fa-solid fa-chevron-down svi-select-chev" inert></i>
+        </span>
+        {{/if}}
+        {{#if isText}}
+        <input type="text" class="svi-input svi-input-text" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}" value="{{ value }}" placeholder="{{ placeholder }}" spellcheck="false">
+        {{/if}}
+        {{#if isNumber}}
+        <input type="number" class="svi-input svi-input-number" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}" value="{{ value }}" min="{{ min }}" max="{{ max }}" step="{{ step }}">
+        {{/if}}
+      </span>
+    </label>
     {{/each}}
-  </section>
+  </div>
   {{/each}}
 </section>

@@ -1,10 +1,13 @@
-import { ADVANCE_LOCK_MS, COMBATANT_FLAGS, COMBAT_FLAGS, MODULE_ID, OPERATION_KEY, REASONS } from "../constants/module-constants.js";
+import { ADVANCE_LOCK_MS, COMBATANT_FLAGS, COMBAT_FLAGS, HALVES, MODULE_ID, OPERATION_KEY, REASONS } from "../constants/module-constants.js";
 import { rolloverPlan } from "../helpers/phase-placement.js";
 import {
   advanceTarget,
   anchorTarget,
   backTarget,
+  currentHalf,
+  currentKey,
   currentPhaseId,
+  hasMoved,
   pendingToSlow,
   roundStartTarget,
   startNeedsConfirmation,
@@ -14,6 +17,7 @@ import CombatSnapshot from "./CombatSnapshot.js";
 import PhasePlacementWriter from "./PhasePlacementWriter.js";
 
 const SUSPENDED_PATH = `flags.${MODULE_ID}.${COMBAT_FLAGS.suspendedAdvance}`;
+const ACTIONS_PATH = `flags.${MODULE_ID}.${COMBAT_FLAGS.actionsHalf}`;
 
 /**
  * Moves the pointer between phases: advance, round change, back, re-anchor
@@ -21,7 +25,9 @@ const SUSPENDED_PATH = `flags.${MODULE_ID}.${COMBAT_FLAGS.suspendedAdvance}`;
  * is one native Combat update that mirrors the core's own navigation: the
  * `combatTurn`/`combatRound` hook first, then `update` with `direction` and
  * the world-time delta the core would have applied, so turn events, system
- * recoveries and listeners of those hooks keep working.
+ * recoveries and listeners of those hooks keep working. Between the two
+ * halves of a split phase only a flag changes: the pointer, the turn and the
+ * turn events stay where they are.
  */
 export default class PhaseAdvancer {
   #locks = new Map();
@@ -35,9 +41,9 @@ export default class PhaseAdvancer {
     return CombatSnapshot.from(combat, this.adapter);
   }
 
-  /** The key of the phase the combat is in: an advance from it happens once. */
+  /** The key of the phase (and half) the combat is in: an advance from it happens once. */
   static keyOf(view) {
-    return suspensionKey(view.round, currentPhaseId(view) ?? `turn-${view.turn}`);
+    return currentKey(view) ?? suspensionKey(view.round, `turn-${view.turn}`);
   }
 
   #lock(combatId, key) {
@@ -79,7 +85,8 @@ export default class PhaseAdvancer {
         target = advanceTarget(view);
       }
       if (target.waitRolls || target.none) return false;
-      if ("round" in target) await this.#turnRound(combat, view);
+      if (target.half) await this.#setHalf(combat, view, { actions: true, reason: REASONS.half });
+      else if ("round" in target) await this.#turnRound(combat, view);
       else await this.#move(combat, view, { round: view.round, turn: target.turn }, { direction: 1, reason: REASONS.advance });
       return true;
     } finally {
@@ -93,7 +100,13 @@ export default class PhaseAdvancer {
     if (!view.enabled || !view.started) return false;
     const target = backTarget(view);
     if (target.refuse || target.none) return false;
+    if (target.half && !("turn" in target)) {
+      await this.#setHalf(combat, view, { actions: false, reason: REASONS.back, suspend: target.suspend });
+      return true;
+    }
     const flags = { [SUSPENDED_PATH]: target.suspend };
+    // Back into a phase that splits lands in its actions half.
+    if (target.half) flags[ACTIONS_PATH] = suspensionKey(target.round ?? view.round, target.phaseId);
     if (!("round" in target)) {
       await this.#move(combat, view, { round: view.round, turn: target.turn }, { direction: -1, reason: REASONS.back, flags });
       return true;
@@ -140,6 +153,15 @@ export default class PhaseAdvancer {
     return true;
   }
 
+  /** From one half of the current phase to the other: only flags change. */
+  async #setHalf(combat, view, { actions, reason, suspend = null }) {
+    const current = currentPhaseId(view);
+    await combat.update(
+      { [ACTIONS_PATH]: actions ? suspensionKey(view.round, current) : null, [SUSPENDED_PATH]: suspend },
+      { [OPERATION_KEY]: { reason } },
+    );
+  }
+
   async #turnRound(combat, view) {
     const rollover = rolloverPlan(view);
     if (rollover.updates.length) {
@@ -165,15 +187,21 @@ export default class PhaseAdvancer {
     await combat.update({ ...updateData, ...suspension, ...flags }, updateOptions);
   }
 
-  /** The done marks a phase completion writes: every member of the current phase not yet done. */
+  /**
+   * The marks a completion writes: every member of the current phase not yet
+   * done, or, in the movement half of a split phase, not yet moved (the
+   * actions half still comes after it).
+   */
   static completionUpdates(view) {
     const current = currentPhaseId(view);
+    const moving = currentHalf(view) === HALVES.move;
+    const field = moving ? COMBATANT_FLAGS.moved : COMBATANT_FLAGS.done;
     return view.combatants
-      .filter((c) => c.phase === current && c.done !== view.round)
-      .map((c) => ({ _id: c.id, [`flags.${MODULE_ID}.${COMBATANT_FLAGS.done}`]: view.round }));
+      .filter((c) => c.phase === current && (moving ? !hasMoved(c, view.round) : c.done !== view.round))
+      .map((c) => ({ _id: c.id, [`flags.${MODULE_ID}.${field}`]: view.round }));
   }
 
-  /** "Complete phase": everyone in the current phase is done and the combat advances now, busy GM or not. */
+  /** "Complete phase" (or its movement half): everyone is marked and the combat advances now, busy GM or not. */
   async complete(combat) {
     const view = this.snapshot(combat);
     if (!view.enabled || currentPhaseId(view) === null) return false;
