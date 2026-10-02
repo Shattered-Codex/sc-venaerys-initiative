@@ -50,7 +50,7 @@
         <i class="fa-solid fa-circle-question" inert></i>
       </button>
     </div>
-    {{#unless svi.started}}<p class="svi-hint svi-hint-block">{{ localize "SC_VENAERYS_INITIATIVE.Gm.NotStartedHint" }}</p>{{/unless}}
+    {{#unless svi.started}}<p class="svi-hint svi-hint-block" role="status"><i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Gm.NotStartedHint" }}</span></p>{{/unless}}
     {{/if}}
 
     {{#each svi.gm.warnings}}
@@ -76,8 +76,9 @@
   </div>
   {{/if}}
   {{else if svi.enabled}}
-  {{#if (or svi.dc svi.youPending)}}
+  {{#if (or svi.dc svi.youPending (not svi.started))}}
   <div class="svi-player-panel">
+    {{#unless svi.started}}<p class="svi-hint svi-hint-block" role="status"><i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.NotStartedHint" }}</span></p>{{/unless}}
     {{#if svi.dc}}<span class="svi-dc-badge">{{ svi.dc.text }}</span>{{/if}}
     {{#if svi.youPending}}
     <div class="svi-you-pending" role="status">

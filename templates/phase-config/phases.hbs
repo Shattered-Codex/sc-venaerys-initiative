@@ -21,13 +21,13 @@
             <span class="svi-look-title">{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.IconTitle"}}</span>
             <div class="svi-look-grid" role="radiogroup" aria-label="{{iconLabel}}">
               {{#each icons}}
-              <button type="button" role="radio" aria-checked="{{selected}}" data-action="pickIcon" data-icon="{{cls}}" aria-label="{{cls}}" data-tooltip="{{cls}}"><i class="{{cls}}" inert></i></button>
+              <button type="button" role="radio" aria-checked="{{selected}}" data-action="pickIcon" data-icon="{{cls}}" aria-label="{{label}}" data-tooltip="{{label}}"><i class="{{cls}}" inert></i></button>
               {{/each}}
             </div>
             <span class="svi-look-title">{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.ColorTitle"}}</span>
             <div class="svi-look-grid" role="radiogroup" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.ColorTitle"}}">
               {{#each colors}}
-              <button type="button" role="radio" class="svi-swatch" aria-checked="{{selected}}" data-action="pickColor" data-color="{{hex}}" aria-label="{{hex}}" data-tooltip="{{hex}}" style="--svi-swatch: {{hex}}"><i class="fa-solid fa-check" inert></i></button>
+              <button type="button" role="radio" class="svi-swatch" aria-checked="{{selected}}" data-action="pickColor" data-color="{{hex}}" aria-label="{{label}}" data-tooltip="{{label}}" style="--svi-swatch: {{hex}}"><i class="fa-solid fa-check" inert></i></button>
               {{/each}}
             </div>
           </div>

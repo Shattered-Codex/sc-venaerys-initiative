@@ -192,7 +192,7 @@
 /* ---------- Phases ---------- */
 .sc-venaerys-initiative.svi-waiting,
 .sc-venaerys-initiative.svi-phase,
-.sc-venaerys-initiative.svi-pending { margin: 4px 6px; color: var(--svi-text); font-size: 13px; line-height: 1.35; }
+.sc-venaerys-initiative.svi-pending { color: var(--svi-text); font-size: 13px; line-height: 1.35; }
 .sc-venaerys-initiative.svi-waiting {
   display: flex;
   align-items: center;
@@ -318,44 +318,55 @@
 }
 
 /*
- * A phased row in two lines: portrait | name | initiative on top, and below
- * the name one bar with the core's controls on the left and the module's on
- * the right. The bar wraps when the sidebar is narrow; nothing is clipped.
+ * A phased row, the same on every row: the portrait on the left; then the
+ * name with the initiative in a narrow column on its right; the core's
+ * icons and effects; and, when there is any, a line of the module's controls
+ * (flags and toggles on the left, the phase select on the right). The
+ * initiative never takes more than its column, so the name keeps its room.
  */
 .sc-venaerys-initiative.svi-phase li.svi-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     "img name res init"
-    "img bar bar bar";
+    "img icons icons icons"
+    "ctrl ctrl ctrl ctrl";
   align-items: center;
   column-gap: 8px;
-  row-gap: 2px;
+  row-gap: 3px;
 }
 .sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-img { grid-area: img; align-self: center; }
-.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-name { grid-area: name; align-self: end; min-width: 0; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-name { grid-area: name; align-self: center; min-width: 0; }
 .sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-name strong { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-resource { grid-area: res; }
-.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-init { grid-area: init; align-self: center; height: 28px; }
-.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-bar {
-  grid-area: bar;
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-init {
+  grid-area: init;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
-  min-width: 0;
+  justify-content: center;
+  width: 2.75rem;
+  height: 26px;
+  overflow: hidden;
 }
-.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-bar > div:first-child { flex: none; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-init input { width: 100%; height: 100%; min-width: 0; padding: 0 2px; text-align: center; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-init button { width: 26px; height: 26px; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-icons { grid-area: icons; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; min-width: 0; }
+/* The core pushes the effects to the far right; here they follow the icons. */
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-icons > div { margin-left: 0; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-controls { grid-area: ctrl; flex-wrap: nowrap; justify-content: flex-start; padding-top: 2px; }
+.sc-venaerys-initiative.svi-phase li.svi-row > .svi-row-controls > .svi-phase-select { margin-left: auto; }
 .sc-venaerys-initiative.svi-phase .svi-row-controls:not(:has(*)) { display: none; }
 .sc-venaerys-initiative .svi-sub { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--svi-muted); }
 .sc-venaerys-initiative .svi-sub.svi-deferred { color: var(--svi-accent-300); }
 
 /* Done state lives on the module's roots in the row: the toggle and status swap their halves. */
-.sc-venaerys-initiative:not(.svi-done) .svi-when-done,
-.sc-venaerys-initiative.svi-done .svi-when-todo { display: none; }
-/* The "Moved" toggle shows its own state: the row is not done while its owner has only moved. */
-.sc-venaerys-initiative .svi-moved-btn[aria-pressed="true"] .svi-when-done { display: inline; }
-.sc-venaerys-initiative .svi-moved-btn[aria-pressed="true"] .svi-when-todo { display: none; }
+/* Done state: a toggle reads its own aria-pressed; a status or note reads the done mark of its own root.
+   (Never an ancestor's: the phase section around every row is a module root too, and is never done.) */
+.sc-venaerys-initiative .svi-done-btn:not([aria-pressed="true"]) .svi-when-done,
+.sc-venaerys-initiative .svi-done-btn[aria-pressed="true"] .svi-when-todo,
+.sc-venaerys-initiative.svi-row-controls:not(.svi-done) .svi-status .svi-when-done,
+.sc-venaerys-initiative.svi-row-controls.svi-done .svi-status .svi-when-todo,
+.sc-venaerys-initiative.svi-row-notes:not(.svi-done) .svi-when-done { display: none; }
 .sc-venaerys-initiative .svi-done-btn,
 .sc-venaerys-initiative .svi-skip-btn {
   display: inline-flex;
@@ -392,9 +403,9 @@
 .sc-venaerys-initiative .svi-status .svi-status-moving { color: var(--svi-muted); }
 /* The phase select shows the phase by name; it shrinks before anything else and wraps when it must. */
 .sc-venaerys-initiative .svi-phase-select {
-  flex: 0 1 9.5em;
+  flex: 0 1 10em;
   width: auto;
-  min-width: 6.5em;
+  min-width: 5.5em;
   max-width: 100%;
   height: 26px;
   padding: 0 4px;
@@ -411,24 +422,62 @@
 .sc-venaerys-initiative .svi-phase-select option { background: var(--svi-surface); color: var(--svi-text); }
 
 /* ---------- Pending strip ---------- */
+/* A card like a phase section: a header with the count (and the GM's "Roll all"),
+   then one row per character, all alike, the roll button lined up on the right. */
 .sc-venaerys-initiative.svi-pending {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px 10px;
-  border-top: 1px solid var(--svi-line);
+  overflow: hidden;
+  border: 1px dashed var(--svi-pending);
   border-radius: var(--svi-radius-md);
-  background: var(--svi-window-header);
+  background: var(--svi-card);
 }
-.sc-venaerys-initiative .svi-pending-title {
+.sc-venaerys-initiative .svi-pending-head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--svi-muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  gap: 8px;
+  height: 34px;
+  padding: 0 6px 0 8px;
+  border-bottom: 1px solid var(--svi-line);
+  color: var(--svi-text);
 }
+.sc-venaerys-initiative .svi-pending-head .svi-phase-icon { color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-pending-title { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--svi-muted); }
+.sc-venaerys-initiative .svi-pending-list { display: flex; flex-direction: column; margin: 0; padding: 2px 0; list-style: none; }
+.sc-venaerys-initiative .svi-pending-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 6px 0 8px;
+  box-shadow: inset 2px 0 0 transparent;
+}
+.sc-venaerys-initiative .svi-pending-row + .svi-pending-row { border-top: 1px solid color-mix(in srgb, var(--svi-line) 60%, transparent); }
+.sc-venaerys-initiative .svi-pending-row.svi-mine { box-shadow: inset 2px 0 0 var(--svi-accent); }
+.sc-venaerys-initiative .svi-pending-row .svi-name { font-size: 13px; }
+.sc-venaerys-initiative .svi-pending-wait { display: grid; place-items: center; width: 26px; color: var(--svi-muted); font-size: 12px; }
+.sc-venaerys-initiative .svi-roll-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+  height: 24px;
+  margin: 0;
+  padding: 0 9px;
+  border: 1px solid var(--svi-accent-700);
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-accent-200);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sc-venaerys-initiative .svi-roll-btn:hover { border-color: var(--svi-accent); background: var(--svi-accent-900); color: var(--svi-accent-100); }
+.sc-venaerys-initiative .svi-roll-btn:focus-visible { outline: 2px solid var(--svi-accent); outline-offset: 1px; }
 .sc-venaerys-initiative .svi-you-pending {
   display: flex;
   align-items: flex-start;
@@ -439,18 +488,6 @@
   background: var(--svi-warn-bg);
   color: var(--svi-accent-100);
 }
-.sc-venaerys-initiative .svi-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.sc-venaerys-initiative .svi-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 8px 0 3px;
-  border: 1px dashed var(--svi-pending);
-  border-radius: var(--svi-radius-sm);
-}
-.sc-venaerys-initiative .svi-chip .svi-muted { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; }
-.sc-venaerys-initiative .svi-chip .svi-roll-btn { height: 22px; padding: 0 6px; gap: 4px; font-size: 11px; }
 .sc-venaerys-initiative .svi-you-pending { flex-wrap: wrap; align-items: center; }
 .sc-venaerys-initiative .svi-you-pending > span { flex: 1; min-width: 12em; }
 .sc-venaerys-initiative .svi-warning-actions { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -486,3 +523,12 @@
 .sc-venaerys-initiative.svi-row-controls .svi-status { padding: 2px 6px; border-radius: var(--svi-radius-sm); }
 .sc-venaerys-initiative.svi-row-controls .svi-done-btn[aria-pressed="true"],
 .sc-venaerys-initiative.svi-row-controls .svi-skip-btn[aria-pressed="true"] { background: var(--svi-done-bg); }
+
+/* ---------- Combat phase of a creature (sheet menu) ---------- */
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-hint { margin: 0 0 8px; color: var(--svi-text-dim); font-size: 12px; }
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 6px; border: 1px solid var(--svi-border); border-radius: var(--svi-radius-md); }
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-list legend { padding: 0 4px; color: var(--svi-text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice { display: flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 8px; border-radius: var(--svi-radius-sm); cursor: pointer; }
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice:hover { background: var(--svi-hover); }
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice:has(input:checked) { background: var(--svi-accent-soft); color: var(--svi-text); }
+.sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice i { width: 16px; color: var(--svi-accent); text-align: center; }

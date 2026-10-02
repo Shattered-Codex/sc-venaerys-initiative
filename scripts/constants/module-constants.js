@@ -54,6 +54,7 @@ export const SETTINGS = Object.freeze({
   rollSource: "rollSource",
   rollFormula: "rollFormula",
   splitPhases: "splitPhases",
+  phaseTurnMarkers: "phaseTurnMarkers",
 });
 
 /** Combat flags. */
@@ -64,6 +65,11 @@ export const COMBAT_FLAGS = Object.freeze({
   suspendedAdvance: "suspendedAdvance",
   split: "split",
   actionsHalf: "actionsHalf",
+});
+
+/** Actor flags: the phase a creature takes in every combat, unless the GM moves it. */
+export const ACTOR_FLAGS = Object.freeze({
+  defaultPhase: "defaultPhase",
 });
 
 /** Combatant flags. */
@@ -153,6 +159,21 @@ export const PHASE_ICONS = Object.freeze([
   "fa-solid fa-gem",
   "fa-solid fa-moon",
 ]);
+
+/** The i18n key part that names an icon of the list: "fa-solid fa-crown" is "crown". */
+export const iconName = (cls) => String(cls).split(" ").pop().replace(/^fa-/, "");
+
+/** The names of the palette swatches, for screen readers and tooltips. */
+export const PHASE_COLOR_NAMES = Object.freeze({
+  "#c9503c": "red",
+  "#d68a3a": "orange",
+  "#c9b23c": "yellow",
+  "#6fa35a": "green",
+  "#3fa3a0": "teal",
+  "#5b86c9": "blue",
+  "#9184d9": "violet",
+  "#b56fb0": "pink",
+});
 
 /** The design palette for extra phases, stored as #rrggbb. */
 export const PHASE_COLORS = Object.freeze([

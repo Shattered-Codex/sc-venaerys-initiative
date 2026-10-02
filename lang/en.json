@@ -99,6 +99,10 @@
           "players": "Players' phases",
           "all": "All creature phases"
         }
+      },
+      "phaseTurnMarkers": {
+        "Name": "Turn marker on the whole phase",
+        "Hint": "Foundry's turn marker shows under every member of the current phase who is still acting, and leaves each one as they mark Done. Off: only the combatant Foundry treats as the current turn has it."
       }
     },
     "Config": {
@@ -150,7 +154,35 @@
         "Cancel": "Cancel",
         "AddEvent": "Add event phase",
         "Event": "Event",
-        "EventHint": "Only event markers act in this phase. In combat, the GM adds one with the + on the phase; a combat without a marker skips the phase."
+        "EventHint": "Only event markers act in this phase. In combat, the GM adds one with the + on the phase; a combat without a marker skips the phase.",
+        "Icons": {
+          "crown": "Crown",
+          "skull": "Skull",
+          "dragon": "Dragon",
+          "khanda": "Khanda",
+          "shield-halved": "Shield",
+          "bolt": "Lightning",
+          "hourglass-half": "Hourglass",
+          "fire": "Fire",
+          "chess-rook": "Tower",
+          "eye": "Eye",
+          "ghost": "Ghost",
+          "spider": "Spider",
+          "hand-fist": "Fist",
+          "wand-sparkles": "Magic wand",
+          "gem": "Gem",
+          "moon": "Moon"
+        },
+        "Colors": {
+          "red": "Red",
+          "orange": "Orange",
+          "yellow": "Yellow",
+          "green": "Green",
+          "teal": "Teal",
+          "blue": "Blue",
+          "violet": "Violet",
+          "pink": "Pink"
+        }
       },
       "TabHints": {
         "world": "GM-only rules for every combat in this world.",
@@ -250,7 +282,9 @@
       "Moved": "Moved",
       "MarkMovedLabel": "Mark that {name} finished moving in {phase}",
       "UnmarkMovedLabel": "Unmark {name}'s movement in {phase}",
-      "Moving": "Moving"
+      "Moving": "Moving",
+      "NotStartedHint": "The combat hasn't started yet. Once the GM starts it, mark Done here when your turn in your phase is over.",
+      "RollAll": "Roll all"
     },
     "Gm": {
       "PhasesOn": "Phases on",
@@ -268,7 +302,7 @@
       "Back": "Previous phase",
       "BackLabel": "Go back from {phase} to the previous phase",
       "Help": "Help",
-      "NotStartedHint": "Available once the combat starts.",
+      "NotStartedHint": "The combat hasn't started. Press Begin Combat at the bottom of the tracker: the current phase then shows Done on each member, and later phases show Skip.",
       "AwaitingRollsOne": "Awaiting 1 roll",
       "AwaitingRollsMany": "Awaiting {count} rolls",
       "AdvanceAnyway": "Advance anyway",
@@ -444,6 +478,15 @@
         "Extreme": "Extreme",
         "Critical": "Critical"
       }
+    },
+    "ActorPhase": {
+      "Menu": "Combat phase",
+      "Button": "Phase",
+      "Title": "Combat phase: {name}",
+      "Legend": "Phase in every combat",
+      "Hint": "The phase this creature takes when it enters a phased combat. The GM can still move it in the tracker. If the phase is later deleted from the template, it goes back to Enemies. On a token's own sheet, this applies to that token only.",
+      "Enemies": "Enemies (default)",
+      "Save": "Save"
     }
   }
 }

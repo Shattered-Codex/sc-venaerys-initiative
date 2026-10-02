@@ -69,19 +69,29 @@
 
     {{#if svi.hasPending}}
     <li class="sc-venaerys-initiative svi-pending" data-theme="{{ @root.sviTheme }}">
-        <div class="svi-pending-title"><i class="fa-solid fa-dice-d20" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}</div>
-        <ul class="svi-chips">
+        <header class="svi-pending-head">
+            <span class="svi-phase-icon" aria-hidden="true"><i class="fa-solid fa-dice-d20"></i></span>
+            <span class="svi-pending-title">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}</span>
+            <span class="svi-count">{{ svi.pendingCount }}</span>
+            <span class="svi-spacer"></span>
+            {{#if svi.rollAll}}
+            <button type="button" class="svi-roll-btn" data-action="sviRollPending" aria-label="{{ svi.rollAll.label }}" data-tooltip="{{ svi.rollAll.label }}">
+                <i class="fa-solid fa-dice-d20" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.RollAll" }}</span>
+            </button>
+            {{/if}}
+        </header>
+        <ul class="plain svi-pending-list">
             {{#each svi.pending}}
-            <li class="svi-chip">
-                {{#if img}}<img class="svi-portrait svi-small" src="{{ img }}" alt="" loading="lazy">{{/if}}
-                <span>{{ name }}</span>
+            <li class="svi-pending-row{{#if mine}} svi-mine{{/if}}">
+                {{#if img}}<img class="svi-portrait" src="{{ img }}" alt="" loading="lazy">{{else}}<span class="svi-portrait" aria-hidden="true"></span>{{/if}}
+                <span class="svi-name">{{ name }}</span>
                 {{#if roll}}
-                <button type="button" class="svi-btn svi-small svi-roll-btn" data-action="sviRoll" data-combatant-id="{{ id }}"
+                <button type="button" class="svi-roll-btn" data-action="sviRoll" data-combatant-id="{{ id }}"
                         aria-label="{{ roll.label }}" data-tooltip="{{ roll.label }}">
                     <i class="fa-solid fa-dice-d20" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Roll" }}</span>
                 </button>
                 {{else}}
-                <span class="svi-muted"><i class="fa-solid fa-dice" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}</span>
+                <span class="svi-pending-wait" role="img" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}"><i class="fa-solid fa-hourglass-half" inert></i></span>
                 {{/if}}
             </li>
             {{/each}}

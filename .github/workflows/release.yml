@@ -209,7 +209,11 @@ jobs:
         run: |
           unzip -l "./${MODULE_ID}.zip" | grep -q "module-tiers.json"
           unzip -l "./${MODULE_ID}.zip" | grep -q "scripts/module.js"
-          unzip -l "./${MODULE_ID}.zip" | grep -q "templates/phase-tracker/phases.hbs"
+          unzip -l "./${MODULE_ID}.zip" | grep -q "templates/combat-tracker/tracker.hbs"
+          if unzip -l "./${MODULE_ID}.zip" | grep -qE " (docs/|test/|tools/)"; then
+            echo "The package must not ship docs, tests or tools." >&2
+            exit 1
+          fi
 
       - name: Commit manifest and publish tag
         if: steps.tag_version.outputs.reuse_release != 'true'

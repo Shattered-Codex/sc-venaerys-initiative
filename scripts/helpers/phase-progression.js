@@ -142,6 +142,21 @@ export function isMovementComplete(view, phaseId) {
   return !memberIndexes(view, phaseId).some((i) => !view.combatants[i].isDefeated && !hasMoved(view.combatants[i], view.round));
 }
 
+/**
+ * Indexes of the members of the current phase still acting in the running
+ * half: not defeated and not done (or, in the movement half, not moved).
+ * They are the tokens that show the turn marker.
+ */
+export function actingIndexes(view) {
+  const current = currentPhaseId(view);
+  if (current === null) return [];
+  const moving = currentHalf(view) === HALVES.move;
+  return memberIndexes(view, current).filter((i) => {
+    const combatant = view.combatants[i];
+    return !combatant.isDefeated && (moving ? !hasMoved(combatant, view.round) : !isDone(combatant, view.round));
+  });
+}
+
 /** After "Previous phase" the automatic advance waits for the next mark in that phase (or half). */
 export function isAdvanceSuspended(view) {
   const key = currentKey(view);

@@ -27,6 +27,7 @@ export const SETTING_SECTIONS = Object.freeze(["combat", "roll", "dc", "window",
 export const SETTINGS_SCHEMA = Object.freeze([
   { key: SETTINGS.enabledByDefault, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
   { key: SETTINGS.autoAdvance, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: "view" },
+  { key: SETTINGS.phaseTurnMarkers, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: "markers" },
   { key: SETTINGS.splitPhases, scope: "world", type: "choice", choices: Object.values(SPLIT_MODES), default: SPLIT_MODES.off, tab: "world", section: "combat", react: null },
   { key: SETTINGS.suggestFromSheet, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
   { key: SETTINGS.rollSource, scope: "world", type: "choice", choices: Object.values(ROLL_SOURCES), default: ROLL_SOURCES.system, tab: "world", section: "roll", react: null },

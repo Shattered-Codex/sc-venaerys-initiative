@@ -1,4 +1,4 @@
-import { COMBATANT_FLAGS, COMBAT_FLAGS, DC_RANGE, DC_SOURCES, MODULE_ID, OPERATION_KEY, REASONS, SIDES } from "../constants/module-constants.js";
+import { ACTOR_FLAGS, COMBATANT_FLAGS, COMBAT_FLAGS, DC_RANGE, DC_SOURCES, MODULE_ID, OPERATION_KEY, REASONS, SIDES } from "../constants/module-constants.js";
 import {
   automaticPhaseOf,
   classifyAll,
@@ -10,7 +10,7 @@ import {
   sideFor,
 } from "../helpers/phase-classifier.js";
 import { canEnterPhase, displayName, phaseById } from "../helpers/phase-plan.js";
-import { suggestedPhase } from "../helpers/sheet-suggestion.js";
+import { chosenPhase, suggestedPhase } from "../helpers/sheet-suggestion.js";
 import CombatSnapshot from "./CombatSnapshot.js";
 import ErrorGuard from "./ErrorGuard.js";
 import FrameScheduler from "./FrameScheduler.js";
@@ -36,10 +36,16 @@ export default class CombatantClassifier {
     this.scheduler = new FrameScheduler(ErrorGuard.wrap("classify", () => this.flush()), { requestFrame });
   }
 
-  /** An enemy with the phase its sheet suggests, when the world uses the suggestion. */
+  /**
+   * An enemy with its automatic phase from the sheet: the phase the GM chose
+   * on the actor, else (when the world uses it) the phase its items name.
+   */
   #withSuggestion(combat, plan, combatant) {
-    if (!this.suggestFromSheet() || (combatant.side ?? sideFor(combatant)) !== SIDES.enemies) return combatant;
+    if ((combatant.side ?? sideFor(combatant)) !== SIDES.enemies) return combatant;
     const actor = combat.combatants.get(combatant.id)?.actor;
+    const chosen = chosenPhase(CombatSnapshot.flagsOf(actor)[ACTOR_FLAGS.defaultPhase], plan);
+    if (chosen) return { ...combatant, suggestedPhase: chosen };
+    if (!this.suggestFromSheet()) return combatant;
     const nameOf = (phase) => displayName(phase, (key) => game.i18n.localize(key));
     return { ...combatant, suggestedPhase: suggestedPhase(this.adapter.itemNames(actor), plan, nameOf) };
   }

@@ -2,6 +2,7 @@ import { I18N_ROOT, MODULE_ID, OPERATION_KEY, SETTINGS } from "./constants/modul
 import { backTarget } from "./helpers/phase-progression.js";
 import { registerKeybindings } from "./hooks/register-keybindings.js";
 import { getSetting, naturalRules, registerSettings, rollPrompt, rollSettings, suggestFromSheet } from "./hooks/register-settings.js";
+import ActorPhaseDialog from "./applications/ActorPhaseDialog.js";
 import PhaseConfigApp from "./applications/PhaseConfigApp.js";
 import PhasedCombatTracker from "./applications/PhasedCombatTracker.js";
 import AutoAdvanceWatcher from "./services/AutoAdvanceWatcher.js";
@@ -24,6 +25,7 @@ import NaturalRollRecorder from "./services/NaturalRollRecorder.js";
 import PhaseAdvancer from "./services/PhaseAdvancer.js";
 import PhaseAutomationRunner from "./services/PhaseAutomationRunner.js";
 import PhasePlacementWriter from "./services/PhasePlacementWriter.js";
+import PhaseTurnMarkers from "./services/PhaseTurnMarkers.js";
 import RollPrompter from "./services/RollPrompter.js";
 import ThemeApplier from "./services/ThemeApplier.js";
 import TurnInterceptor from "./services/TurnInterceptor.js";
@@ -53,6 +55,7 @@ function build(adapter) {
   const automation = new PhaseAutomationRunner({ adapter });
   const integration = new IntegrationHooks({ adapter });
   const markers = new EventMarkers();
+  const turnMarkers = new PhaseTurnMarkers({ adapter, enabled: () => getSetting(SETTINGS.phaseTurnMarkers) });
   const tracker = { adapter, commands, doneMarkers, probe, roller, openHelp: () => PhaseConfigApp.open("help") };
   const view = new CombatWatcher({ patchDone: (ids) => PhasedCombatTracker.patchDone(ids) });
 
@@ -66,7 +69,7 @@ function build(adapter) {
   commands.register("assign", (combat, payload) => classifier.assign(combat, payload));
   commands.register("addMarker", (combat, payload) => markers.add(combat, payload));
 
-  Object.assign(services, { adapter, roller, prompter, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, integration });
+  Object.assign(services, { adapter, roller, prompter, turnMarkers, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, integration });
 }
 
 /** The keybinding actions: each answers whether it acted, so an unused key reaches other bindings. */
@@ -104,6 +107,7 @@ Hooks.once("init", () => {
       ThemeApplier.refresh();
       services.view?.render();
     },
+    onMarkersChange: () => services.turnMarkers?.refresh(),
     SettingsMenu: PhaseConfigApp,
     defaults: adapter.settingDefaults(),
   });
@@ -119,6 +123,7 @@ Hooks.once("setup", () => {
   services.startGuard.install();
   // The system's document classes are final by now.
   services.adapter.guardEventMarkers((combatant) => CombatSnapshot.isEventMarker(combatant));
+  services.turnMarkers.install();
   services.interceptor.install();
   // After every init (the system set its tracker class) and before the UI is built.
   PhasedCombatTracker.install(services.tracker);
@@ -182,6 +187,20 @@ Hooks.once("ready", () => {
   // The module's own hooks for other modules, on every client; and on GM clients, conflicting settings at the start.
   ErrorGuard.on("updateCombat", "integration", (combat, changed, options) => integration.onUpdateCombat(combat, changed, options));
   ErrorGuard.on("updateCombatant", "integration", (combatant, changes) => integration.onUpdateCombatant(combatant, changes));
+  // "Combat phase" on a creature's sheet: the "…" menu of V2 sheets, a header button on V1 sheets.
+  ErrorGuard.on("getHeaderControlsActorSheetV2", "actor-phase", (app, controls) => ActorPhaseDialog.addHeaderControl(app, controls));
+  ErrorGuard.on("getActorSheetHeaderButtons", "actor-phase", (app, buttons) => ActorPhaseDialog.addHeaderButton(app, buttons));
+  // Turn markers under every member still acting, on every client: any change of the viewed combat redraws them.
+  const redrawMarkers = (combat) => {
+    if (combat === game.combat) services.turnMarkers.scheduleRefresh();
+  };
+  ErrorGuard.on("updateCombat", "turn-markers", (combat) => redrawMarkers(combat));
+  for (const hook of ["createCombatant", "updateCombatant", "deleteCombatant"]) {
+    ErrorGuard.on(hook, "turn-markers", (combatant) => redrawMarkers(combatant.parent));
+  }
+  ErrorGuard.on("updateToken", "turn-markers", (_token, changed) => {
+    if (Object.hasOwn(changed, "hidden")) services.turnMarkers.scheduleRefresh();
+  });
   // A player with a character in the combat and no roll is asked to roll.
   ErrorGuard.on("createCombatant", "roll-prompt", (combatant) => prompter.onCreateCombatant(combatant));
   ErrorGuard.on("updateCombat", "roll-prompt", (combat, changed) => prompter.onUpdateCombat(combat, changed));

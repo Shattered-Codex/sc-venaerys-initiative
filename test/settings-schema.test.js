@@ -45,6 +45,7 @@ describe("settings schema", () => {
       rollSource: ["world", "system"],
       rollFormula: ["world", ""],
       splitPhases: ["world", "off"],
+      phaseTurnMarkers: ["world", true],
     };
     assert.deepEqual(SETTINGS_SCHEMA.map((e) => e.key).sort(), Object.keys(expected).sort());
     for (const [key, [scope, value]] of Object.entries(expected)) {

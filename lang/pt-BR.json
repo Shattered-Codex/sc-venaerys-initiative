@@ -99,6 +99,10 @@
           "players": "Fases dos jogadores",
           "all": "Todas as fases de criaturas"
         }
+      },
+      "phaseTurnMarkers": {
+        "Name": "Marcador de turno na fase inteira",
+        "Hint": "O marcador de turno do Foundry aparece embaixo de todos os membros da fase atual que ainda estão agindo, e sai de cada um quando ele marca Feito. Desligado: só o combatente que o Foundry considera o turno atual tem o marcador."
       }
     },
     "Config": {
@@ -150,7 +154,35 @@
         "Cancel": "Cancelar",
         "AddEvent": "Adicionar fase de evento",
         "Event": "Evento",
-        "EventHint": "Só marcadores de evento agem nesta fase. No combate, o Mestre adiciona um pelo + da fase; um combate sem marcador pula a fase."
+        "EventHint": "Só marcadores de evento agem nesta fase. No combate, o Mestre adiciona um pelo + da fase; um combate sem marcador pula a fase.",
+        "Icons": {
+          "crown": "Coroa",
+          "skull": "Caveira",
+          "dragon": "Dragão",
+          "khanda": "Khanda",
+          "shield-halved": "Escudo",
+          "bolt": "Raio",
+          "hourglass-half": "Ampulheta",
+          "fire": "Fogo",
+          "chess-rook": "Torre",
+          "eye": "Olho",
+          "ghost": "Fantasma",
+          "spider": "Aranha",
+          "hand-fist": "Punho",
+          "wand-sparkles": "Varinha mágica",
+          "gem": "Gema",
+          "moon": "Lua"
+        },
+        "Colors": {
+          "red": "Vermelho",
+          "orange": "Laranja",
+          "yellow": "Amarelo",
+          "green": "Verde",
+          "teal": "Verde-azulado",
+          "blue": "Azul",
+          "violet": "Violeta",
+          "pink": "Rosa"
+        }
       },
       "TabHints": {
         "world": "Regras só do Mestre para todos os combates deste mundo.",
@@ -250,7 +282,9 @@
       "Moved": "Moveu",
       "MarkMovedLabel": "Marcar que {name} terminou de se mover em {phase}",
       "UnmarkMovedLabel": "Desmarcar o movimento de {name} em {phase}",
-      "Moving": "Movendo"
+      "Moving": "Movendo",
+      "NotStartedHint": "O combate ainda não começou. Quando o Mestre iniciar, marque Feito aqui quando o seu turno na sua fase acabar.",
+      "RollAll": "Rolar todos"
     },
     "Gm": {
       "PhasesOn": "Fases ligadas",
@@ -268,7 +302,7 @@
       "Back": "Voltar fase",
       "BackLabel": "Voltar de {phase} para a fase anterior",
       "Help": "Ajuda",
-      "NotStartedHint": "Disponível depois que o combate começar.",
+      "NotStartedHint": "O combate ainda não começou. Clique em Iniciar Combate, no rodapé do tracker: a fase atual passa a mostrar Feito em cada membro, e as fases seguintes mostram Pular.",
       "AwaitingRollsOne": "Aguardando 1 rolagem",
       "AwaitingRollsMany": "Aguardando {count} rolagens",
       "AdvanceAnyway": "Avançar mesmo assim",
@@ -444,6 +478,15 @@
         "Extreme": "Extremo",
         "Critical": "Crítico"
       }
+    },
+    "ActorPhase": {
+      "Menu": "Fase de combate",
+      "Button": "Fase",
+      "Title": "Fase de combate: {name}",
+      "Legend": "Fase em todo combate",
+      "Hint": "A fase em que esta criatura entra num combate com fases. O Mestre ainda pode movê-la no tracker. Se a fase for apagada do modelo depois, ela volta para Inimigos. Na ficha de um token, vale só para aquele token.",
+      "Enemies": "Inimigos (padrão)",
+      "Save": "Salvar"
     }
   }
 }

@@ -7,11 +7,12 @@ const TYPES = { boolean: Boolean, number: Number, array: Array, choice: String, 
  * Registers every setting of SETTINGS_SCHEMA. None shows in the core menu:
  * they live in the module's own configuration screen, opened by
  * `SettingsMenu`. `onViewChange` re-projects the phase window and
- * `onThemeChange` re-stamps the theme. `defaults` are the running system's
+ * `onThemeChange` re-stamps the theme, `onMarkersChange` redraws the turn
+ * markers. `defaults` are the running system's
  * own defaults (a Call of Cthulhu DC is a difficulty level, not 15).
  */
-export function registerSettings({ onViewChange, onThemeChange, SettingsMenu, defaults = {} }) {
-  const reactions = { view: onViewChange, theme: onThemeChange };
+export function registerSettings({ onViewChange, onThemeChange, onMarkersChange, SettingsMenu, defaults = {} }) {
+  const reactions = { view: onViewChange, theme: onThemeChange, markers: onMarkersChange };
   for (const entry of SETTINGS_SCHEMA) {
     game.settings.register(MODULE_ID, entry.key, {
       name: `${I18N_ROOT}.Settings.${entry.key}.Name`,

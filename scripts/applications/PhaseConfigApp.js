@@ -1,4 +1,4 @@
-import { BUILTIN_PHASE_IDS, I18N_ROOT, MODULE_ID, PHASE_COLORS, PHASE_ICONS, SETTINGS, TEMPLATE_ROOT } from "../constants/module-constants.js";
+import { BUILTIN_PHASE_IDS, I18N_ROOT, MODULE_ID, PHASE_COLORS, PHASE_COLOR_NAMES, PHASE_ICONS, SETTINGS, TEMPLATE_ROOT, iconName } from "../constants/module-constants.js";
 import { defaultPlan } from "../constants/default-phases.js";
 import { SETTINGS_SCHEMA, SETTING_SECTIONS, SETTING_TABS, coerceSetting, schemaEntry } from "../constants/settings-schema.js";
 import {
@@ -281,8 +281,8 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
         upLabel: format("MoveUp"),
         downLabel: format("MoveDown"),
         deleteLabel: format("Delete"),
-        icons: PHASE_ICONS.map((cls) => ({ cls, selected: cls === phase.icon })),
-        colors: PHASE_COLORS.map((hex) => ({ hex, selected: hex.toLowerCase() === phase.color.toLowerCase() })),
+        icons: PHASE_ICONS.map((cls) => ({ cls, label: localize(T(`Config.Phases.Icons.${iconName(cls)}`)), selected: cls === phase.icon })),
+        colors: PHASE_COLORS.map((hex) => ({ hex, label: localize(T(`Config.Phases.Colors.${PHASE_COLOR_NAMES[hex]}`)), selected: hex.toLowerCase() === phase.color.toLowerCase() })),
         actions: this.#actionsContext(phase),
       };
     });

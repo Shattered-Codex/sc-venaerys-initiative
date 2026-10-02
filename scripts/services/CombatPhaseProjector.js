@@ -76,6 +76,9 @@ export default class CombatPhaseProjector {
       phases,
       pending,
       hasPending: pending.length > 0,
+      pendingCount: pending.length,
+      // The GM rolls everyone still waiting at once, from the strip's header.
+      rollAll: isGM && pending.length > 1 ? { label: localize(T("Gm.RollForThem")) } : null,
       youPending: pending.some((p) => p.mine),
     };
   }
