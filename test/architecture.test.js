@@ -59,7 +59,8 @@ describe("architecture", () => {
 
   it("keeps one exported class per file in services and applications, named after the file", () => {
     for (const { rel, text } of [...under("services"), ...under("applications")]) {
-      const classes = [...code(text).matchAll(/\bclass\s+([A-Za-z_$][\w$]*)/g)].map((m) => m[1]);
+      // Anonymous subclasses built at runtime (`class extends Base`) are part of their file's class.
+      const classes = [...code(text).matchAll(/\bclass\s+(?!extends\b)([A-Za-z_$][\w$]*)/g)].map((m) => m[1]);
       assert.deepEqual(classes, [basename(rel, ".js")], rel);
       assert.match(text, new RegExp(`export default class ${basename(rel, ".js")}\\b`), rel);
     }

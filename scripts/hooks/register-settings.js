@@ -1,15 +1,16 @@
 import { I18N_ROOT, MODULE_ID, SETTINGS } from "../constants/module-constants.js";
 import { SETTINGS_SCHEMA, coerceSetting, schemaEntry } from "../constants/settings-schema.js";
 
-const TYPES = { boolean: Boolean, number: Number, array: Array };
+const TYPES = { boolean: Boolean, number: Number, array: Array, choice: String };
 
 /**
  * Registers every setting of SETTINGS_SCHEMA. None shows in the core menu:
  * they live in the module's own configuration screen, opened by
- * `SettingsMenu`. `onViewChange` re-projects the phase window.
+ * `SettingsMenu`. `onViewChange` re-projects the phase window and
+ * `onThemeChange` re-stamps the theme.
  */
-export function registerSettings({ onViewChange, SettingsMenu }) {
-  const reactions = { view: onViewChange };
+export function registerSettings({ onViewChange, onThemeChange, SettingsMenu }) {
+  const reactions = { view: onViewChange, theme: onThemeChange };
   for (const entry of SETTINGS_SCHEMA) {
     game.settings.register(MODULE_ID, entry.key, {
       name: `${I18N_ROOT}.Settings.${entry.key}.Name`,
@@ -47,5 +48,19 @@ export function projectionSettings() {
   return {
     showDcToPlayers: getSetting(SETTINGS.showDcToPlayers),
     autoAdvance: getSetting(SETTINGS.autoAdvance),
+    dcSource: getSetting(SETTINGS.dcSource),
+  };
+}
+
+/** Whether an enemy's items may suggest its phase when it enters. */
+export function suggestFromSheet() {
+  return getSetting(SETTINGS.suggestFromSheet);
+}
+
+/** The GM's rules for a natural 20 and 1 on the initiative d20. */
+export function naturalRules() {
+  return {
+    natural20: getSetting(SETTINGS.natural20),
+    natural1: getSetting(SETTINGS.natural1),
   };
 }

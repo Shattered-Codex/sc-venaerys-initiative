@@ -68,7 +68,7 @@ describe("CombatPhaseProjector for the GM", () => {
     view.combatants[2].nextPhase = "slow";
     view.combatants[2].pinned = true;
     const model = project(view, true);
-    assert.equal(model.phases.length, 6);
+    assert.equal(model.phases.length, 7);
     assert.deepEqual(rowsOf(model, "fast").map((r) => r.id), ["ana", "bruno"]);
     const dragon = rowsOf(model, "epicBoss")[0];
     assert.equal(dragon.hidden, true);
@@ -120,6 +120,16 @@ describe("CombatPhaseProjector for the GM", () => {
     assert.equal(open[0].expanded, true);
     assert.equal(open[0].children.length, 2);
   });
+
+  it("offers the GM to complete a group of the current phase until every living member is done", () => {
+    const kobolds = (done) => combatView({ round: 2, on: "k2", combatants: [enemy("k1", "enemies", { name: "Kobold", groupKey: "kob", done }), enemy("k2", "enemies", { name: "Kobold", groupKey: "kob", done: 2 })] });
+    const [group] = rowsOf(project(kobolds(null), true), "enemies");
+    assert.match(group.completeButton.label, /Tracker\.CompleteGroupLabel.*Kobold/);
+    assert.equal(rowsOf(project(kobolds(null), false), "enemies")[0].completeButton, null);
+    assert.equal(rowsOf(project(kobolds(2), true), "enemies")[0].completeButton, null);
+    const future = combatView({ round: 2, on: "ana", combatants: [player("ana", "fast"), enemy("k1", "enemies", { groupKey: "kob" }), enemy("k2", "enemies", { groupKey: "kob" })] });
+    assert.equal(rowsOf(project(future, true), "enemies")[0].completeButton, null);
+  });
 });
 
 describe("initiative as the core tracker shows it", () => {
@@ -149,5 +159,48 @@ describe("initiative as the core tracker shows it", () => {
 
   it("shows nothing for a missing initiative", () => {
     assert.equal(CombatPhaseProjector.formatInitiative(null, 2), "");
+  });
+});
+
+describe("CombatPhaseProjector pointer marker", () => {
+  const pointerRows = (model) => model.phases.flatMap((p) => p.rows ?? []).filter((r) => r.pointer);
+
+  it("marks only the member under the pointer, for the GM", () => {
+    const rows = pointerRows(project(encounter(), true));
+    assert.deepEqual(rows.map((r) => r.id), ["bruno"]);
+    assert.match(rows[0].pointer.label, /Tracker\.PointerLabel/);
+  });
+
+  it("never reaches a player", () => {
+    assert.deepEqual(pointerRows(project(encounter(), false)), []);
+  });
+
+  it("marks nobody before the start", () => {
+    const view = encounter();
+    view.started = false;
+    assert.deepEqual(pointerRows(project(view, true)), []);
+  });
+});
+
+describe("CombatPhaseProjector DC from base + CR", () => {
+  const gm = (view, extra = {}) => CombatPhaseProjector.project(view, { isGM: true }, { ...settings, ...extra }, options()).gm;
+  const baseOnly = (model) => model.warnings.find((w) => w.text.includes("Gm.DcBaseOnly"));
+
+  it("offers Recalculate with the base and CR of the combat", () => {
+    const view = combatView({ round: 0, combatants: [], dcRule: { source: "baseCr", base: 10, referenceCr: 3 } });
+    assert.match(gm(view).dcRecalculate.label, /RecalculateLabel.*"base":10.*"cr":3/);
+    assert.equal(baseOnly(gm(view)), undefined);
+  });
+
+  it("offers Recalculate on a typed DC only when the world uses base + CR", () => {
+    const view = combatView({ round: 0, combatants: [], dcRule: { source: "manual", base: null, referenceCr: null } });
+    assert.equal(gm(view).dcRecalculate, null);
+    assert.match(gm(view, { dcSource: "baseCr" }).dcRecalculate.label, /Gm\.Recalculate\)/);
+  });
+
+  it("warns before the start when the DC stayed at the base", () => {
+    const view = combatView({ round: 0, combatants: [], dc: 10, dcRule: { source: "baseCr", base: 10, referenceCr: null } });
+    assert.match(baseOnly(gm(view)).hint, /"base":10/);
+    assert.equal(baseOnly(gm({ ...view, round: 1, started: true })), undefined);
   });
 });

@@ -11,6 +11,8 @@ export const DEFAULT_PHASES = Object.freeze([
   { id: BUILTIN_PHASE_IDS.fast, type: PHASE_TYPES.fast, nameKey: `${I18N_ROOT}.Phase.Fast`, name: null, icon: "fa-solid fa-bolt", color: "#5b86c9" },
   { id: BUILTIN_PHASE_IDS.enemies, type: PHASE_TYPES.enemies, nameKey: `${I18N_ROOT}.Phase.Enemies`, name: null, icon: "fa-solid fa-users", color: "#b56fb0" },
   { id: BUILTIN_PHASE_IDS.slow, type: PHASE_TYPES.slow, nameKey: `${I18N_ROOT}.Phase.Slow`, name: null, icon: "fa-solid fa-hourglass-half", color: "#3fa3a0" },
+  // Only combats where the GM adds an event marker ever stop here; the rest skip it.
+  { id: "lair", type: PHASE_TYPES.event, nameKey: `${I18N_ROOT}.Phase.Lair`, name: null, icon: "fa-solid fa-chess-rook", color: "#9184d9" },
 ].map(Object.freeze));
 
 /** What "Add phase" creates; the id comes from the caller. */
@@ -20,6 +22,15 @@ export const NEW_PHASE = Object.freeze({
   name: null,
   icon: "fa-solid fa-flag",
   color: "#6fa35a",
+});
+
+/** What "Add event phase" creates; the id comes from the caller. */
+export const NEW_EVENT_PHASE = Object.freeze({
+  type: PHASE_TYPES.event,
+  nameKey: `${I18N_ROOT}.Phase.NewEvent`,
+  name: null,
+  icon: "fa-solid fa-wand-sparkles",
+  color: "#9184d9",
 });
 
 /** A fresh, mutable copy of the default template. */

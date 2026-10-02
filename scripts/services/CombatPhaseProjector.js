@@ -1,5 +1,5 @@
-import { BUILTIN_PHASE_IDS, I18N_ROOT, SIDES } from "../constants/module-constants.js";
-import { displayName, phaseById } from "../helpers/phase-plan.js";
+import { BUILTIN_PHASE_IDS, DC_SOURCES, I18N_ROOT, SIDES } from "../constants/module-constants.js";
+import { canEnterPhase, displayName, isEventPhase, phaseById } from "../helpers/phase-plan.js";
 import {
   advanceTarget,
   canToggleDone,
@@ -23,7 +23,7 @@ export default class CombatPhaseProjector {
   /**
    * @param {object} view                         CombatSnapshot.from(combat)
    * @param {{isGM: boolean}} user
-   * @param {{showDcToPlayers: boolean, autoAdvance: boolean}} settings
+   * @param {{showDcToPlayers: boolean, autoAdvance: boolean, dcSource?: string}} settings
    * @param {object} [options]
    * @param {(key: string) => string} options.localize
    * @param {(key: string, data: object) => string} options.format
@@ -39,7 +39,8 @@ export default class CombatPhaseProjector {
     const currentName = current ? phaseName(current) : "";
     const shown = [...visible.phases.flatMap((p) => p.members ?? []), ...visible.pending];
     const places = shown.some((c) => Number.isFinite(c.initiative) && !Number.isInteger(c.initiative)) ? decimals : 0;
-    const ctx = { view, isGM, localize, format, places, phaseName, expanded };
+    const pointerId = isGM && current ? view.combatants[view.turn]?.id ?? null : null;
+    const ctx = { view, isGM, localize, format, places, phaseName, expanded, pointerId };
 
     const phases = visible.phases.map((entry) => {
       if (entry.waitingForGm) return { key: "waiting", waitingForGm: true, label: localize(T("Tracker.WaitingForGm")) };
@@ -95,6 +96,8 @@ export default class CombatPhaseProjector {
       pastLabel: localize(T("Tracker.Past")),
       emptyLabel: localize(T("Tracker.NoCombatants")),
       gmOnlyLabel: localize(T("Tracker.GmOnly")),
+      // An event phase only happens in combats where the GM adds a marker to it.
+      addMarker: isGM && isEventPhase(phase) ? { label: format(T("Tracker.AddMarkerLabel"), { phase: name }) } : null,
     };
   }
 
@@ -123,6 +126,9 @@ export default class CombatPhaseProjector {
         expanded: isOpen,
         toggleLabel: ctx.format(T(isOpen ? "Tracker.Collapse" : "Tracker.Expand"), { name: twins[0].name }),
         count: `${alive.filter((c) => c.done === ctx.view.round).length}/${alive.length}`,
+        completeButton: ctx.isGM && ctx.state === "current" && alive.some((c) => c.done !== ctx.view.round)
+          ? { label: ctx.format(T("Tracker.CompleteGroupLabel"), { name: twins[0].name, phase: ctx.name }) }
+          : null,
         children,
       };
       groups.set(key, group);
@@ -132,23 +138,28 @@ export default class CombatPhaseProjector {
   }
 
   static #row(c, ctx) {
-    const { view, isGM, localize, format, places, phaseName, name: phase, state } = ctx;
+    const { view, isGM, localize, format, places, phaseName, name: phase, state, pointerId } = ctx;
     const done = c.done === view.round;
     const canToggle = canToggleDone(view, c, { isGM });
     const current = state === "current";
-    const enemy = c.side === SIDES.enemies;
+    const marker = c.side === SIDES.event;
+    const rollsNot = c.side === SIDES.enemies || marker;
     const doneLabel = format(T(done ? "Tracker.UnmarkDoneLabel" : "Tracker.MarkDoneLabel"), { name: c.name, phase });
     const row = {
       isGroup: false,
       id: c.id,
       name: c.name,
       img: c.img,
-      initiative: enemy ? "—" : CombatPhaseProjector.formatInitiative(c.initiative, places),
-      initiativeLabel: enemy ? localize(T("Tracker.NoInitiative")) : null,
+      initiative: rollsNot ? "—" : CombatPhaseProjector.formatInitiative(c.initiative, places),
+      initiativeLabel: rollsNot ? localize(T("Tracker.NoInitiative")) : null,
+      marker,
       done,
       defeated: c.isDefeated,
       hidden: isGM && c.hidden,
-      pinned: isGM && c.pinned,
+      // A marker is always pinned to its event phase: nothing to point out.
+      pinned: isGM && c.pinned && !marker,
+      // The core's end of turn reaches this member alone, when the phase ends.
+      pointer: c.id === pointerId ? { label: format(T("Tracker.PointerLabel"), { name: c.name }) } : null,
       deferred: isGM && c.nextPhase ? format(T("Tracker.NextRound"), { phase: phaseName(c.nextPhase) }) : null,
       noRoll: isGM && hasNoRoll(c),
       skipped: state === "future" && done,
@@ -161,13 +172,16 @@ export default class CombatPhaseProjector {
     return row;
   }
 
+  /** The phases a combatant may be moved to; a marker has no "Automatic", it only changes event phase. */
   static #select(c, { view, localize, format, phaseName }) {
+    const marker = c.side === SIDES.event;
     const chosen = c.pinned ? c.nextPhase ?? c.phase : "auto";
+    const phases = view.plan.filter((p) => canEnterPhase(c, p));
     return {
       label: format(T("Tracker.PhaseSelectLabel"), { name: c.name }),
       options: [
-        { value: "auto", label: localize(T("Tracker.Automatic")), selected: chosen === "auto" },
-        ...view.plan.map((p) => ({ value: p.id, label: phaseName(p.id), selected: chosen === p.id })),
+        ...(marker ? [] : [{ value: "auto", label: localize(T("Tracker.Automatic")), selected: chosen === "auto" }]),
+        ...phases.map((p) => ({ value: p.id, label: phaseName(p.id), selected: chosen === p.id })),
       ],
     };
   }
@@ -189,6 +203,11 @@ export default class CombatPhaseProjector {
     if (complete && !settings.autoAdvance && !target?.waitRolls) {
       warnings.push({ icon: "fa-solid fa-flag-checkered", text: localize(T("Gm.PhaseComplete")), hint: localize(T("Gm.PhaseCompleteHint")), action: null });
     }
+    const rule = view.dcRule ?? { source: DC_SOURCES.manual };
+    const baseCr = rule.source === DC_SOURCES.baseCr;
+    if (baseCr && !view.started && !rule.referenceCr) {
+      warnings.push({ icon: "fa-solid fa-calculator", text: localize(T("Gm.DcBaseOnly")), hint: format(T("Gm.DcBaseOnlyHint"), { base: rule.base ?? view.dc }), action: null });
+    }
     if (view.started && !firstBlockingPhase(view, view.round + 1)) {
       warnings.push({ icon: "fa-solid fa-ban", text: localize(T("Gm.NoPhases")), hint: localize(T("Gm.NoPhasesHint")), action: null });
     }
@@ -197,6 +216,9 @@ export default class CombatPhaseProjector {
       phasesOn: view.enabled,
       phasesEditable: !view.started,
       dc: view.dc,
+      dcRecalculate: baseCr || settings.dcSource === DC_SOURCES.baseCr
+        ? { label: baseCr ? format(T("Gm.RecalculateLabel"), { base: rule.base ?? 0, cr: rule.referenceCr ?? 0 }) : localize(T("Gm.Recalculate")) }
+        : null,
       controlsDisabled: controls,
       advanceStrong: waitingForDialog || (complete && !settings.autoAdvance),
       advanceLabel: current ? format(T("Gm.AdvanceLabel"), { phase: currentName }) : localize(T("Gm.Advance")),

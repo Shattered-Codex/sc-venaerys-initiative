@@ -1,21 +1,28 @@
-import { COMBAT_FLAGS, MODULE_ID, OPERATION_KEY, REASONS, SETTINGS } from "../constants/module-constants.js";
+import { COMBAT_FLAGS, DC_SOURCES, MODULE_ID, OPERATION_KEY, REASONS, SETTINGS } from "../constants/module-constants.js";
+import { suggestedDc } from "../helpers/dc-rules.js";
 import { getSetting } from "../hooks/register-settings.js";
 import CombatSnapshot from "./CombatSnapshot.js";
 
 /**
  * The flags a combat starts with, written by the active GM when it is
  * created: phases on or off (world default), a validated copy of the phase
- * template and the default DC. They are written even with phases off, so the
- * GM can still turn them on before the start.
+ * template and the DC (the default one, or the base of a "Base + CR" DC,
+ * which then follows the combatants until the start). They are written even
+ * with phases off, so the GM can still turn them on before the start.
  */
 export default class CombatSetup {
   static initialFlags({ enabled }) {
     return {
       [COMBAT_FLAGS.enabled]: enabled,
       [COMBAT_FLAGS.plan]: getSetting(SETTINGS.phaseTemplate),
-      [COMBAT_FLAGS.dc]: { value: getSetting(SETTINGS.defaultDc), source: "manual" },
+      [COMBAT_FLAGS.dc]: CombatSetup.initialDc(),
       [COMBAT_FLAGS.suspendedAdvance]: null,
     };
+  }
+
+  static initialDc() {
+    if (getSetting(SETTINGS.dcSource) === DC_SOURCES.baseCr) return suggestedDc([], getSetting(SETTINGS.dcBase));
+    return { value: getSetting(SETTINGS.defaultDc), source: DC_SOURCES.manual };
   }
 
   async onCreateCombat(combat) {

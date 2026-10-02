@@ -77,6 +77,60 @@ describe("CombatantClassifier", () => {
     assert.equal(flagsOf(ana).phase, "slow");
   });
 
+  it("reclassifies when the natural of a roll arrives, with the GM's rules", async () => {
+    const ana = fakeCombatant({ id: "ana", initiative: 17, flags: { side: "players", phase: "slow" } });
+    const combat = fakeCombat({ round: 0, turn: null, flags: { dc: { value: 18, source: "manual" } }, combatants: [ana] });
+    installGame({ combats: [combat] });
+    const adapter = new Dnd5eAdapter();
+    const writer = new PhasePlacementWriter({ adapter, advance: async () => {} });
+    const frames = manualFrames();
+    const rules = { natural20: "autoSuccess", natural1: "autoFail" };
+    const classifier = new CombatantClassifier({ adapter, writer, naturals: () => rules, requestFrame: frames.requestFrame });
+    flagsOf(ana).natural = { value: 20, initiative: 17 };
+    const changes = { flags: { [KEY]: { natural: { value: 20, initiative: 17 } } } };
+    classifier.onUpdateCombatant(ana, changes, { [KEY]: { reason: "placement" } });
+    assert.equal(frames.size, 0, "only the natural write itself counts");
+    classifier.onUpdateCombatant(ana, changes, { [KEY]: { reason: "natural" } });
+    await frames.run();
+    assert.equal(flagsOf(ana).phase, "fast");
+  });
+
+  it("sends an entering enemy to the phase its sheet suggests, only with the setting on", async () => {
+    for (const [on, expected] of [[true, "boss"], [false, "enemies"]]) {
+      const boss = fakeCombatant({ id: "b", initScore: 14, actor: { items: [{ name: "Boss" }], system: { attributes: { init: { score: 14 } } } } });
+      const combat = fakeCombat({ round: 0, turn: null, combatants: [boss] });
+      installGame({ combats: [combat] });
+      game.i18n.localize = (key) => key.split(".").pop();
+      const adapter = new Dnd5eAdapter();
+      const writer = new PhasePlacementWriter({ adapter, advance: async () => {} });
+      const frames = manualFrames();
+      const classifier = new CombatantClassifier({ adapter, writer, suggestFromSheet: () => on, requestFrame: frames.requestFrame });
+      classifier.onCreateCombatant(boss);
+      await frames.run();
+      assert.equal(flagsOf(boss).phase, expected, `setting ${on}`);
+      assert.notEqual(flagsOf(boss).pinned, true);
+    }
+  });
+
+  it("goes back to the suggested phase on Automatic", async () => {
+    const boss = fakeCombatant({ id: "b", initiative: 14, flags: { side: "enemies", phase: "miniBoss", pinned: true }, actor: { items: [{ name: "Boss" }], system: { attributes: { init: { score: 14 } } } } });
+    const combat = fakeCombat({ round: 0, turn: null, combatants: [boss] });
+    installGame({ combats: [combat] });
+    game.i18n.localize = (key) => key.split(".").pop();
+    const adapter = new Dnd5eAdapter();
+    const writer = new PhasePlacementWriter({ adapter, advance: async () => {} });
+    const classifier = new CombatantClassifier({ adapter, writer, suggestFromSheet: () => true });
+    await classifier.assign(combat, { combatantId: "b", phaseId: null });
+    assert.deepEqual([flagsOf(boss).phase, flagsOf(boss).pinned], ["boss", false]);
+  });
+
+  it("keeps a typed DC inside the DC range", async () => {
+    const combat = fakeCombat({ round: 0, turn: null, combatants: [] });
+    const { classifier } = setup(combat);
+    await classifier.setDc(combat, { value: 99 });
+    assert.deepEqual(combat.flags[KEY].dc, { value: 40, source: "manual" });
+  });
+
   it("reclassifies rolled, unpinned players on a new DC", async () => {
     const ana = fakeCombatant({ id: "ana", initiative: 16, flags: { side: "players", phase: "fast" } });
     const pinned = fakeCombatant({ id: "pin", initiative: 16, flags: { side: "players", phase: "fast", pinned: true } });
@@ -116,7 +170,7 @@ describe("CombatSetup", () => {
     const [write] = combat.writes("update");
     assert.equal(write.options[KEY].reason, "setup");
     assert.equal(combat.flags[KEY].enabled, false);
-    assert.equal(combat.flags[KEY].plan.length, 6);
+    assert.equal(combat.flags[KEY].plan.length, 7);
     assert.deepEqual(combat.flags[KEY].dc, { value: 12, source: "manual" });
     await setupService.onCreateCombat(combat);
     assert.equal(combat.writes("update").length, 1);

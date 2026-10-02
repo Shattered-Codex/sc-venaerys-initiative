@@ -1,11 +1,19 @@
-import { BUILTIN_PHASE_IDS, DISPOSITION, SIDES } from "../constants/module-constants.js";
+import { BUILTIN_PHASE_IDS, DISPOSITION, NATURAL_RULES, SIDES } from "../constants/module-constants.js";
 
 /**
  * Pure classification: which side a combatant is on, and which phase the
  * automatic rules put it in. Results are "changes" for the placement rules:
  * `{id, target?, side?, initiative?}`, where `target` is the automatic phase
  * (`null` = pending) and an absent `target` leaves the phase alone.
+ * `naturals` holds the GM's rules for a natural 20 and 1
+ * (`{natural20, natural1}`); a combatant's `natural` is the d20 of the roll
+ * that gave its current initiative, or null. An enemy's `suggestedPhase`,
+ * when the caller filled it from the sheet, replaces Enemies as its automatic
+ * phase. Event markers keep the phase the GM gave them and never roll.
  */
+
+/** No natural rules: only the total counts. */
+export const NO_NATURALS = Object.freeze({ natural20: NATURAL_RULES.none, natural1: NATURAL_RULES.none });
 
 /** Player-owned or Friendly tokens roll against the DC; everyone else is an enemy. */
 export function sideFor({ hasPlayerOwner, disposition, hasToken }) {
@@ -14,12 +22,23 @@ export function sideFor({ hasPlayerOwner, disposition, hasToken }) {
   return SIDES.enemies;
 }
 
-/** Meeting the DC is a pass; the total is compared as it is, tie-break decimals included. */
-export function phaseForRoll(total, dc) {
+/**
+ * Meeting the DC is a pass; the total is compared as it is, tie-break
+ * decimals included. A natural 20 or 1 overrides the total when the GM's
+ * rules say so.
+ */
+export function phaseForRoll(total, dc, natural = null, naturals = NO_NATURALS) {
+  if (natural === 20 && naturals.natural20 === NATURAL_RULES.autoSuccess) return BUILTIN_PHASE_IDS.fast;
+  if (natural === 1 && naturals.natural1 === NATURAL_RULES.autoFail) return BUILTIN_PHASE_IDS.slow;
   return total >= dc ? BUILTIN_PHASE_IDS.fast : BUILTIN_PHASE_IDS.slow;
 }
 
+const rollPhase = (combatant, dc, naturals) => phaseForRoll(combatant.initiative, dc, combatant.natural ?? null, naturals);
+
 const hasRolled = (combatant) => Number.isFinite(combatant.initiative);
+
+/** Enemies and event markers keep a display initiative instead of a roll. */
+const doesNotRoll = (side) => side === SIDES.enemies || side === SIDES.event;
 
 /** The phase a combatant is heading to this round or the next. */
 export function intendedPhase(combatant) {
@@ -31,33 +50,35 @@ export function intendedPhase(combatant) {
  * rules have no say: the GM pinned it, or a player has no roll (pending
  * players stay pending; players placed in Slow without a roll stay there).
  */
-function automaticTarget(combatant, side, dc) {
-  if (combatant.pinned) return undefined;
-  if (side === SIDES.enemies) return BUILTIN_PHASE_IDS.enemies;
-  if (hasRolled(combatant)) return phaseForRoll(combatant.initiative, dc);
+const enemyPhase = (combatant) => combatant.suggestedPhase ?? BUILTIN_PHASE_IDS.enemies;
+
+function automaticTarget(combatant, side, dc, naturals) {
+  if (combatant.pinned || side === SIDES.event) return undefined;
+  if (side === SIDES.enemies) return enemyPhase(combatant);
+  if (hasRolled(combatant)) return rollPhase(combatant, dc, naturals);
   return combatant.side ? undefined : null;
 }
 
 /** What a combatant needs when it enters a phased combat, or null when nothing differs. */
-export function classifyCombatant(combatant, dc) {
+export function classifyCombatant(combatant, dc, naturals = NO_NATURALS) {
   const side = combatant.side ?? sideFor(combatant);
   const change = { id: combatant.id };
   if (side !== combatant.side) change.side = side;
-  if (side === SIDES.enemies && !hasRolled(combatant)) change.initiative = combatant.displayInitiative;
-  const target = automaticTarget(combatant, side, dc);
+  if (doesNotRoll(side) && !hasRolled(combatant)) change.initiative = combatant.displayInitiative;
+  const target = automaticTarget(combatant, side, dc, naturals);
   if (target !== undefined && target !== intendedPhase(combatant)) change.target = target;
   return Object.keys(change).length > 1 ? change : null;
 }
 
 /** Classifies every combatant; only the ones that change come back, so a second pass is empty. */
-export function classifyAll(view) {
-  return view.combatants.map((combatant) => classifyCombatant(combatant, view.dc)).filter(Boolean);
+export function classifyAll(view, naturals = NO_NATURALS) {
+  return view.combatants.map((combatant) => classifyCombatant(combatant, view.dc, naturals)).filter(Boolean);
 }
 
-/** A combatant's initiative was set or rolled again. */
-export function classifyRoll(combatant, dc) {
+/** A combatant's initiative was set or rolled again, or its natural d20 arrived. */
+export function classifyRoll(combatant, dc, naturals = NO_NATURALS) {
   if (combatant.side !== SIDES.players || combatant.pinned || !hasRolled(combatant)) return null;
-  const target = phaseForRoll(combatant.initiative, dc);
+  const target = rollPhase(combatant, dc, naturals);
   return target === intendedPhase(combatant) ? null : { id: combatant.id, target };
 }
 
@@ -67,15 +88,15 @@ export function classifyRoll(combatant, dc) {
  */
 export function classifyCleared(combatant) {
   if (hasRolled(combatant)) return null;
-  if (combatant.side === SIDES.enemies) return { id: combatant.id, initiative: combatant.displayInitiative };
+  if (doesNotRoll(combatant.side)) return { id: combatant.id, initiative: combatant.displayInitiative };
   if (combatant.side !== SIDES.players || combatant.pinned) return null;
   if (combatant.phase === null && combatant.nextPhase === null) return null;
   return { id: combatant.id, target: null };
 }
 
 /** A new DC: rolled, unpinned players whose result changes. */
-export function classifyForDc(view, dc) {
-  return view.combatants.map((combatant) => classifyRoll(combatant, dc)).filter(Boolean);
+export function classifyForDc(view, dc, naturals = NO_NATURALS) {
+  return view.combatants.map((combatant) => classifyRoll(combatant, dc, naturals)).filter(Boolean);
 }
 
 /**
@@ -83,9 +104,10 @@ export function classifyForDc(view, dc) {
  * gone. A player without a roll is pending before the start and acts in Slow
  * after it, like anyone placed there by "Advance anyway".
  */
-export function automaticPhaseOf(combatant, dc, started) {
+export function automaticPhaseOf(combatant, dc, started, naturals = NO_NATURALS) {
   const side = combatant.side ?? sideFor(combatant);
-  if (side === SIDES.enemies) return BUILTIN_PHASE_IDS.enemies;
-  if (hasRolled(combatant)) return phaseForRoll(combatant.initiative, dc);
+  if (side === SIDES.event) return combatant.phase;
+  if (side === SIDES.enemies) return enemyPhase(combatant);
+  if (hasRolled(combatant)) return rollPhase(combatant, dc, naturals);
   return started ? BUILTIN_PHASE_IDS.slow : null;
 }

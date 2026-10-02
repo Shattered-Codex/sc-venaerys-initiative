@@ -1,36 +1,47 @@
 /*
- * Ember theme over the Nocturne palette of the SC design system.
- * Scoped to the module's own windows: nothing here reaches Foundry's UI.
- * Every visual value the module uses comes from these --svi-* variables.
+ * Design tokens of the module, scoped to its own roots: nothing here reaches
+ * Foundry's UI. The base block is the "ember" theme over the Nocturne
+ * palette; every other theme (styles/themes.css) redefines only the palette
+ * variables of the first group, and everything else is derived from them, so
+ * light and dark themes both read correctly.
  */
 .sc-venaerys-initiative {
-  /* Nocturne roles */
-  --svi-bg: #161826;
-  --svi-surface: #232532;
-  --svi-text: #e9e9ed;
-  --svi-divider: color-mix(in srgb, #e9e9ed 16%, transparent);
-  --svi-neutral-200: #e4e7f5;
-  --svi-neutral-300: #cfd3e5;
-  --svi-neutral-400: #b2b6ca;
-  --svi-neutral-600: #75798c;
-  --svi-neutral-700: #595d6c;
-  --svi-neutral-800: #3f424d;
-  --svi-neutral-900: #292b31;
-
-  /* Ember accent ramp */
+  /* Palette: what a theme sets */
   --svi-accent: #d68a3a;
-  --svi-accent-100: oklch(0.970 0.018 62);
-  --svi-accent-200: oklch(0.925 0.045 62);
-  --svi-accent-300: oklch(0.865 0.080 62);
-  --svi-accent-700: oklch(0.480 0.098 62);
-  --svi-accent-800: oklch(0.370 0.070 62);
-  --svi-accent-900: oklch(0.270 0.040 62);
+  --svi-bg: #161826;
+  --svi-bg-1: #1d1f2c;
+  --svi-bg-2: #232532;
+  --svi-bg-3: #3f424d;
+  --svi-bg-hover: #2f3241;
+  --svi-border: color-mix(in srgb, #e9e9ed 16%, transparent);
+  --svi-border-strong: #595d6c;
+  --svi-text: #e9e9ed;
+  --svi-text-dim: #b2b6ca;
+  --svi-text-mute: #9397ab;
+
+  /* Accent ramp, derived (mixing toward the text gets stronger, toward the background softer) */
+  --svi-accent-100: color-mix(in oklch, var(--svi-accent) 25%, var(--svi-text));
+  --svi-accent-200: color-mix(in oklch, var(--svi-accent) 55%, var(--svi-text));
+  --svi-accent-300: color-mix(in oklch, var(--svi-accent) 75%, var(--svi-text));
+  --svi-accent-700: color-mix(in oklch, var(--svi-accent) 60%, var(--svi-bg));
+  --svi-accent-800: color-mix(in oklch, var(--svi-accent) 30%, var(--svi-bg));
+  --svi-accent-900: color-mix(in oklch, var(--svi-accent) 15%, var(--svi-bg));
+
+  /* Names the stylesheets use */
+  --svi-surface: var(--svi-bg-2);
+  --svi-divider: var(--svi-border);
+  --svi-neutral-200: var(--svi-text);
+  --svi-neutral-300: var(--svi-text-dim);
+  --svi-neutral-400: var(--svi-text-mute);
+  --svi-neutral-600: var(--svi-border-strong);
+  --svi-neutral-700: var(--svi-border-strong);
+  --svi-neutral-800: var(--svi-bg-3);
 
   /* Shape and type */
   --svi-radius-sm: 4px;
   --svi-radius-md: 8px;
-  --svi-shadow-md: 0 0 0 1px #595d6c, 0 6px 18px rgba(0, 0, 0, 0.55);
-  --svi-shadow-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65);
+  --svi-shadow-md: 0 0 0 1px var(--svi-border-strong), 0 6px 18px rgba(0, 0, 0, 0.55);
+  --svi-shadow-lg: 0 0 0 1px var(--svi-text-mute), 0 16px 40px rgba(0, 0, 0, 0.65);
   --svi-font-body: var(--font-primary, "Signika"), system-ui, sans-serif;
   --svi-font-mono: var(--font-mono, ui-monospace), ui-monospace, monospace;
   --svi-row-h: 36px;
@@ -41,14 +52,14 @@
   --svi-window-header: var(--svi-bg);
   --svi-card: var(--svi-surface);
   --svi-line: var(--svi-divider);
-  --svi-muted: color-mix(in srgb, var(--svi-text) 62%, transparent);
+  --svi-muted: var(--svi-text-dim);
   --svi-hover: color-mix(in srgb, var(--svi-text) 8%, transparent);
   --svi-phase-current: var(--svi-accent);
   --svi-phase-current-bg: color-mix(in oklch, var(--svi-accent-900) 55%, var(--svi-surface));
   --svi-done: var(--svi-accent-200);
   --svi-done-bg: var(--svi-accent-800);
-  --svi-pending: var(--svi-neutral-400);
-  --svi-danger: oklch(0.700 0.150 25);
+  --svi-pending: var(--svi-text-mute);
+  --svi-danger: oklch(0.650 0.160 25);
   --svi-danger-bg: oklch(0.300 0.070 25);
   --svi-warn-bg: color-mix(in oklch, var(--svi-accent-900) 80%, var(--svi-surface));
 

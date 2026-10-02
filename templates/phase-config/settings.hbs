@@ -1,0 +1,34 @@
+<section class="svi-config-panel" data-tab-panel="{{ tab.id }}" role="tabpanel" {{#unless tab.active}}hidden{{/unless}}>
+  <header class="svi-panel-head">
+    <h2 class="svi-panel-title">{{ localize tab.title }}</h2>
+    <p class="svi-panel-hint">{{ localize tab.hint }}</p>
+  </header>
+  {{#each sections}}
+  <section class="svi-section{{#if callout}} svi-callout{{/if}}">
+    <h3 class="svi-section-title">{{ localize title }}</h3>
+    {{#each rows}}
+    <div class="svi-setting">
+      <label class="svi-setting-text" for="svi-setting-{{ key }}">
+        <span class="svi-setting-name">{{ name }}</span>
+        <span class="svi-setting-hint">{{ hint }}{{#if range}} · {{ range }}{{/if}}</span>
+      </label>
+      {{#if isToggle}}
+      <input type="checkbox" role="switch" class="svi-toggle" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}"{{#if value}} checked{{/if}}>
+      {{/if}}
+      {{#if isSelect}}
+      <select class="svi-select" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}">
+        {{#each choices}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
+      </select>
+      {{/if}}
+      {{#if isNumber}}
+      <div class="svi-stepper" role="group" aria-label="{{ name }}">
+        <button type="button" data-action="sviStep" data-step="-{{ step }}" aria-label="{{ decreaseLabel }}"><i class="fa-solid fa-minus" inert></i></button>
+        <input type="number" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}" value="{{ value }}" min="{{ min }}" max="{{ max }}" step="{{ step }}">
+        <button type="button" data-action="sviStep" data-step="{{ step }}" aria-label="{{ increaseLabel }}"><i class="fa-solid fa-plus" inert></i></button>
+      </div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{/each}}
+</section>

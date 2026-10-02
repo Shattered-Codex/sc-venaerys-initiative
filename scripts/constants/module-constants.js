@@ -6,6 +6,20 @@ export const TEMPLATE_ROOT = `modules/${MODULE_ID}/templates`;
 export const OPERATION_KEY = MODULE_ID;
 export const SOCKET_NAME = `module.${MODULE_ID}`;
 
+/** The module's own hooks, called on every client after the combat update. */
+export const HOOKS = Object.freeze({
+  phaseChange: `${MODULE_ID}.phaseChange`,
+  combatantDone: `${MODULE_ID}.combatantDone`,
+});
+
+/** Keybinding actions; none has a default key. `gm` ones are restricted to GMs. */
+export const KEYBINDINGS = Object.freeze([
+  { id: "markOwnDone", gm: false },
+  { id: "advancePhase", gm: true },
+  { id: "previousPhase", gm: true },
+  { id: "showTracker", gm: false },
+].map(Object.freeze));
+
 /** Why the module wrote something; the closed list other code reads from the operation option. */
 export const REASONS = Object.freeze({
   setup: "setup",
@@ -18,6 +32,8 @@ export const REASONS = Object.freeze({
   round: "round",
   back: "back",
   anchor: "anchor",
+  natural: "natural",
+  marker: "marker",
 });
 
 export const SETTINGS = Object.freeze({
@@ -27,6 +43,12 @@ export const SETTINGS = Object.freeze({
   showDcToPlayers: "showDcToPlayers",
   autoAdvance: "autoAdvance",
   openOnStart: "openOnStart",
+  theme: "theme",
+  dcSource: "dcSource",
+  dcBase: "dcBase",
+  natural20: "natural20",
+  natural1: "natural1",
+  suggestFromSheet: "suggestFromSheet",
 });
 
 /** Combat flags. */
@@ -45,15 +67,18 @@ export const COMBATANT_FLAGS = Object.freeze({
   pinned: "pinned",
   done: "done",
   moved: "moved",
+  natural: "natural",
 });
 
-export const SIDES = Object.freeze({ players: "players", enemies: "enemies" });
+/** `event` is an event marker: a combatant with no actor that the GM adds to an event phase. */
+export const SIDES = Object.freeze({ players: "players", enemies: "enemies", event: "event" });
 
 export const PHASE_TYPES = Object.freeze({
   fast: "fast",
   enemies: "enemies",
   slow: "slow",
   creatures: "creatures",
+  event: "event",
 });
 
 /** The built-in phases keep these ids; their relative order is fixed. */
@@ -63,10 +88,19 @@ export const BUILTIN_ORDER = Object.freeze([BUILTIN_PHASE_IDS.fast, BUILTIN_PHAS
 /** Phase types of the players' side, the ones that roll against the DC. */
 export const PLAYER_PHASE_TYPES = Object.freeze([PHASE_TYPES.fast, PHASE_TYPES.slow]);
 
+/** The picture of a new event marker, a core icon. */
+export const MARKER_IMG = "icons/svg/castle.svg";
+
 /** Mirrors CONST.TOKEN_DISPOSITIONS so pure code does not need Foundry loaded. */
 export const DISPOSITION = Object.freeze({ SECRET: -2, HOSTILE: -1, NEUTRAL: 0, FRIENDLY: 1 });
 
 export const DC_RANGE = Object.freeze({ min: 1, max: 40 });
+
+/** Where a combat's DC comes from: typed by the GM, or a base plus the reference CR. */
+export const DC_SOURCES = Object.freeze({ manual: "manual", baseCr: "baseCr" });
+
+/** What a natural 20 or 1 on the initiative d20 does. */
+export const NATURAL_RULES = Object.freeze({ none: "none", autoSuccess: "autoSuccess", autoFail: "autoFail" });
 
 /** How long a phase advance may wait for its own write before the lock gives up. */
 export const ADVANCE_LOCK_MS = 5000;

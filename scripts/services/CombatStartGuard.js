@@ -3,6 +3,7 @@ import { displayName, phaseById } from "../helpers/phase-plan.js";
 import { startConfirmation, startNeedsConfirmation } from "../helpers/phase-progression.js";
 import CombatSnapshot from "./CombatSnapshot.js";
 import ErrorGuard from "./ErrorGuard.js";
+import ThemeApplier from "./ThemeApplier.js";
 
 /**
  * Asks the GM before a phased combat starts with players who have not rolled,
@@ -78,6 +79,7 @@ export default class CombatStartGuard {
         { action: "wait", label: `${I18N_ROOT}.Start.Wait`, icon: "fa-solid fa-hourglass-half", default: info.defaultAction === "wait" },
       ],
       rejectClose: false,
+      render: (event, dialog) => ThemeApplier.apply(dialog.element),
     });
     return choice === "start" ? "start" : "wait";
   }

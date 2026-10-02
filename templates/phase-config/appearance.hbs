@@ -1,0 +1,25 @@
+<section class="svi-config-panel" data-tab-panel="{{ tab.id }}" role="tabpanel" {{#unless tab.active}}hidden{{/unless}}>
+  <header class="svi-panel-head">
+    <h2 class="svi-panel-title">{{ localize tab.title }}</h2>
+    <p class="svi-panel-hint">{{ localize tab.hint }}</p>
+  </header>
+  <p class="svi-preview-note" role="status" hidden></p>
+  {{#each families}}
+  <fieldset class="svi-theme-family">
+    <legend class="svi-section-title">{{ localize label }}</legend>
+    <div class="svi-theme-grid">
+      {{#each themes}}
+      <label class="sc-venaerys-initiative svi-theme-card" data-theme="{{ id }}" data-theme-fixed>
+        <input type="radio" name="svi-theme" value="{{ id }}" data-setting="theme" data-default="ember"{{#if checked}} checked{{/if}}>
+        <span class="svi-theme-sample" aria-hidden="true">
+          <span class="svi-theme-sample-head"><i class="fa-solid fa-bolt" inert></i><span class="svi-theme-swatch"></span></span>
+          <span class="svi-theme-sample-done"><i class="fa-solid fa-circle-check" inert></i></span>
+        </span>
+        <span class="svi-theme-name">{{ localize label }}</span>
+        {{#if current}}<span class="svi-theme-current"><i class="fa-solid fa-check" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Config.Appearance.Current" }}</span>{{/if}}
+      </label>
+      {{/each}}
+    </div>
+  </fieldset>
+  {{/each}}
+</section>

@@ -27,6 +27,9 @@ import { firstPlayerPhaseRank, phaseRank } from "./phase-plan.js";
  * @property {number|null} moved                  round in which it marked "moved"
  * @property {number|null} initiative
  * @property {number} displayInitiative           what an enemy shows instead of a roll
+ * @property {20|1|null} natural                  natural d20 of the roll that gave this initiative
+ * @property {number|null} cr                     challenge rating, when the system has one
+ * @property {string|null} [suggestedPhase]       phase the sheet suggests; filled only by the classifier service
  * @property {boolean} isDefeated
  * @property {boolean} hidden
  * @property {boolean} visible                    for the user the snapshot was taken for
@@ -44,6 +47,7 @@ import { firstPlayerPhaseRank, phaseRank } from "./phase-plan.js";
  * @property {number|null} turn
  * @property {PhaseData[]} plan
  * @property {number} dc
+ * @property {{source: "manual"|"baseCr", base: number|null, referenceCr: number|null}} dcRule
  * @property {string|null} suspendedAdvance
  * @property {CombatantView[]} combatants        in the order of combat.turns
  */

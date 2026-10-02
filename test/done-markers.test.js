@@ -60,4 +60,29 @@ describe("DoneMarkers", () => {
     const [write] = combat.writes("embedded");
     assert.deepEqual(write.updates.map((u) => u._id), ["ana"]);
   });
+
+  it("marks, for a GM, the combatants of the current phase no player owns", async () => {
+    const combat = combatWith();
+    for (const c of combat.turns) c.isOwner = true;
+    combat.combatants.get("ana").hasPlayerOwner = true;
+    installGame({ isGM: true });
+    assert.equal(await new DoneMarkers({ adapter: null }).markOwn(combat), true);
+    assert.deepEqual(combat.writes("embedded")[0].updates.map((u) => u._id), ["bruno"]);
+  });
+
+  it("completes a group in one write: only the current phase's living members not yet done, and only for a GM", async () => {
+    const kobold = (id, extra = {}) => fakeCombatant({ id, initiative: 0, flags: { side: "enemies", phase: "enemies" }, ...extra });
+    const combat = fakeCombat({ round: 2, combatants: [kobold("k1"), kobold("k2", { flags: { side: "enemies", phase: "enemies", done: 2 } }), kobold("k3", { isDefeated: true }), kobold("k4")] });
+    combat.turn = combat.turns.indexOf(combat.combatants.get("k4"));
+    installGame({ isGM: false });
+    const markers = new DoneMarkers({ adapter: null });
+    assert.equal(await markers.markGroup(combat, ["k1", "k2", "k3", "k4"]), false);
+    installGame({ isGM: true, isActiveGM: false });
+    assert.equal(await markers.markGroup(combat, ["k1", "k2", "k3", "k4"]), true);
+    const writes = combat.writes("embedded");
+    assert.equal(writes.length, 1);
+    assert.deepEqual(writes[0].updates, [{ _id: "k1", [`flags.${KEY}.done`]: 2 }, { _id: "k4", [`flags.${KEY}.done`]: 2 }]);
+    assert.equal(writes[0].options.render, false);
+    assert.equal(await markers.markGroup(combat, ["k1", "k4"]), false);
+  });
 });

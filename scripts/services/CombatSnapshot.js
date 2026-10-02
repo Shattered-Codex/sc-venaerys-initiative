@@ -1,4 +1,4 @@
-import { COMBATANT_FLAGS, COMBAT_FLAGS, MODULE_ID, SIDES } from "../constants/module-constants.js";
+import { COMBATANT_FLAGS, COMBAT_FLAGS, DC_SOURCES, MODULE_ID, SIDES } from "../constants/module-constants.js";
 import { schemaEntry } from "../constants/settings-schema.js";
 import { validatePlan } from "../helpers/phase-plan.js";
 
@@ -42,6 +42,33 @@ export default class CombatSnapshot {
     return Number.isFinite(value) ? value : DEFAULT_DC;
   }
 
+  /** How the DC was set: by hand, or base plus reference CR (frozen at the start). */
+  static dcRuleOf(combat) {
+    const dc = CombatSnapshot.flagsOf(combat)[COMBAT_FLAGS.dc] ?? {};
+    const number = (value) => (Number.isFinite(value) ? value : null);
+    if (dc.source !== DC_SOURCES.baseCr) return { source: DC_SOURCES.manual, base: null, referenceCr: null };
+    return { source: DC_SOURCES.baseCr, base: number(dc.base), referenceCr: number(dc.referenceCr) };
+  }
+
+  /** The natural d20 recorded for the combatant's current initiative; a later initiative makes it stale. */
+  static naturalOf(combatant) {
+    const natural = CombatSnapshot.flagsOf(combatant)[COMBATANT_FLAGS.natural];
+    if (!natural || natural.initiative !== combatant.initiative) return null;
+    return natural.value === 20 || natural.value === 1 ? natural.value : null;
+  }
+
+  /** An event marker: a combatant with no actor that the GM added to an event phase. */
+  static isEventMarker(combatant) {
+    return CombatSnapshot.flagsOf(combatant)[COMBATANT_FLAGS.side] === SIDES.event;
+  }
+
+  /** The phase of the combatant the combat pointed at before its last update. */
+  static previousPhaseOf(combat) {
+    const previousId = combat.previous?.combatantId;
+    const previous = previousId ? combat.combatants.get(previousId) : null;
+    return CombatSnapshot.flagsOf(previous)[COMBATANT_FLAGS.phase] ?? null;
+  }
+
   /** @returns {import("../helpers/phase-progression.js").CombatView} */
   static from(combat, adapter) {
     const plan = CombatSnapshot.planOf(combat);
@@ -56,6 +83,7 @@ export default class CombatSnapshot {
       turn: Number.isInteger(combat.turn) ? combat.turn : null,
       plan: plan ?? [],
       dc: CombatSnapshot.dcOf(combat),
+      dcRule: CombatSnapshot.dcRuleOf(combat),
       suspendedAdvance: typeof suspended === "string" ? suspended : null,
       combatants: (combat.turns ?? []).map((combatant) => CombatSnapshot.combatant(combatant, phaseIds, adapter)),
     };
@@ -80,6 +108,8 @@ export default class CombatSnapshot {
       moved: round(flags[COMBATANT_FLAGS.moved]),
       initiative: Number.isFinite(combatant.initiative) ? combatant.initiative : null,
       displayInitiative: adapter?.displayInitiative(combatant) ?? 0,
+      natural: CombatSnapshot.naturalOf(combatant),
+      cr: adapter?.challengeRating?.(combatant.actor) ?? null,
       isDefeated: !!combatant.isDefeated,
       hidden: !!combatant.hidden,
       visible: !!combatant.visible,

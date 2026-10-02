@@ -1,5 +1,5 @@
-import { BUILTIN_ORDER, PHASE_TYPES, PLAYER_PHASE_TYPES } from "../constants/module-constants.js";
-import { NEW_PHASE, defaultPlan } from "../constants/default-phases.js";
+import { BUILTIN_ORDER, PHASE_TYPES, PLAYER_PHASE_TYPES, SIDES } from "../constants/module-constants.js";
+import { NEW_EVENT_PHASE, NEW_PHASE, defaultPlan } from "../constants/default-phases.js";
 
 /**
  * Pure rules of a phase plan: the ordered list of phases a combat runs
@@ -13,6 +13,16 @@ const COLOR = /^#[0-9a-f]{6}$/i;
 
 export function isBuiltin(phase) {
   return BUILTIN_ORDER.includes(phase?.type);
+}
+
+/** An event phase: only event markers act in it. */
+export function isEventPhase(phase) {
+  return phase?.type === PHASE_TYPES.event;
+}
+
+/** Event markers go to event phases only, and everyone else to any other phase. */
+export function canEnterPhase(combatant, phase) {
+  return !!phase && (combatant?.side === SIDES.event) === isEventPhase(phase);
 }
 
 /** The name a client shows: the GM's own text, else the translated default. */
@@ -101,9 +111,9 @@ export function movePhase(plan, id, offset) {
   return isValidPlanOrder(next) ? next : null;
 }
 
-/** Appends a new creatures phase. `makeId` must return an id not used in the plan. */
-export function addPhase(plan, makeId) {
-  return [...plan, { id: makeId(), ...NEW_PHASE }];
+/** Appends a new creatures phase, or an event phase. `makeId` must return an id not used in the plan. */
+export function addPhase(plan, makeId, { event = false } = {}) {
+  return [...plan, { id: makeId(), ...(event ? NEW_EVENT_PHASE : NEW_PHASE) }];
 }
 
 /** Renames an extra phase; null for built-ins and empty names. */

@@ -1,23 +1,10 @@
-/* Phase window, start dialog and the shared controls of the module's screens. */
+/* Phases inside the combat tracker, the start dialog and the shared controls of the module's screens. */
 
-/* ---------- Window frame ---------- */
-.sc-venaerys-initiative.svi-phase-window,
+/* ---------- Roots ---------- */
 .sc-venaerys-initiative.svi-config,
 .sc-venaerys-initiative.svi-start-dialog {
   --svi-phase-color: var(--svi-accent);
   font-family: var(--svi-font-body);
-}
-
-.sc-venaerys-initiative.svi-phase-window .window-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 0;
-  overflow: hidden;
-  background: var(--svi-window-bg);
-  color: var(--svi-text);
-  font-size: 13px;
-  line-height: 1.35;
 }
 
 /* ---------- Shared bits ---------- */
@@ -28,8 +15,7 @@
 .sc-venaerys-initiative .svi-switch,
 .sc-venaerys-initiative .svi-done-btn,
 .sc-venaerys-initiative .svi-skip-btn,
-.sc-venaerys-initiative .svi-chevron,
-.sc-venaerys-initiative .svi-tracker-button {
+.sc-venaerys-initiative .svi-chevron {
   outline: none;
   box-shadow: none;
 }
@@ -171,20 +157,13 @@
 }
 .sc-venaerys-initiative .svi-stepper-value { display: inline-flex; align-items: center; gap: 2px; padding-left: 4px; font-size: 11px; }
 
-/* ---------- Header and GM panel ---------- */
-.sc-venaerys-initiative .svi-header { flex: none; display: flex; flex-direction: column; }
-.sc-venaerys-initiative .svi-round-row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 8px; }
-.sc-venaerys-initiative .svi-round { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
-.sc-venaerys-initiative .svi-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: var(--svi-neutral-800);
-  color: var(--svi-neutral-200);
-  font-size: 12px;
-}
+/* ---------- Panel above the list ---------- */
+/* The panel root has no box of its own: with nothing to show it takes no space. */
+.sc-venaerys-initiative.svi-tracker-panel { color: var(--svi-text); font-size: 13px; line-height: 1.35; }
+.sc-venaerys-initiative .svi-gm-panel,
+.sc-venaerys-initiative .svi-player-panel { margin: 6px 6px 0; border-radius: var(--svi-radius-md); background: var(--svi-window-bg); }
+.sc-venaerys-initiative .svi-player-panel { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+.sc-venaerys-initiative .svi-player-panel .svi-dc-badge { align-self: flex-start; }
 .sc-venaerys-initiative .svi-dc-badge {
   padding: 2px 8px;
   border: 1px solid var(--svi-line);
@@ -192,7 +171,7 @@
   font-family: var(--svi-font-mono);
   font-size: 12px;
 }
-.sc-venaerys-initiative .svi-gm-panel { display: flex; flex-direction: column; gap: 8px; padding: 0 10px 10px; }
+.sc-venaerys-initiative .svi-gm-panel { display: flex; flex-direction: column; gap: 8px; padding: 8px; }
 .sc-venaerys-initiative .svi-gm-line { display: flex; align-items: center; gap: 8px; min-height: 36px; }
 .sc-venaerys-initiative .svi-switch-wrap { display: flex; flex-direction: column; gap: 1px; }
 .sc-venaerys-initiative .svi-switch-wrap .svi-hint { padding-left: 38px; }
@@ -211,19 +190,10 @@
 .sc-venaerys-initiative .svi-warning-hint { margin: 0; font-size: 12px; color: var(--svi-muted); }
 
 /* ---------- Phases ---------- */
-.sc-venaerys-initiative .svi-phases {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0 8px 8px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--svi-neutral-700) transparent;
-}
-.sc-venaerys-initiative .svi-empty { margin: 8px 4px; color: var(--svi-muted); }
-.sc-venaerys-initiative .svi-waiting {
+.sc-venaerys-initiative.svi-waiting,
+.sc-venaerys-initiative.svi-phase,
+.sc-venaerys-initiative.svi-pending { margin: 4px 6px; color: var(--svi-text); font-size: 13px; line-height: 1.35; }
+.sc-venaerys-initiative.svi-waiting {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -235,19 +205,25 @@
   color: var(--svi-accent-200);
   font-weight: 500;
 }
-.sc-venaerys-initiative .svi-phase {
+.sc-venaerys-initiative.svi-phase {
   flex: none;
   border: 1px solid var(--svi-line);
   border-radius: var(--svi-radius-md);
   background: var(--svi-card);
 }
-.sc-venaerys-initiative .svi-phase.svi-state-current {
+.sc-venaerys-initiative.svi-phase.svi-state-current {
   border-color: var(--svi-phase-current);
   background: var(--svi-phase-current-bg);
   animation: svi-phase-in 240ms var(--svi-ease);
 }
-.sc-venaerys-initiative .svi-phase.svi-state-past { opacity: 0.8; }
-.sc-venaerys-initiative .svi-phase.svi-phase-empty { opacity: 0.6; background: transparent; }
+.sc-venaerys-initiative.svi-phase.svi-drop-target {
+  border-color: var(--svi-accent-300);
+  border-style: dashed;
+  opacity: 1;
+}
+.sc-venaerys-initiative.svi-phase li[draggable="true"] { cursor: grab; }
+.sc-venaerys-initiative.svi-phase.svi-state-past { opacity: 0.8; }
+.sc-venaerys-initiative.svi-phase.svi-phase-empty { opacity: 0.6; background: transparent; }
 .sc-venaerys-initiative .svi-phase-header {
   position: sticky;
   top: 0;
@@ -310,16 +286,11 @@
 .sc-venaerys-initiative .svi-rows { display: flex; flex-direction: column; padding: 0 2px 4px; }
 .sc-venaerys-initiative .svi-children { display: flex; flex-direction: column; margin-left: 16px; padding-left: 6px; border-left: 1px solid var(--svi-line); }
 
-/* Rows */
-.sc-venaerys-initiative .svi-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: var(--svi-row-h);
-  padding: 0 6px;
-  border-radius: var(--svi-radius-sm);
-}
-.sc-venaerys-initiative .svi-row:hover { background: color-mix(in srgb, var(--svi-text) 4%, transparent); }
+/* Rows: the core's own row, with the module's notes and controls inside */
+.sc-venaerys-initiative .svi-members,
+.sc-venaerys-initiative .svi-children { display: flex; flex-direction: column; margin: 0; padding: 0 2px 4px; list-style: none; }
+.sc-venaerys-initiative .svi-children { margin-left: 16px; padding-left: 6px; border-left: 1px solid var(--svi-line); }
+.sc-venaerys-initiative .svi-group-row { display: flex; align-items: center; gap: 8px; min-height: var(--svi-row-h); padding: 0 6px; }
 .sc-venaerys-initiative .svi-portrait {
   flex: none;
   width: 24px;
@@ -330,27 +301,18 @@
   object-fit: cover;
 }
 .sc-venaerys-initiative .svi-portrait.svi-small { width: 22px; height: 22px; }
-.sc-venaerys-initiative .svi-name-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .sc-venaerys-initiative .svi-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sc-venaerys-initiative .svi-group-row .svi-name { flex: 1; min-width: 0; }
+.sc-venaerys-initiative .svi-group-row .svi-complete-group { width: 24px; height: 24px; color: inherit; }
+.sc-venaerys-initiative .svi-phase-header .svi-add-marker { width: 24px; height: 24px; }
+.sc-venaerys-initiative.svi-row-notes { display: flex; flex-direction: column; }
+.sc-venaerys-initiative.svi-row-controls { display: flex; flex: none; align-items: center; gap: 4px; color: var(--svi-text); }
 .sc-venaerys-initiative .svi-sub { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--svi-muted); }
 .sc-venaerys-initiative .svi-sub.svi-deferred { color: var(--svi-accent-300); }
-.sc-venaerys-initiative .svi-row.svi-hidden .svi-name-col,
-.sc-venaerys-initiative .svi-row.svi-hidden .svi-portrait,
-.sc-venaerys-initiative .svi-row.svi-defeated .svi-name-col,
-.sc-venaerys-initiative .svi-row.svi-defeated .svi-portrait { opacity: 0.55; }
-.sc-venaerys-initiative .svi-row.svi-defeated .svi-name { text-decoration: line-through; }
-.sc-venaerys-initiative .svi-init {
-  min-width: 38px;
-  font-family: var(--svi-font-mono);
-  font-size: 12px;
-  text-align: right;
-  color: var(--svi-neutral-300);
-}
 
-/* Done state lives on the row: the toggle and status swap their halves. */
-.sc-venaerys-initiative .svi-row:not(.svi-done) .svi-when-done,
-.sc-venaerys-initiative .svi-row.svi-done .svi-when-todo { display: none; }
+/* Done state lives on the module's roots in the row: the toggle and status swap their halves. */
+.sc-venaerys-initiative:not(.svi-done) .svi-when-done,
+.sc-venaerys-initiative.svi-done .svi-when-todo { display: none; }
 .sc-venaerys-initiative .svi-done-btn,
 .sc-venaerys-initiative .svi-skip-btn {
   display: inline-flex;
@@ -396,13 +358,13 @@
 .sc-venaerys-initiative .svi-phase-select option { background: var(--svi-surface); color: var(--svi-text); }
 
 /* ---------- Pending strip ---------- */
-.sc-venaerys-initiative .svi-pending-part { flex: none; }
-.sc-venaerys-initiative .svi-pending {
+.sc-venaerys-initiative.svi-pending {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 8px 10px 10px;
   border-top: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-md);
   background: var(--svi-window-header);
 }
 .sc-venaerys-initiative .svi-pending-title {
@@ -440,16 +402,30 @@
 .sc-venaerys-initiative.svi-start-dialog .svi-start-lead { color: var(--svi-text); font-weight: 500; }
 .sc-venaerys-initiative.svi-start-dialog .svi-start-note { font-style: italic; }
 
-/* ---------- Native tracker button ---------- */
-.sc-venaerys-initiative.svi-tracker-bar { display: flex; justify-content: center; padding: 4px 0 2px; }
-.sc-venaerys-initiative .svi-tracker-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: auto;
-  height: 26px;
-  margin: 0;
-  padding: 0 10px;
-  font-size: 12px;
-  cursor: pointer;
+/* ---------- Inside the core tracker ---------- */
+/* The section body stays transparent, so the core's rows keep Foundry's own
+   light or dark look; the module paints only its header and its controls, each
+   on a surface of its own theme. */
+.sc-venaerys-initiative.svi-phase,
+.sc-venaerys-initiative.svi-phase.svi-state-current,
+.sc-venaerys-initiative.svi-phase.svi-phase-empty { background: transparent; color: inherit; }
+.sc-venaerys-initiative.svi-phase > .svi-phase-header { background: var(--svi-card); color: var(--svi-text); }
+.sc-venaerys-initiative.svi-phase.svi-state-current > .svi-phase-header { background: var(--svi-phase-current-bg); animation: svi-phase-in 240ms var(--svi-ease); }
+.sc-venaerys-initiative.svi-phase.svi-state-current { animation: none; }
+.sc-venaerys-initiative.svi-phase .svi-compact { color: inherit; opacity: 0.75; }
+.sc-venaerys-initiative .svi-group-row { color: inherit; }
+.sc-venaerys-initiative .svi-group-count,
+.sc-venaerys-initiative.svi-row-notes .svi-sub,
+.sc-venaerys-initiative.svi-row-controls .svi-flag {
+  padding: 1px 5px;
+  border-radius: var(--svi-radius-sm);
+  background: var(--svi-surface);
 }
+.sc-venaerys-initiative.svi-row-notes .svi-sub { align-self: flex-start; }
+.sc-venaerys-initiative.svi-row-controls .svi-done-btn,
+.sc-venaerys-initiative.svi-row-controls .svi-skip-btn,
+.sc-venaerys-initiative.svi-row-controls .svi-status,
+.sc-venaerys-initiative.svi-row-controls .svi-phase-select { background: var(--svi-surface); }
+.sc-venaerys-initiative.svi-row-controls .svi-status { padding: 2px 6px; border-radius: var(--svi-radius-sm); }
+.sc-venaerys-initiative.svi-row-controls .svi-done-btn[aria-pressed="true"],
+.sc-venaerys-initiative.svi-row-controls .svi-skip-btn[aria-pressed="true"] { background: var(--svi-done-bg); }

@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { describe, it } from "node:test";
-import { DEFAULT_PHASES, NEW_PHASE, defaultPlan } from "../scripts/constants/default-phases.js";
+import { DEFAULT_PHASES, NEW_EVENT_PHASE, NEW_PHASE, defaultPlan } from "../scripts/constants/default-phases.js";
 import {
   addPhase,
+  canEnterPhase,
   deletePhase,
   displayName,
   firstPlayerPhaseRank,
+  isEventPhase,
   isValidPlanOrder,
   movePhase,
   normalizePlan,
+  phaseById,
   phaseRank,
   phasesWithoutName,
   renamePhase,
@@ -23,9 +26,10 @@ const ids = (plan) => plan.map((phase) => phase.id);
 const lookup = (root, path) => path.split(".").reduce((node, key) => node?.[key], root);
 
 describe("default phase template", () => {
-  it("is valid and runs Epic Boss, Boss, Mini-Boss, Fast, Enemies, Slow", () => {
+  it("is valid and runs Epic Boss, Boss, Mini-Boss, Fast, Enemies, Slow, then the Lair Actions event", () => {
     assert.ok(validatePlan(defaultPlan()));
-    assert.deepEqual(ids(DEFAULT_PHASES), ["epicBoss", "boss", "miniBoss", "fast", "enemies", "slow"]);
+    assert.deepEqual(ids(DEFAULT_PHASES), ["epicBoss", "boss", "miniBoss", "fast", "enemies", "slow", "lair"]);
+    assert.equal(DEFAULT_PHASES.at(-1).type, "event");
   });
 
   it("stores name keys and no translated names", () => {
@@ -38,7 +42,7 @@ describe("default phase template", () => {
   it("has every default and new-phase name key in both languages", async () => {
     for (const lang of ["en", "pt-BR"]) {
       const catalog = JSON.parse(await readFile(new URL(`../lang/${lang}.json`, import.meta.url), "utf8"));
-      for (const key of [...DEFAULT_PHASES.map((p) => p.nameKey), NEW_PHASE.nameKey]) {
+      for (const key of [...DEFAULT_PHASES.map((p) => p.nameKey), NEW_PHASE.nameKey, NEW_EVENT_PHASE.nameKey]) {
         assert.equal(typeof lookup(catalog, key), "string", `${lang} ${key}`);
       }
     }
@@ -97,7 +101,9 @@ describe("reordering", () => {
       assert.ok(next && isValidPlanOrder(next), `before ${before}`);
     }
     const boss = reorderPlan(plan, reorderIds(ids(plan), "boss", "slow"));
-    assert.deepEqual(ids(boss), ["epicBoss", "miniBoss", "fast", "enemies", "boss", "slow"]);
+    assert.deepEqual(ids(boss), ["epicBoss", "miniBoss", "fast", "enemies", "boss", "slow", "lair"]);
+    const lair = reorderPlan(plan, reorderIds(ids(plan), "lair", "epicBoss"));
+    assert.deepEqual(ids(lair), ["lair", "epicBoss", "boss", "miniBoss", "fast", "enemies", "slow"]);
   });
 
   it("refuses an order that inverts the built-ins", () => {
@@ -107,9 +113,9 @@ describe("reordering", () => {
   });
 
   it("moves up and down by one, refusing edges and inversions", () => {
-    assert.deepEqual(ids(movePhase(plan, "miniBoss", 1)), ["epicBoss", "boss", "fast", "miniBoss", "enemies", "slow"]);
+    assert.deepEqual(ids(movePhase(plan, "miniBoss", 1)), ["epicBoss", "boss", "fast", "miniBoss", "enemies", "slow", "lair"]);
     assert.equal(movePhase(plan, "epicBoss", -1), null);
-    assert.equal(movePhase(plan, "slow", 1), null);
+    assert.equal(movePhase(plan, "lair", 1), null);
     assert.equal(movePhase(plan, "enemies", 1), null);
   });
 });
@@ -127,9 +133,25 @@ describe("editing extras", () => {
     assert.ok(validatePlan(next));
   });
 
+  it("adds an event phase on request", () => {
+    const next = addPhase(defaultPlan(), () => "ritual", { event: true });
+    assert.deepEqual(next.at(-1), { id: "ritual", type: "event", nameKey: "SC_VENAERYS_INITIATIVE.Phase.NewEvent", name: null, icon: "fa-solid fa-wand-sparkles", color: "#9184d9" });
+    assert.ok(validatePlan(next));
+  });
+
+  it("keeps event markers and everyone else apart", () => {
+    const [lair, fast] = [phaseById(defaultPlan(), "lair"), phaseById(defaultPlan(), "fast")];
+    assert.equal(isEventPhase(lair), true);
+    assert.equal(canEnterPhase({ side: "event" }, lair), true);
+    assert.equal(canEnterPhase({ side: "event" }, fast), false);
+    assert.equal(canEnterPhase({ side: "enemies" }, lair), false);
+    assert.equal(canEnterPhase({ side: null }, fast), true);
+    assert.equal(canEnterPhase({ side: "players" }, null), false);
+  });
+
   it("deletes extras only", () => {
     assert.equal(deletePhase(defaultPlan(), "fast"), null);
-    assert.deepEqual(ids(deletePhase(defaultPlan(), "boss")), ["epicBoss", "miniBoss", "fast", "enemies", "slow"]);
+    assert.deepEqual(ids(deletePhase(defaultPlan(), "boss")), ["epicBoss", "miniBoss", "fast", "enemies", "slow", "lair"]);
   });
 
   it("renames extras only and refuses an empty name", () => {

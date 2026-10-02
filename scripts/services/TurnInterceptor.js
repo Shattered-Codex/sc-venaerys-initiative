@@ -3,14 +3,17 @@ import { pointerAfterMove } from "../helpers/phase-placement.js";
 import { currentPhaseId } from "../helpers/phase-progression.js";
 import { decide } from "../helpers/turn-intercept.js";
 import CombatSnapshot from "./CombatSnapshot.js";
+import ErrorGuard from "./ErrorGuard.js";
 
 /**
  * Native turn navigation in a phased combat becomes the phase command it
  * stands for, wherever it comes from (tracker, dock, keybindings, macros):
  * a player's "end turn" marks their combatants done, the GM's next/previous
  * turn advances or goes back a phase, and next turn in round 0 starts the
- * combat through `startCombat`. Runs in the pre-hook, on the client that
- * asked, so the native update is cancelled before it is sent.
+ * combat through `startCombat`. The navigation methods themselves are
+ * wrapped at `setup`, so the core never fires `combatTurn`/`combatRound` for
+ * a move that will not happen; the pre-update hook stays as a safety net for
+ * raw `update({turn}, {direction})` calls.
  */
 export default class TurnInterceptor {
   constructor({ adapter, commands, doneMarkers }) {
@@ -19,21 +22,23 @@ export default class TurnInterceptor {
     this.doneMarkers = doneMarkers;
   }
 
-  /** Intercept core navigation before it emits combatTurn/combatRound. */
+  /** Wraps the core navigation methods of the final Combat class, before they emit combatTurn/combatRound. */
   install() {
     const proto = CONFIG.Combat.documentClass.prototype;
+    const interceptor = this;
     for (const [method, forward] of [["nextTurn", true], ["nextRound", true], ["previousTurn", false], ["previousRound", false]]) {
       const original = proto[method];
       if (typeof original !== "function") continue;
-      const interceptor = this;
-      proto[method] = async function phasedNavigation(...args) {
+      async function phasedNavigation(...args) {
         if (!CombatSnapshot.isPhased(this) || (!forward && this.round === 0)) return original.apply(this, args);
         if (this.round === 0) return this.startCombat();
         if (game.user.isGM) await interceptor.commands.execute(forward ? "advance" : "back", this, forward ? { force: true } : {});
         else if (forward) await interceptor.doneMarkers.markOwn(this);
         else ui.notifications.warn(game.i18n.localize(`${I18N_ROOT}.Notifications.OnlyGmBack`));
         return this;
-      };
+      }
+      // A module error falls back to the core's own navigation.
+      proto[method] = ErrorGuard.wrap(`navigation:${method}`, phasedNavigation, original);
     }
   }
 

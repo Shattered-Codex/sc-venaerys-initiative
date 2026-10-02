@@ -60,6 +60,26 @@ describe("TurnInterceptor", () => {
     }
   });
 
+  it("turns a player's next turn into done marks and a player's previous turn into a warning", async () => {
+    const combat = fakeCombat({ round: 2, combatants: [p("a", "fast", 18)] });
+    const { interceptor, commands, marks, recorded } = build(combat, { isGM: false });
+    const nativeCalls = [];
+    const proto = { nextTurn: () => nativeCalls.push("next"), previousTurn: () => nativeCalls.push("previous") };
+    const previousClass = CONFIG.Combat.documentClass;
+    CONFIG.Combat.documentClass = { prototype: proto };
+    try {
+      interceptor.install();
+      await proto.nextTurn.call(combat);
+      await proto.previousTurn.call(combat);
+      assert.deepEqual(nativeCalls, []);
+      assert.deepEqual(marks, ["combat"]);
+      assert.deepEqual(commands, []);
+      assert.deepEqual(recorded.warnings, ["SC_VENAERYS_INITIATIVE.Notifications.OnlyGmBack"]);
+    } finally {
+      CONFIG.Combat.documentClass = previousClass;
+    }
+  });
+
   it("cancels the GM's next turn and advances the phase, forced", async () => {
     const combat = fakeCombat({ round: 2, combatants: [p("a", "fast", 18)] });
     const { interceptor, commands } = build(combat);

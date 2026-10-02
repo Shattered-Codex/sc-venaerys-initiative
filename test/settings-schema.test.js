@@ -13,8 +13,17 @@ describe("settings schema", () => {
     const keys = SETTINGS_SCHEMA.map((entry) => entry.key);
     assert.equal(new Set(keys).size, keys.length);
     for (const entry of SETTINGS_SCHEMA) {
-      assert.ok(entry.tab === null || SETTING_TABS.includes(entry.tab), entry.key);
+      assert.ok(entry.tab === null || SETTING_TABS.some((tab) => tab.id === entry.tab && tab.settings), entry.key);
       assert.ok(entry.section === null || SETTING_SECTIONS.includes(entry.section), entry.key);
+    }
+  });
+
+  it("lays the screen out in the suite's tabs, with only the client tab for players", () => {
+    assert.deepEqual(SETTING_TABS.map((tab) => tab.id), ["world", "appearance", "phases", "client", "help"]);
+    assert.deepEqual(SETTING_TABS.filter((tab) => !tab.gm).map((tab) => tab.id), ["client"]);
+    for (const entry of SETTINGS_SCHEMA.filter((e) => e.tab)) {
+      const tab = SETTING_TABS.find((t) => t.id === entry.tab);
+      assert.equal(tab.gm, entry.scope === "world", `${entry.key} sits on a tab its scope can see`);
     }
   });
 
@@ -26,6 +35,12 @@ describe("settings schema", () => {
       showDcToPlayers: ["world", false],
       autoAdvance: ["world", true],
       openOnStart: ["client", true],
+      theme: ["world", "ember"],
+      dcSource: ["world", "manual"],
+      dcBase: ["world", 10],
+      natural20: ["world", "autoSuccess"],
+      natural1: ["world", "autoFail"],
+      suggestFromSheet: ["world", true],
     };
     assert.deepEqual(SETTINGS_SCHEMA.map((e) => e.key).sort(), Object.keys(expected).sort());
     for (const [key, [scope, value]] of Object.entries(expected)) {
@@ -33,6 +48,21 @@ describe("settings schema", () => {
       assert.deepEqual(schemaEntry(key).default, value, key);
     }
     assert.deepEqual(schemaEntry("defaultDc").range, { min: 1, max: 40, step: 1 });
+    assert.deepEqual(schemaEntry("dcBase").range, { min: 0, max: 30, step: 1 });
+    assert.deepEqual(schemaEntry("dcSource").choices, ["manual", "baseCr"]);
+    assert.deepEqual(schemaEntry("natural20").choices, ["none", "autoSuccess"]);
+    assert.deepEqual(schemaEntry("natural1").choices, ["none", "autoFail"]);
+  });
+
+  it("labels every choice of the generated select rows in both languages", async () => {
+    for (const lang of ["en", "pt-BR"]) {
+      const root = await catalog(lang);
+      for (const entry of SETTINGS_SCHEMA.filter((e) => e.type === "choice" && e.tab !== "appearance")) {
+        for (const choice of entry.choices) {
+          assert.equal(typeof lookup(root, `Settings.${entry.key}.Choices.${choice}`), "string", `${lang} ${entry.key}.${choice}`);
+        }
+      }
+    }
   });
 
   it("gives every setting a name and a hint in both languages", async () => {
@@ -55,6 +85,12 @@ describe("coerceSetting", () => {
     assert.equal(coerceSetting(dc, "abc"), 15);
     assert.equal(coerceSetting(dc, ""), 15);
     assert.equal(coerceSetting(dc, "17"), 17);
+  });
+
+  it("keeps a choice inside its list", () => {
+    assert.equal(coerceSetting(schemaEntry("dcSource"), "baseCr"), "baseCr");
+    assert.equal(coerceSetting(schemaEntry("dcSource"), "nonsense"), "manual");
+    assert.equal(coerceSetting(schemaEntry("natural1"), "autoSuccess"), "autoFail");
   });
 
   it("reads checkboxes", () => {

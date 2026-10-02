@@ -22,7 +22,8 @@
   ],
   "styles": [
     "styles/tokens.css",
-    "styles/phase-tracker.css",
+    "styles/themes.css",
+    "styles/combat-tracker.css",
     "styles/phase-config.css"
   ],
   "languages": [

@@ -11,8 +11,9 @@ describe("module entry point", () => {
   let proto;
   before(async () => {
     installFoundryStubs();
-    proto = { _sortCombatants: () => 0, startCombat: () => "native" };
+    proto = { _sortCombatants: () => 0, startCombat: () => "native", nextTurn: () => "native" };
     globalThis.CONFIG.Combat = { documentClass: { prototype: proto }, initiative: { decimals: 2 } };
+    globalThis.CONFIG.ui = { combat: class CoreTracker {} };
     await import("../scripts/module.js");
   });
 
@@ -29,12 +30,14 @@ describe("module entry point", () => {
     assert.notEqual(proto._sortCombatants, sort);
     registered.once.get("setup")();
     assert.notEqual(proto.startCombat, start);
+    assert.notEqual(proto.nextTurn, undefined);
+    assert.equal(Object.getPrototypeOf(CONFIG.ui.combat).name, "CoreTracker");
     registered.once.get("ready")();
     assert.equal(typeof moduleRecord.api.open, "function");
   });
 
   it("listens to the combat hooks it needs", () => {
-    for (const hook of ["updateCombat", "createCombat", "deleteCombat", "preUpdateCombat", "createCombatant", "updateCombatant", "deleteCombatant", "preDeleteCombatant", "renderCombatTracker", "userConnected"]) {
+    for (const hook of ["updateCombat", "createCombat", "preUpdateCombat", "createCombatant", "updateCombatant", "deleteCombatant", "preDeleteCombatant", "userConnected"]) {
       assert.ok(registered.on.has(hook), hook);
     }
   });

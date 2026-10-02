@@ -40,6 +40,7 @@ export function fakeCombatant({ id, name = id, flags = {}, initiative = null, in
     isDefeated: false,
     defeated: false,
     actorId: actorId ?? `actor-${id}`,
+    tokenId: hasToken ? `token-${id}` : null,
     flags: { [MODULE_ID]: { ...flags } },
     token: hasToken ? { disposition, baseActor: { id: actorId ?? `actor-${id}` } } : null,
     actor: { system: { attributes: { init: { score: initScore } } } },
@@ -88,6 +89,8 @@ export function fakeCombat({ id = "combat", round = 1, turn = 0, flags = {}, com
       },
       [Symbol.iterator]: () => combat.turns[Symbol.iterator](),
     },
+    getCombatantsByToken: (tokenId) => combat.turns.filter((c) => c.tokenId === tokenId),
+    getCombatantsByActor: (actorId) => combat.turns.filter((c) => c.actorId === actorId),
     getTimeDelta(fromRound, _fromTurn, toRound) {
       return (Math.max(toRound, 1) - Math.max(fromRound, 1)) * 6;
     },

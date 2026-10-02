@@ -1,8 +1,12 @@
-<div class="tab svi-tab-panel {{tab.cssClass}}" data-group="primary" data-tab="help" role="tabpanel">
+<section class="svi-config-panel" data-tab-panel="{{ tab.id }}" role="tabpanel" {{#unless tab.active}}hidden{{/unless}}>
+  <header class="svi-panel-head">
+    <h2 class="svi-panel-title">{{ localize tab.title }}</h2>
+    <p class="svi-panel-hint">{{ localize tab.hint }}</p>
+  </header>
   {{#each help}}
   <details class="svi-help-topic"{{#if open}} open{{/if}}>
-    <summary><i class="{{icon}}" inert></i><span>{{localize title}}</span></summary>
-    <p>{{localize body}}</p>
+    <summary><i class="{{ icon }}" inert></i><span>{{ localize title }}</span></summary>
+    <p>{{ localize body }}</p>
   </details>
   {{/each}}
-</div>
+</section>

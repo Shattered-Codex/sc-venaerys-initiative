@@ -1,8 +1,9 @@
-import { MODULE_ID, OPERATION_KEY } from "./constants/module-constants.js";
+import { MODULE_ID, OPERATION_KEY, SETTINGS } from "./constants/module-constants.js";
 import { backTarget } from "./helpers/phase-progression.js";
-import { registerSettings } from "./hooks/register-settings.js";
+import { registerKeybindings } from "./hooks/register-keybindings.js";
+import { getSetting, naturalRules, registerSettings, suggestFromSheet } from "./hooks/register-settings.js";
 import PhaseConfigApp from "./applications/PhaseConfigApp.js";
-import PhaseTrackerApp from "./applications/PhaseTrackerApp.js";
+import PhasedCombatTracker from "./applications/PhasedCombatTracker.js";
 import AutoAdvanceWatcher from "./services/AutoAdvanceWatcher.js";
 import CombatSetup from "./services/CombatSetup.js";
 import CombatSnapshot from "./services/CombatSnapshot.js";
@@ -10,13 +11,19 @@ import CombatSorter from "./services/CombatSorter.js";
 import CombatStartGuard from "./services/CombatStartGuard.js";
 import CombatWatcher from "./services/CombatWatcher.js";
 import CombatantClassifier from "./services/CombatantClassifier.js";
+import DcSuggester from "./services/DcSuggester.js";
 import DoneMarkers from "./services/DoneMarkers.js";
 import ErrorGuard from "./services/ErrorGuard.js";
+import EventMarkers from "./services/EventMarkers.js";
 import GmBusyProbe from "./services/GmBusyProbe.js";
 import GmCommands from "./services/GmCommands.js";
-import NativeTrackerDecorator from "./services/NativeTrackerDecorator.js";
+import IntegrationHooks from "./services/IntegrationHooks.js";
+import ModuleConflictAdvisor from "./services/ModuleConflictAdvisor.js";
+import NaturalRollRecorder from "./services/NaturalRollRecorder.js";
 import PhaseAdvancer from "./services/PhaseAdvancer.js";
+import PhaseAutomationRunner from "./services/PhaseAutomationRunner.js";
 import PhasePlacementWriter from "./services/PhasePlacementWriter.js";
+import ThemeApplier from "./services/ThemeApplier.js";
 import TurnInterceptor from "./services/TurnInterceptor.js";
 import AdapterFactory from "./services/adapters/AdapterFactory.js";
 
@@ -32,30 +39,71 @@ function build() {
   const writer = new PhasePlacementWriter({ adapter, advance: (combat, options) => advancer.advance(combat, options) });
   const advancer = new PhaseAdvancer({ adapter, writer });
   const doneMarkers = new DoneMarkers({ adapter });
-  const classifier = new CombatantClassifier({ adapter, writer });
+  const classifier = new CombatantClassifier({ adapter, writer, naturals: naturalRules, suggestFromSheet });
+  const dcSuggester = new DcSuggester({ adapter, classifier, base: () => getSetting(SETTINGS.dcBase) });
+  const naturals = new NaturalRollRecorder({ adapter });
   const setup = new CombatSetup();
-  const probe = new GmBusyProbe({ onChange: () => view.render({ headerOnly: true }) });
+  const probe = new GmBusyProbe({ onChange: () => view.render() });
   const watcher = new AutoAdvanceWatcher({ adapter, advancer, probe });
   const interceptor = new TurnInterceptor({ adapter, commands, doneMarkers });
   const startGuard = new CombatStartGuard({ adapter });
-  const openHelp = () => PhaseConfigApp.open("help");
-  const view = new CombatWatcher({ createApp: () => new PhaseTrackerApp({ services: { adapter, commands, doneMarkers, probe, openHelp } }) });
-  const decorator = new NativeTrackerDecorator({ open: () => view.open() });
+  const automation = new PhaseAutomationRunner({ adapter });
+  const integration = new IntegrationHooks({ adapter });
+  const markers = new EventMarkers();
+  const tracker = { adapter, commands, doneMarkers, probe, openHelp: () => PhaseConfigApp.open("help") };
+  const view = new CombatWatcher({ patchDone: (ids) => PhasedCombatTracker.patchDone(ids) });
 
   const refuseBack = (combat) => (backTarget(CombatSnapshot.from(combat, adapter)).refuse ? "NoEarlierPhase" : null);
   commands.register("advance", (combat, { force = true } = {}) => advancer.advance(combat, { force }));
   commands.register("complete", (combat) => advancer.complete(combat));
   commands.register("back", (combat) => advancer.back(combat), { precheck: refuseBack });
   commands.register("toggle", (combat, payload) => setup.toggle(combat, payload));
-  commands.register("setDc", (combat, payload) => classifier.setDc(combat, payload));
+  commands.register("setDc", (combat, payload) => classifier.setDc(combat, { value: payload?.value }));
+  commands.register("recalculateDc", (combat) => dcSuggester.recalculate(combat));
   commands.register("assign", (combat, payload) => classifier.assign(combat, payload));
+  commands.register("addMarker", (combat, payload) => markers.add(combat, payload));
 
-  Object.assign(services, { commands, advancer, classifier, setup, probe, watcher, interceptor, startGuard, view, decorator });
+  Object.assign(services, { adapter, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, integration });
+}
+
+/** The keybinding actions: each answers whether it acted, so an unused key reaches other bindings. */
+function keybindingActions() {
+  const running = () => {
+    const combat = game.combat;
+    return combat?.started && CombatSnapshot.isPhased(combat) ? combat : null;
+  };
+  // The work is not awaited: the key answers at once, and ErrorGuard reports a failure later.
+  const when = (label, act) => {
+    const guarded = ErrorGuard.wrap(`key:${label}`, act);
+    return () => {
+      const combat = running();
+      if (!combat) return false;
+      guarded(combat);
+      return true;
+    };
+  };
+  return {
+    markOwnDone: when("markOwnDone", (combat) => services.doneMarkers.markOwn(combat)),
+    advancePhase: when("advancePhase", (combat) => services.commands.execute("advance", combat, { force: true })),
+    previousPhase: when("previousPhase", (combat) => services.commands.execute("back", combat)),
+    showTracker: () => {
+      ErrorGuard.wrap("key:showTracker", () => services.view.show())();
+      return true;
+    },
+  };
 }
 
 Hooks.once("init", () => {
-  registerSettings({ onViewChange: () => services.view?.render(), SettingsMenu: PhaseConfigApp });
+  registerSettings({
+    onViewChange: () => services.view?.render(),
+    onThemeChange: () => {
+      ThemeApplier.refresh();
+      services.view?.render();
+    },
+    SettingsMenu: PhaseConfigApp,
+  });
   build();
+  registerKeybindings(keybindingActions());
   CombatSorter.install();
   // Registered at init so the turn order is fixed before any other module's listener runs.
   ErrorGuard.on("updateCombat", "sort", (combat, changed) => CombatSorter.onUpdateCombat(combat, changed));
@@ -63,12 +111,17 @@ Hooks.once("init", () => {
 
 Hooks.once("setup", () => {
   services.startGuard.install();
+  // The system's document classes are final by now.
+  services.adapter.guardEventMarkers((combatant) => CombatSnapshot.isEventMarker(combatant));
   services.interceptor.install();
+  // After every init (the system set its tracker class) and before the UI is built.
+  PhasedCombatTracker.install(services.tracker);
 });
 
 Hooks.once("ready", () => {
-  const { commands, advancer, classifier, setup, probe, watcher, interceptor, startGuard, view, decorator } = services;
+  const { commands, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, automation, integration } = services;
   startGuard.check();
+  PhasedCombatTracker.check();
   commands.relay.start();
   game.modules.get(MODULE_ID).api = {
     open: () => view.open(),
@@ -85,6 +138,7 @@ Hooks.once("ready", () => {
     if (!game.user.isActiveGM) return undefined;
     // The native start (round 0 to 1); the module's own writes after it are watched as usual.
     const started = combat.round === 1 && combat.previous?.round === 0 && !options?.[OPERATION_KEY];
+    dcSuggester.onUpdateCombat(combat, changed);
     return Promise.all([
       classifier.onUpdateCombat(combat, changed, options),
       started ? advancer.afterNativeStart(combat) : watcher.onUpdateCombat(combat, changed, options),
@@ -93,12 +147,19 @@ Hooks.once("ready", () => {
   ErrorGuard.on("createCombatant", "combatant", (combatant, options) => {
     classifier.onCreateCombatant(combatant);
     watcher.onCreateCombatant(combatant, options);
+    dcSuggester.onCombatantChange(combatant);
   });
   ErrorGuard.on("updateCombatant", "combatant", (combatant, changes, options) => {
     classifier.onUpdateCombatant(combatant, changes, options);
     watcher.onUpdateCombatant(combatant, changes, options);
+    dcSuggester.onCombatantChange(combatant);
   });
-  ErrorGuard.on("deleteCombatant", "combatant", (combatant, options) => watcher.onDeleteCombatant(combatant, options));
+  ErrorGuard.on("deleteCombatant", "combatant", (combatant, options) => {
+    watcher.onDeleteCombatant(combatant, options);
+    dcSuggester.onCombatantChange(combatant);
+  });
+  // The natural d20 of an initiative roll, on the client that rolled it.
+  ErrorGuard.on("createChatMessage", "natural", (message) => naturals.onCreateChatMessage(message));
   for (const hook of ["createActiveEffect", "deleteActiveEffect"]) {
     ErrorGuard.on(hook, "defeat", (effect) => watcher.onActiveEffect(effect));
   }
@@ -107,17 +168,15 @@ Hooks.once("ready", () => {
   ErrorGuard.on("closeApplicationV2", "busy", () => probe.poke());
   ErrorGuard.on("closeDialog", "busy", () => probe.poke());
 
-  // The phase window, on every client.
-  ErrorGuard.on("updateCombat", "view", (combat, changed) => view.onUpdateCombat(combat, changed));
-  ErrorGuard.on("createCombat", "view", () => view.render());
-  ErrorGuard.on("deleteCombat", "view", (combat) => {
-    view.onDeleteCombat(combat);
-    view.render();
-  });
-  ErrorGuard.on("createCombatant", "view", () => view.render());
+  // The combat tracker, on every client: the core renders it; the module shows it and patches done marks.
+  ErrorGuard.on("updateCombat", "view", (combat) => view.onUpdateCombat(combat));
+  // A phase's actions when it starts, on every client: GM actions on the active GM, local ones where the phase is seen.
+  ErrorGuard.on("updateCombat", "automation", (combat, changed, options) => automation.onUpdateCombat(combat, changed, options));
   ErrorGuard.on("updateCombatant", "view", (combatant, changes) => view.onUpdateCombatant(combatant, changes));
-  ErrorGuard.on("deleteCombatant", "view", () => view.render());
-  ErrorGuard.on("renderCombatTracker", "tracker-button", (app, element) => decorator.onRender(app, element));
+  // The module's own hooks for other modules, on every client; and on GM clients, conflicting settings at the start.
+  ErrorGuard.on("updateCombat", "integration", (combat, changed, options) => integration.onUpdateCombat(combat, changed, options));
+  ErrorGuard.on("updateCombatant", "integration", (combatant, changes) => integration.onUpdateCombatant(combatant, changes));
+  ErrorGuard.on("updateCombat", "conflicts", (combat, changed, options) => ModuleConflictAdvisor.onUpdateCombat(combat, changed, options));
 
   if (game.user.isActiveGM) watcher.reviewAll();
   view.openIfRunning();

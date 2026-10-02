@@ -1,0 +1,10 @@
+<nav class="svi-config-rail" role="tablist" aria-label="{{ localize tabsLabel }}" aria-orientation="vertical">
+  {{#each tabs}}
+  <button type="button" role="tab" class="svi-config-tab{{#if active}} active{{/if}}" data-action="sviTab" data-tab="{{ id }}"
+          aria-selected="{{ active }}" tabindex="{{#if active}}0{{else}}-1{{/if}}">
+    <i class="{{ icon }}" inert></i>
+    <span class="svi-config-tab-label" inert>{{ localize label }}</span>
+    <span class="svi-dirty-dot" aria-hidden="true"></span>
+  </button>
+  {{/each}}
+</nav>

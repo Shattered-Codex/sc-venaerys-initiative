@@ -8,7 +8,9 @@
       "Fast": "Rápida",
       "Enemies": "Inimigos",
       "Slow": "Lenta",
-      "New": "Nova fase"
+      "New": "Nova fase",
+      "Lair": "Ações de Covil",
+      "NewEvent": "Novo evento"
     },
     "Settings": {
       "enabledByDefault": {
@@ -28,12 +30,48 @@
         "Hint": "Desligado, só o Mestre vê a DC do combate."
       },
       "openOnStart": {
-        "Name": "Abrir a janela de fases no início do combate",
-        "Hint": "Abre a janela de fases neste cliente sempre que um combate com fases começa."
+        "Name": "Mostrar o tracker de combate no início do combate",
+        "Hint": "Traz a aba de combate (ou o popout dela) para a frente neste cliente sempre que um combate com fases começa."
       },
       "phaseTemplate": {
         "Name": "Modelo de fases",
         "Hint": "As fases, em ordem, que cada combate novo copia."
+      },
+      "theme": {
+        "Name": "Tema",
+        "Hint": "Cores das telas do módulo e das seções de fase, para todos neste mundo."
+      },
+      "dcSource": {
+        "Name": "Origem da DC",
+        "Hint": "Digitada: todo combate começa com a DC padrão. Base + ND: a base mais o maior ND entre os inimigos da fase Inimigos, atualizada até o combate começar.",
+        "Choices": {
+          "manual": "Digitada pelo Mestre",
+          "baseCr": "Base + ND"
+        }
+      },
+      "dcBase": {
+        "Name": "Base da DC",
+        "Hint": "Somada ao ND de referência quando a DC é Base + ND. ND fracionário conta 0."
+      },
+      "natural20": {
+        "Name": "20 natural na iniciativa",
+        "Hint": "O que um 20 natural no d20 mantido faz. Iniciativa fixa (escore) não tem rolagem natural.",
+        "Choices": {
+          "none": "Nada: só o total conta",
+          "autoSuccess": "Sucesso automático: age em Rápida"
+        }
+      },
+      "natural1": {
+        "Name": "1 natural na iniciativa",
+        "Hint": "O que um 1 natural no d20 mantido faz. Iniciativa fixa (escore) não tem rolagem natural.",
+        "Choices": {
+          "none": "Nada: só o total conta",
+          "autoFail": "Falha automática: age em Lenta"
+        }
+      },
+      "suggestFromSheet": {
+        "Name": "Sugerir fases de chefe pela ficha",
+        "Hint": "Um inimigo que entra no combate vai para a fase de criaturas com o nome exato de um dos seus itens (uma característica chamada \"Chefe\" vai para Chefe; \"Chefe Final\" não). É só um padrão: o Mestre ainda pode movê-lo."
       }
     },
     "Config": {
@@ -42,20 +80,19 @@
       "MenuHint": "Ordem das fases, DC e as outras opções do SC - Venaerys's Initiative.",
       "Title": "SC - Venaerys's Initiative · Configuração",
       "Tabs": {
-        "general": "Geral",
+        "world": "Mundo",
+        "appearance": "Aparência",
         "phases": "Fases",
+        "client": "Este cliente",
         "help": "Ajuda"
       },
       "Sections": {
         "combat": "Combate",
         "dc": "DC",
-        "window": "Janela"
+        "window": "Janela",
+        "theme": "Tema"
       },
-      "ScopeWorld": "Mundo · só o Mestre",
-      "ScopeClient": "Por usuário",
       "Range": "{min} a {max}",
-      "On": "Ligado",
-      "Off": "Desligado",
       "Decrease": "Diminuir {name}",
       "Increase": "Aumentar {name}",
       "Save": "Salvar",
@@ -77,8 +114,6 @@
         "NameEmpty": "Dê um nome à fase.",
         "Add": "Adicionar fase",
         "Restore": "Restaurar padrão",
-        "Unsaved": "Alterações não salvas",
-        "Saved": "Fases salvas.",
         "OrderRefused": "{fast}, {enemies} e {slow} mantêm essa ordem.",
         "RestoreTitle": "Restaurar fases padrão",
         "RestoreBody": "Restaurar as fases padrão? As fases extras que você criou e os nomes que você mudou serão perdidos. Combates em andamento não mudam.",
@@ -86,13 +121,38 @@
         "DeleteTitle": "Apagar fase",
         "DeleteBody": "Apagar a fase '{name}'? Combates em andamento não mudam.",
         "DeleteConfirm": "Apagar",
-        "Cancel": "Cancelar"
+        "Cancel": "Cancelar",
+        "AddEvent": "Adicionar fase de evento",
+        "Event": "Evento",
+        "EventHint": "Só marcadores de evento agem nesta fase. No combate, o Mestre adiciona um pelo + da fase; um combate sem marcador pula a fase."
+      },
+      "TabHints": {
+        "world": "Regras só do Mestre para todos os combates deste mundo.",
+        "appearance": "Cores das telas do módulo e das seções de fase, para todos neste mundo. As linhas dos combatentes mantêm o visual do Foundry.",
+        "phases": "Ordem das fases em cada rodada. Combates em andamento não mudam.",
+        "client": "Suas preferências, só neste computador.",
+        "help": "Como as fases se comportam com eventos de turno, pendentes e outros módulos."
+      },
+      "TabsLabel": "Seções da configuração",
+      "Unsaved": "Alterações não salvas",
+      "SavedPill": "Salvo",
+      "ResetTab": "Restaurar aba",
+      "Close": "Fechar",
+      "UnsavedTab": "{tab}: alterações não salvas",
+      "Appearance": {
+        "Current": "Atual",
+        "Previewing": "Pré-visualizando {theme} só neste computador. Feche sem salvar para voltar a {saved}.",
+        "Specimen": "Amostra"
       }
     },
     "Help": {
+      "Moving": {
+        "Title": "Mover combatentes",
+        "Body": "Durante o combate, mova um combatente para outra fase pelo seletor da linha, arrastando a linha para outra fase, ou com \"Mover para fase…\" no menu do botão direito. Quem foi movido fica fixado naquela fase; escolha Automático para a rolagem decidir de novo."
+      },
       "TurnEvents": {
         "Title": "Eventos de turno",
-        "Body": "O início de turno automático (recargas, dano contínuo, reação) acontece para todos os membros no começo da fase. O fim de turno automático só acontece para o membro destacado, no fim da fase. Os demais resolvem os efeitos de fim de turno (testes de resistência, efeitos que duram até o fim do próximo turno) à mão, ao marcar Feito."
+        "Body": "O início de turno automático (recargas, dano contínuo, reação) acontece para todos os membros no começo da fase. O fim de turno automático só acontece para o membro marcado com a ampulheta (só o Mestre vê), no fim da fase. Os demais resolvem os efeitos de fim de turno (testes de resistência, efeitos que duram até o fim do próximo turno) à mão, ao marcar Feito."
       },
       "Unconfirmed": {
         "Title": "Início sem confirmação",
@@ -112,16 +172,11 @@
       }
     },
     "Tracker": {
-      "Title": "Fases do combate",
-      "OpenButton": "Fases",
-      "OpenLabel": "Abrir a janela de fases",
       "Round": "Rodada {round}",
       "NotStarted": "Não iniciado",
       "InCombat": "Em combate",
       "Dc": "DC {dc}",
       "DcShort": "DC",
-      "NoCombat": "Nenhum combate ativo.",
-      "PhasesOff": "A iniciativa em fases está desligada neste combate.",
       "Now": "Agora",
       "Past": "Fase concluída",
       "DoneCount": "{done}/{total} feitos",
@@ -149,7 +204,13 @@
       "WaitingForGm": "Aguardando o Mestre",
       "Expand": "Expandir {name}",
       "Collapse": "Recolher {name}",
-      "PastLocked": "Só o Mestre desmarca uma fase concluída."
+      "PastLocked": "Só o Mestre desmarca uma fase concluída.",
+      "PointerLabel": "Fim de turno automático: {name} recebe o fim de turno do core (efeitos, testes) quando a fase termina",
+      "MoveToPhase": "Mover para fase…",
+      "MoveTitle": "Mover {name}",
+      "Move": "Mover",
+      "CompleteGroupLabel": "Marcar todos os {name} em {phase} como feitos",
+      "AddMarkerLabel": "Adicionar um marcador de evento em {phase}"
     },
     "Gm": {
       "PhasesOn": "Fases ligadas",
@@ -177,7 +238,11 @@
       "PhaseComplete": "Fase completa",
       "PhaseCompleteHint": "O avanço automático está desligado. Avance quando a mesa estiver pronta.",
       "NoPhases": "Nenhuma fase com combatentes",
-      "NoPhasesHint": "Todos os combatentes estão derrotados ou sem fase. A rodada não vira sozinha."
+      "NoPhasesHint": "Todos os combatentes estão derrotados ou sem fase. A rodada não vira sozinha.",
+      "Recalculate": "Recalcular a DC por base + ND",
+      "RecalculateLabel": "Recalcular a DC: base {base} + ND {cr}",
+      "DcBaseOnly": "A DC ficou só na base",
+      "DcBaseOnlyHint": "Nenhum inimigo tem ND 1 ou mais, então a DC fica em {base}. Digite uma DC ou adicione inimigos."
     },
     "Start": {
       "Title": "Iniciar combate",
@@ -193,7 +258,132 @@
     "Notifications": {
       "NoEarlierPhase": "Não há fase anterior: o combate começou nesta fase. Para mudar quem age agora, mova o combatente para a fase atual.",
       "OnlyGmBack": "Só o Mestre pode voltar fases.",
-      "Error": "SC - Venaerys's Initiative encontrou um erro e voltou ao comportamento nativo nesta ação. Detalhes no console."
+      "Error": "SC - Venaerys's Initiative encontrou um erro e voltou ao comportamento nativo nesta ação. Detalhes no console.",
+      "TrackerReplaced": "Outro módulo substituiu o tracker de combate: as fases não aparecem nele. As regras das fases continuam valendo."
+    },
+    "Theme": {
+      "ember": "Brasa",
+      "verdant": "Verdejante",
+      "arcane": "Arcano",
+      "tide": "Maré",
+      "forge": "Forja",
+      "ash": "Cinzas",
+      "midnight": "Meia-noite",
+      "bloodmoon": "Lua de Sangue",
+      "neon": "Neon",
+      "stoneforge": "Forja de Pedra",
+      "catacomb": "Catacumba",
+      "sanctuary": "Santuário",
+      "underworld": "Submundo",
+      "moss": "Musgo",
+      "light": "Claro",
+      "sepia": "Sépia",
+      "parchment": "Pergaminho",
+      "holo": "Holograma",
+      "phosphor": "Fósforo",
+      "cyber": "Cibernético",
+      "hud": "HUD holográfico",
+      "dnd5e": "D&D 5e",
+      "pf2e": "Pathfinder 2e",
+      "daggerheart": "Daggerheart",
+      "coc7": "Call of Cthulhu",
+      "contrast": "Alto contraste"
+    },
+    "ThemeFamily": {
+      "Dark": "Escuros",
+      "Stone": "Pedra",
+      "Light": "Claros",
+      "Scifi": "Sci-fi",
+      "System": "Sistemas de jogo",
+      "Special": "Especiais"
+    },
+    "Automation": {
+      "Title": "Ações ao começar",
+      "CountOne": "1 ação",
+      "CountMany": "{count} ações",
+      "Empty": "Nenhuma ação",
+      "Add": "Adicionar ação…",
+      "Requires": "Exige o módulo {module}",
+      "Note": "Macros só rodam se o autor for o Mestre. Ações locais não aparecem para jogadores que não veem a fase.",
+      "Enabled": "Ação ligada",
+      "MoveUp": "Mover ação para cima",
+      "MoveDown": "Mover ação para baixo",
+      "Delete": "Apagar ação",
+      "DeleteTitle": "Apagar ação",
+      "DeleteBody": "Apagar esta ação da fase '{phase}'?",
+      "PickFile": "Escolher arquivo",
+      "DropHint": "Solte um documento aqui",
+      "NoMacro": "— nenhuma macro —",
+      "Failed": "{phase}: a ação \"{kind}\" falhou. Detalhes no console.",
+      "MacroRefused": "A macro '{macro}' não rodou: só macros escritas por um Mestre rodam a partir de uma fase.",
+      "Local": "Em todo cliente que vê a fase",
+      "Gm": "No Mestre",
+      "Kinds": {
+        "screenMessage": "Mensagem na tela",
+        "sound": "Som",
+        "hook": "Hook",
+        "chatMessage": "Mensagem no chat",
+        "macro": "Macro",
+        "rollTable": "Tabela de rolagem",
+        "jumpScare": "Jump Scare",
+        "puzzle": "Puzzle",
+        "resource": "Recurso"
+      },
+      "Fields": {
+        "text": "Texto",
+        "audience": "Quem vê",
+        "src": "Arquivo de áudio",
+        "volume": "Volume (%)",
+        "name": "Nome do hook",
+        "macroUuid": "Macro",
+        "tableUuid": "Tabela de rolagem",
+        "scareId": "Id do susto",
+        "puzzleUuid": "Página do puzzle",
+        "action": "Ação",
+        "target": "Recurso de quem",
+        "actorUuid": "Ator",
+        "resourceId": "Id do recurso",
+        "operation": "Operação",
+        "amount": "Quantidade"
+      },
+      "Choices": {
+        "all": "Todos",
+        "gm": "Só o Mestre",
+        "open": "Abrir",
+        "arm": "Armar",
+        "trigger": "Disparar",
+        "members": "Os combatentes da fase",
+        "party": "O grupo",
+        "combatants": "Todos os combatentes",
+        "actor": "Um ator",
+        "add": "Somar",
+        "subtract": "Subtrair",
+        "set": "Definir",
+        "restore": "Restaurar"
+      }
+    },
+    "Conflicts": {
+      "midiAutoReroll": "Combate com fases: o \"Rerrolar iniciativa automaticamente\" do midi-qol está ligado. Ele rerrola todos e volta o turno a cada rodada, o que move o ponteiro da fase e repete os eventos de turno. Desligue-o nas regras opcionais do midi-qol para combates com fases.",
+      "midiRecordAoo": "Combate com fases: o \"Registrar ataques de oportunidade\" do midi-qol está ligado. Todo ataque de um membro da fase que não está no ponteiro conta como ataque de oportunidade e gasta a reação dele. Deixe-o em \"Nenhum\" para combates com fases.",
+      "dockHideFirstRound": "Combate com fases: o \"Esconder até o primeiro turno\" do Combat Tracker Dock está ligado. Na rodada 1, ele esconde dos jogadores os inimigos de uma fase até cada um estar no ponteiro. Desligue-o para combates com fases."
+    },
+    "Keybindings": {
+      "markOwnDone": {
+        "Name": "Marcar meus combatentes como feitos",
+        "Hint": "Marca como feitos os seus combatentes da fase atual. Para o Mestre, os combatentes que nenhum jogador controla."
+      },
+      "advancePhase": {
+        "Name": "Avançar fase",
+        "Hint": "Leva o combate com fases para a próxima fase, como o botão Próxima do Mestre."
+      },
+      "previousPhase": {
+        "Name": "Voltar fase",
+        "Hint": "Volta o combate com fases uma fase."
+      },
+      "showTracker": {
+        "Name": "Mostrar o tracker de combate",
+        "Hint": "Traz o tracker de combate para a frente: a janela destacada, se aberta, senão a aba da barra lateral."
+      }
     }
   }
 }

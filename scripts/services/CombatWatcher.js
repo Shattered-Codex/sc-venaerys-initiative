@@ -5,59 +5,60 @@ import ErrorGuard from "./ErrorGuard.js";
 import FrameScheduler from "./FrameScheduler.js";
 
 /**
- * Keeps the phase window in step with the combat on every client: bursts of
- * combat hooks become one render on the next frame, a change of nothing but
- * done marks becomes a patch of the rows involved, the window opens when a
- * phased combat starts (if this user wants it) and closes when its combat is
- * deleted.
+ * Keeps the combat tracker in step with what the core does not render by
+ * itself: a done mark written without a render becomes a patch of the rows
+ * involved (sidebar and popout), a setting or the GM's busy state asks for a
+ * render, and the tracker comes forward when a phased combat starts (if this
+ * user wants it). Combat and combatant changes are rendered by the core.
  */
 export default class CombatWatcher {
-  #full = false;
-  #header = false;
+  #render = false;
   #patches = new Set();
-  #app = null;
 
-  constructor({ createApp, requestFrame }) {
-    this.createApp = createApp;
+  constructor({ patchDone, requestFrame }) {
+    this.patchDone = patchDone;
     this.scheduler = new FrameScheduler(ErrorGuard.wrap("render", () => this.flush()), { requestFrame });
   }
 
-  get app() {
-    return this.#app;
+  static get tracker() {
+    return globalThis.ui?.combat ?? null;
   }
 
+  /** The tracker in its own window (the module's `open` API). */
   open() {
-    this.#app ??= this.createApp();
-    return this.#app.render({ force: true });
+    return CombatWatcher.tracker?.renderPopout();
   }
 
   close() {
-    return this.#app?.rendered ? this.#app.close() : undefined;
+    return CombatWatcher.tracker?.popout?.close();
   }
 
   toggle() {
-    return this.#app?.rendered ? this.close() : this.open();
+    return CombatWatcher.tracker?.popout?.rendered ? this.close() : this.open();
   }
 
-  /** On `ready`: a phased combat already under way reopens the window after a reload. */
+  /** Brings the combat tab (or its popout) forward on this client. */
+  show() {
+    const tracker = CombatWatcher.tracker;
+    if (!tracker) return;
+    if (tracker.popout?.rendered) tracker.popout.bringToFront?.();
+    else tracker.activate?.();
+  }
+
+  /** On `ready`: a phased combat already under way shows the tracker again after a reload. */
   openIfRunning() {
     const combat = game.combat;
-    if (combat?.started && CombatSnapshot.isPhased(combat) && getSetting(SETTINGS.openOnStart)) this.open();
+    if (combat?.started && CombatSnapshot.isPhased(combat) && getSetting(SETTINGS.openOnStart)) this.show();
   }
 
-  render({ headerOnly = false } = {}) {
-    if (headerOnly) this.#header = true;
-    else this.#full = true;
+  render() {
+    this.#render = true;
     this.scheduler.schedule();
   }
 
-  onUpdateCombat(combat, changed) {
+  onUpdateCombat(combat) {
     const startedNow = combat.previous?.round === 0 && combat.round >= 1;
-    if (startedNow && combat === game.combat && CombatSnapshot.isPhased(combat) && getSetting(SETTINGS.openOnStart) && !this.#app?.rendered) {
-      this.open();
-      return;
-    }
-    this.render();
+    if (startedNow && combat === game.combat && CombatSnapshot.isPhased(combat) && getSetting(SETTINGS.openOnStart)) this.show();
   }
 
   /** Only `done` changed: the rows can be patched instead of rendered. The server stamps `_stats` on every update. */
@@ -70,30 +71,17 @@ export default class CombatWatcher {
   }
 
   onUpdateCombatant(combatant, changes) {
-    if (!CombatWatcher.isDoneOnly(changes)) return this.render();
+    if (!CombatWatcher.isDoneOnly(changes) || combatant.parent !== CombatWatcher.tracker?.viewed) return;
     this.#patches.add(combatant.id);
     this.scheduler.schedule();
-    return undefined;
-  }
-
-  onDeleteCombat(combat) {
-    if (this.#app?.combatId === combat.id) this.close();
   }
 
   flush() {
-    const app = this.#app;
-    const full = this.#full;
-    const header = this.#header;
+    const render = this.#render;
     const patches = [...this.#patches];
-    this.#full = false;
-    this.#header = false;
+    this.#render = false;
     this.#patches.clear();
-    if (!app?.rendered) return;
-    if (full || (patches.length && !app.patchDone(patches))) {
-      app.render();
-      return;
-    }
-    // The GM's panel reads the done marks too (phase complete, advance waiting).
-    if (header || (patches.length && game.user.isGM)) app.render({ parts: ["header"] });
+    // The GM's panel reads the done marks too (phase complete), so the GM renders instead of patching.
+    if (render || (patches.length && (game.user.isGM || !this.patchDone(patches)))) CombatWatcher.tracker?.render();
   }
 }

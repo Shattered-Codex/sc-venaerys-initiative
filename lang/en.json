@@ -8,7 +8,9 @@
       "Fast": "Fast",
       "Enemies": "Enemies",
       "Slow": "Slow",
-      "New": "New phase"
+      "New": "New phase",
+      "Lair": "Lair Actions",
+      "NewEvent": "New event"
     },
     "Settings": {
       "enabledByDefault": {
@@ -28,12 +30,48 @@
         "Hint": "When off, only the GM sees the combat's DC."
       },
       "openOnStart": {
-        "Name": "Open the phase window when combat starts",
-        "Hint": "Opens the phase window on this client whenever a phased combat begins."
+        "Name": "Show the combat tracker when combat starts",
+        "Hint": "Brings the combat tab (or its popout) forward on this client whenever a phased combat begins."
       },
       "phaseTemplate": {
         "Name": "Phase template",
         "Hint": "The ordered phases each new combat copies."
+      },
+      "theme": {
+        "Name": "Theme",
+        "Hint": "Colors of the module's screens and of the phase sections, for everyone in this world."
+      },
+      "dcSource": {
+        "Name": "Where the DC comes from",
+        "Hint": "Typed: every combat starts with the default DC. Base + CR: the base plus the highest CR among the enemies of the Enemies phase, updated until the combat starts.",
+        "Choices": {
+          "manual": "Typed by the GM",
+          "baseCr": "Base + CR"
+        }
+      },
+      "dcBase": {
+        "Name": "DC base",
+        "Hint": "Added to the reference CR when the DC is Base + CR. A fractional CR counts 0."
+      },
+      "natural20": {
+        "Name": "Natural 20 on initiative",
+        "Hint": "What a natural 20 on the kept d20 does. A fixed initiative score has no natural roll.",
+        "Choices": {
+          "none": "Nothing: only the total counts",
+          "autoSuccess": "Automatic success: acts in Fast"
+        }
+      },
+      "natural1": {
+        "Name": "Natural 1 on initiative",
+        "Hint": "What a natural 1 on the kept d20 does. A fixed initiative score has no natural roll.",
+        "Choices": {
+          "none": "Nothing: only the total counts",
+          "autoFail": "Automatic failure: acts in Slow"
+        }
+      },
+      "suggestFromSheet": {
+        "Name": "Suggest boss phases from the sheet",
+        "Hint": "An enemy entering a combat goes to the creature phase named exactly like one of its items (a feature called \"Boss\" goes to Boss; \"Boss Fight\" does not). Only a default: the GM can still move it."
       }
     },
     "Config": {
@@ -42,20 +80,19 @@
       "MenuHint": "Phase order, DC and the other options of SC - Venaerys's Initiative.",
       "Title": "SC - Venaerys's Initiative · Settings",
       "Tabs": {
-        "general": "General",
+        "world": "World",
+        "appearance": "Appearance",
         "phases": "Phases",
+        "client": "This client",
         "help": "Help"
       },
       "Sections": {
         "combat": "Combat",
         "dc": "DC",
-        "window": "Window"
+        "window": "Window",
+        "theme": "Theme"
       },
-      "ScopeWorld": "World · GM only",
-      "ScopeClient": "Per user",
       "Range": "{min} to {max}",
-      "On": "On",
-      "Off": "Off",
       "Decrease": "Decrease {name}",
       "Increase": "Increase {name}",
       "Save": "Save",
@@ -77,8 +114,6 @@
         "NameEmpty": "Give the phase a name.",
         "Add": "Add phase",
         "Restore": "Restore defaults",
-        "Unsaved": "Unsaved changes",
-        "Saved": "Phases saved.",
         "OrderRefused": "{fast}, {enemies} and {slow} keep this order.",
         "RestoreTitle": "Restore default phases",
         "RestoreBody": "Restore the default phases? The extra phases you created and the names you changed will be lost. Combats in progress don't change.",
@@ -86,13 +121,38 @@
         "DeleteTitle": "Delete phase",
         "DeleteBody": "Delete the phase '{name}'? Combats in progress don't change.",
         "DeleteConfirm": "Delete",
-        "Cancel": "Cancel"
+        "Cancel": "Cancel",
+        "AddEvent": "Add event phase",
+        "Event": "Event",
+        "EventHint": "Only event markers act in this phase. In combat, the GM adds one with the + on the phase; a combat without a marker skips the phase."
+      },
+      "TabHints": {
+        "world": "GM-only rules for every combat in this world.",
+        "appearance": "Colors of the module's screens and phase sections, for everyone in this world. The combatant rows keep Foundry's own look.",
+        "phases": "Order of the phases in each round. Combats in progress don't change.",
+        "client": "Your own preferences, on this computer only.",
+        "help": "How phases behave with turn events, pending combatants and other modules."
+      },
+      "TabsLabel": "Settings sections",
+      "Unsaved": "Unsaved changes",
+      "SavedPill": "Saved",
+      "ResetTab": "Reset tab",
+      "Close": "Close",
+      "UnsavedTab": "{tab}: unsaved changes",
+      "Appearance": {
+        "Current": "Current",
+        "Previewing": "Previewing {theme} on this computer only. Close without saving to go back to {saved}.",
+        "Specimen": "Sample"
       }
     },
     "Help": {
+      "Moving": {
+        "Title": "Moving combatants",
+        "Body": "During the combat, move a combatant to another phase with the select on its row, by dragging the row onto another phase, or with \"Move to phase…\" in the row's right-click menu. A moved combatant stays pinned to that phase; choose Automatic to let the roll decide again."
+      },
       "TurnEvents": {
         "Title": "Turn events",
-        "Body": "Automatic start-of-turn effects (recharges, ongoing damage, reaction) happen for every member at the start of the phase. Automatic end-of-turn effects only happen for the highlighted member, at the end of the phase. Everyone else resolves end-of-turn effects (saving throws, effects that last until the end of their next turn) by hand when marking Done."
+        "Body": "Automatic start-of-turn effects (recharges, ongoing damage, reaction) happen for every member at the start of the phase. Automatic end-of-turn effects only happen for the member marked with the hourglass (GM only), at the end of the phase. Everyone else resolves end-of-turn effects (saving throws, effects that last until the end of their next turn) by hand when marking Done."
       },
       "Unconfirmed": {
         "Title": "Starting without confirmation",
@@ -112,16 +172,11 @@
       }
     },
     "Tracker": {
-      "Title": "Combat Phases",
-      "OpenButton": "Phases",
-      "OpenLabel": "Open the phase window",
       "Round": "Round {round}",
       "NotStarted": "Not started",
       "InCombat": "In combat",
       "Dc": "DC {dc}",
       "DcShort": "DC",
-      "NoCombat": "No active combat.",
-      "PhasesOff": "Phased initiative is off in this combat.",
       "Now": "Now",
       "Past": "Phase finished",
       "DoneCount": "{done}/{total} done",
@@ -149,7 +204,13 @@
       "WaitingForGm": "Waiting for the GM",
       "Expand": "Expand {name}",
       "Collapse": "Collapse {name}",
-      "PastLocked": "Only the GM can unmark a finished phase."
+      "PastLocked": "Only the GM can unmark a finished phase.",
+      "PointerLabel": "Automatic turn end: {name} gets the core's end of turn (effects, saving throws) when the phase ends",
+      "MoveToPhase": "Move to phase…",
+      "MoveTitle": "Move {name}",
+      "Move": "Move",
+      "CompleteGroupLabel": "Mark every {name} in {phase} done",
+      "AddMarkerLabel": "Add an event marker to {phase}"
     },
     "Gm": {
       "PhasesOn": "Phases on",
@@ -177,7 +238,11 @@
       "PhaseComplete": "Phase complete",
       "PhaseCompleteHint": "Automatic advance is off. Advance when the table is ready.",
       "NoPhases": "No phase with combatants",
-      "NoPhasesHint": "Every combatant is defeated or has no phase. The round won't turn by itself."
+      "NoPhasesHint": "Every combatant is defeated or has no phase. The round won't turn by itself.",
+      "Recalculate": "Recalculate the DC from base + CR",
+      "RecalculateLabel": "Recalculate the DC: base {base} + CR {cr}",
+      "DcBaseOnly": "The DC is only the base",
+      "DcBaseOnlyHint": "No enemy has a CR of 1 or more, so the DC stays at {base}. Type a DC or add enemies."
     },
     "Start": {
       "Title": "Start combat",
@@ -193,7 +258,132 @@
     "Notifications": {
       "NoEarlierPhase": "There is no previous phase: the combat started in this phase. To change who acts now, move the combatant to the current phase.",
       "OnlyGmBack": "Only the GM can go back phases.",
-      "Error": "SC - Venaerys's Initiative hit an error and fell back to native behavior for this action. Details in the console."
+      "Error": "SC - Venaerys's Initiative hit an error and fell back to native behavior for this action. Details in the console.",
+      "TrackerReplaced": "Another module replaced the combat tracker: the phases are not shown in it. The phase rules keep running."
+    },
+    "Theme": {
+      "ember": "Ember",
+      "verdant": "Verdant",
+      "arcane": "Arcane",
+      "tide": "Tide",
+      "forge": "Forge",
+      "ash": "Ash",
+      "midnight": "Midnight",
+      "bloodmoon": "Bloodmoon",
+      "neon": "Neon",
+      "stoneforge": "Stoneforge",
+      "catacomb": "Catacomb",
+      "sanctuary": "Sanctuary",
+      "underworld": "Underworld",
+      "moss": "Moss",
+      "light": "Light",
+      "sepia": "Sepia",
+      "parchment": "Parchment",
+      "holo": "Hologram",
+      "phosphor": "Phosphor",
+      "cyber": "Cyber",
+      "hud": "Holo HUD",
+      "dnd5e": "D&D 5e",
+      "pf2e": "Pathfinder 2e",
+      "daggerheart": "Daggerheart",
+      "coc7": "Call of Cthulhu",
+      "contrast": "High contrast"
+    },
+    "ThemeFamily": {
+      "Dark": "Dark",
+      "Stone": "Stone",
+      "Light": "Light",
+      "Scifi": "Sci-fi",
+      "System": "Game systems",
+      "Special": "Special"
+    },
+    "Automation": {
+      "Title": "Actions when it starts",
+      "CountOne": "1 action",
+      "CountMany": "{count} actions",
+      "Empty": "No action",
+      "Add": "Add action…",
+      "Requires": "Needs the module {module}",
+      "Note": "Macros only run if a GM wrote them. Local actions are not shown to players who cannot see the phase.",
+      "Enabled": "Action on",
+      "MoveUp": "Move action up",
+      "MoveDown": "Move action down",
+      "Delete": "Delete action",
+      "DeleteTitle": "Delete action",
+      "DeleteBody": "Delete this action from the phase '{phase}'?",
+      "PickFile": "Choose a file",
+      "DropHint": "Drop a document here",
+      "NoMacro": "— no macro —",
+      "Failed": "{phase}: the action \"{kind}\" failed. Details in the console.",
+      "MacroRefused": "The macro '{macro}' was not run: only macros written by a GM run from a phase.",
+      "Local": "On every client that sees the phase",
+      "Gm": "On the GM",
+      "Kinds": {
+        "screenMessage": "Message on screen",
+        "sound": "Sound",
+        "hook": "Hook",
+        "chatMessage": "Chat message",
+        "macro": "Macro",
+        "rollTable": "Roll table",
+        "jumpScare": "Jump Scare",
+        "puzzle": "Puzzle",
+        "resource": "Resource"
+      },
+      "Fields": {
+        "text": "Text",
+        "audience": "Who sees it",
+        "src": "Audio file",
+        "volume": "Volume (%)",
+        "name": "Hook name",
+        "macroUuid": "Macro",
+        "tableUuid": "Roll table",
+        "scareId": "Scare id",
+        "puzzleUuid": "Puzzle page",
+        "action": "Action",
+        "target": "Whose resource",
+        "actorUuid": "Actor",
+        "resourceId": "Resource id",
+        "operation": "Operation",
+        "amount": "Amount"
+      },
+      "Choices": {
+        "all": "Everyone",
+        "gm": "GM only",
+        "open": "Open",
+        "arm": "Arm",
+        "trigger": "Trigger",
+        "members": "The phase's combatants",
+        "party": "The party",
+        "combatants": "Every combatant",
+        "actor": "One actor",
+        "add": "Add",
+        "subtract": "Subtract",
+        "set": "Set",
+        "restore": "Restore"
+      }
+    },
+    "Conflicts": {
+      "midiAutoReroll": "Phased combat: midi-qol's \"Auto reroll initiative\" is on. It rerolls everyone and resets the turn every round, which moves the phase pointer and repeats turn events. Turn it off in midi-qol's optional rules for phased combats.",
+      "midiRecordAoo": "Phased combat: midi-qol's \"Record attacks of opportunity\" is on. Every attack by a phase member other than the one under the pointer counts as an attack of opportunity and spends their reaction. Set it to \"None\" for phased combats.",
+      "dockHideFirstRound": "Phased combat: Combat Tracker Dock's \"Hide until first turn\" is on. In round 1 it keeps the enemies of a phase hidden from players until each one is under the pointer. Turn it off for phased combats."
+    },
+    "Keybindings": {
+      "markOwnDone": {
+        "Name": "Mark my combatants done",
+        "Hint": "Marks your combatants in the current phase done. For a GM, the combatants no player owns."
+      },
+      "advancePhase": {
+        "Name": "Advance phase",
+        "Hint": "Moves the phased combat to the next phase, like the GM's Next button."
+      },
+      "previousPhase": {
+        "Name": "Previous phase",
+        "Hint": "Moves the phased combat back one phase."
+      },
+      "showTracker": {
+        "Name": "Show the combat tracker",
+        "Hint": "Brings the combat tracker forward: its popout if open, otherwise the sidebar tab."
+      }
     }
   }
 }

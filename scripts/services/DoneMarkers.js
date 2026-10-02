@@ -16,6 +16,11 @@ export default class DoneMarkers {
     this.adapter = adapter;
   }
 
+  /** A done mark is patched into the tracker rows, so it asks the core for no render. */
+  static options() {
+    return { render: false, [OPERATION_KEY]: { reason: REASONS.done } };
+  }
+
   /** Marks (`done = true`) or unmarks a combatant; refused without permission. */
   async setDone(combat, combatantId, done) {
     const view = CombatSnapshot.from(combat, this.adapter);
@@ -23,20 +28,38 @@ export default class DoneMarkers {
     if (!canToggleDone(view, target, { isGM: game.user.isGM })) return false;
     const value = done ? view.round : null;
     if (target.done === value) return false;
-    await combat.combatants.get(combatantId)?.update({ [DONE_PATH]: value }, { [OPERATION_KEY]: { reason: REASONS.done } });
+    await combat.combatants.get(combatantId)?.update({ [DONE_PATH]: value }, DoneMarkers.options());
     return true;
   }
 
-  /** A player's "end turn": marks their own combatants of the current phase done. */
+  /**
+   * A player's "end turn": marks their own combatants of the current phase
+   * done. A GM owns everyone, so for a GM "their own" are the combatants no
+   * player owns.
+   */
   async markOwn(combat) {
     const view = CombatSnapshot.from(combat, this.adapter);
     const current = currentPhaseId(view);
     if (current === null) return false;
-    const updates = view.combatants
-      .filter((c) => c.isOwner && c.phase === current && c.done !== view.round && canToggleDone(view, c, { isGM: false }))
-      .map((c) => ({ _id: c.id, [DONE_PATH]: view.round }));
+    const mine = (c) => c.isOwner && !(game.user.isGM && c.hasPlayerOwner);
+    return this.#mark(combat, view, view.combatants.filter((c) => mine(c) && c.phase === current && canToggleDone(view, c, { isGM: false })));
+  }
+
+  /** "Complete group": the GM marks every member of a group of the current phase done, defeated ones aside. */
+  async markGroup(combat, combatantIds) {
+    if (!game.user.isGM) return false;
+    const view = CombatSnapshot.from(combat, this.adapter);
+    const current = currentPhaseId(view);
+    if (current === null) return false;
+    const ids = new Set(combatantIds);
+    return this.#mark(combat, view, view.combatants.filter((c) => ids.has(c.id) && c.phase === current && !c.isDefeated));
+  }
+
+  /** One batch of done marks for whoever is not done yet. */
+  async #mark(combat, view, combatants) {
+    const updates = combatants.filter((c) => c.done !== view.round).map((c) => ({ _id: c.id, [DONE_PATH]: view.round }));
     if (!updates.length) return false;
-    await combat.updateEmbeddedDocuments("Combatant", updates, { [OPERATION_KEY]: { reason: REASONS.done } });
+    await combat.updateEmbeddedDocuments("Combatant", updates, DoneMarkers.options());
     return true;
   }
 }

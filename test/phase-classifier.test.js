@@ -116,3 +116,50 @@ describe("rolls, resets and new DCs", () => {
     assert.equal(automaticPhaseOf(player("a", "boss", { initiative: null }), 15, true), "slow");
   });
 });
+
+describe("natural 20 and 1", () => {
+  const on = { natural20: "autoSuccess", natural1: "autoFail" };
+  const off = { natural20: "none", natural1: "none" };
+
+  it("sends a natural 20 to Fast below the DC only with the rule on", () => {
+    assert.equal(phaseForRoll(17, 18, 20, on), "fast");
+    assert.equal(phaseForRoll(17, 18, 20, off), "slow");
+  });
+
+  it("sends a natural 1 to Slow above the DC only with the rule on", () => {
+    assert.equal(phaseForRoll(16, 15, 1, on), "slow");
+    assert.equal(phaseForRoll(16, 15, 1, off), "fast");
+  });
+
+  it("goes by the total without a natural, and with no rules given", () => {
+    assert.equal(phaseForRoll(17, 18, null, on), "slow");
+    assert.equal(phaseForRoll(17, 18, 20), "slow");
+  });
+
+  it("reclassifies a player when the natural of its roll arrives", () => {
+    assert.deepEqual(classifyRoll(player("a", "slow", { initiative: 17, natural: 20 }), 18, on), { id: "a", target: "fast" });
+    assert.equal(classifyRoll(player("a", "slow", { initiative: 17, natural: 20 }), 18, off), null);
+  });
+
+  it("applies the rules on entry, on a new DC and for the automatic phase", () => {
+    assert.equal(classifyCombatant(player("a", null, { side: null, initiative: 16, natural: 1 }), 15, on).target, "slow");
+    const view = combatView({ combatants: [player("a", "fast", { initiative: 17, natural: 20 })] });
+    assert.deepEqual(classifyForDc(view, 19, on), []);
+    assert.deepEqual(classifyAll({ ...view, dc: 19 }, on), []);
+    assert.equal(automaticPhaseOf(player("a", "boss", { initiative: 17, natural: 20 }), 18, true, on), "fast");
+  });
+});
+
+describe("phase suggested by the sheet", () => {
+  it("puts an entering enemy in the suggested phase, unpinned, and keeps it there on a second pass", () => {
+    const change = classifyCombatant(combatant({ id: "g", side: null, phase: null, suggestedPhase: "boss", initiative: 12 }), 15);
+    assert.equal(change.target, "boss");
+    assert.equal("pinned" in change, false);
+    assert.equal(classifyCombatant(enemy("g", "boss", { suggestedPhase: "boss" }), 15), null);
+  });
+
+  it("never overrides the GM's pin, and is the automatic phase of the select", () => {
+    assert.equal(classifyCombatant(enemy("g", "miniBoss", { pinned: true, suggestedPhase: "boss" }), 15), null);
+    assert.equal(automaticPhaseOf(enemy("g", "miniBoss", { pinned: true, suggestedPhase: "boss" }), 15, true), "boss");
+  });
+});

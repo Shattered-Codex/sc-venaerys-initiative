@@ -65,6 +65,25 @@ describe("CombatSnapshot", () => {
     assert.deepEqual({ phase: a.phase, side: a.side, done: a.done }, { phase: null, side: null, done: null });
   });
 
+  it("reads a natural only while the initiative is the one it came with", () => {
+    const natural = (flag, initiative) => CombatSnapshot.naturalOf(fakeCombatant({ id: "a", initiative, flags: { natural: flag } }));
+    assert.equal(natural({ value: 20, initiative: 17 }, 17), 20);
+    assert.equal(natural({ value: 1, initiative: 17 }, 17), 1);
+    assert.equal(natural({ value: 20, initiative: 17 }, 12), null);
+    assert.equal(natural({ value: 7, initiative: 17 }, 17), null);
+    assert.equal(natural(undefined, 17), null);
+  });
+
+  it("reads how the DC was set and the CR from the adapter", () => {
+    assert.deepEqual(CombatSnapshot.dcRuleOf(fakeCombat()), { source: "manual", base: null, referenceCr: null });
+    const baseCr = fakeCombat({ flags: { dc: { value: 12, source: "baseCr", base: 10, referenceCr: 2 } } });
+    assert.deepEqual(CombatSnapshot.dcRuleOf(baseCr), { source: "baseCr", base: 10, referenceCr: 2 });
+    const ogre = fakeCombatant({ id: "o", actor: { type: "npc", system: { details: { cr: 2 }, attributes: { init: { score: 8 } } } } });
+    const [view] = CombatSnapshot.from(fakeCombat({ combatants: [ogre] }), new Dnd5eAdapter()).combatants;
+    assert.equal(view.cr, 2);
+    assert.equal(CombatSnapshot.from(fakeCombat({ combatants: [ogre] }), new SystemAdapter()).combatants[0].cr, null);
+  });
+
   it("falls back to the default DC when the stored one is not a number", () => {
     assert.equal(CombatSnapshot.dcOf(fakeCombat({ flags: { dc: { value: null } } })), 15);
     assert.equal(CombatSnapshot.dcOf(fakeCombat({ flags: { dc: { value: 50 } } })), 50);

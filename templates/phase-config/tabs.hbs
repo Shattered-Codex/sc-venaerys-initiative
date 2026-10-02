@@ -1,8 +1,0 @@
-<nav class="svi-tabs tabs" role="tablist">
-  {{#each tabs as |tab|}}
-  <button type="button" role="tab" class="svi-tab {{tab.cssClass}}" data-action="tab" data-group="{{tab.group}}" data-tab="{{tab.id}}"
-          aria-selected="{{tab.active}}">
-    <i class="{{tab.icon}}" inert></i><span inert>{{localize tab.label}}</span>
-  </button>
-  {{/each}}
-</nav>

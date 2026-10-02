@@ -64,9 +64,9 @@ describe("GM visibility", () => {
   it("sees every phase, empty ones included, and every combatant", () => {
     const view = combatView({ round: 2, on: "a", combatants: [enemy("h", "boss", { hidden: true, visible: true }), player("a", "fast")] });
     const result = visibleCombat(view, asGM);
-    assert.equal(result.phases.length, 6);
+    assert.equal(result.phases.length, 7);
     assert.equal(result.showDc, true);
-    assert.deepEqual(result.phases.map((p) => p.state), ["past", "past", "past", "current", "future", "future"]);
+    assert.deepEqual(result.phases.map((p) => p.state), ["past", "past", "past", "current", "future", "future", "future"]);
   });
 
   it("marks every phase future before the start", () => {
