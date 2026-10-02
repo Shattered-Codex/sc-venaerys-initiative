@@ -397,6 +397,10 @@
   border-radius: var(--svi-radius-sm);
 }
 .sc-venaerys-initiative .svi-chip .svi-muted { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; }
+.sc-venaerys-initiative .svi-chip .svi-roll-btn { height: 22px; padding: 0 6px; gap: 4px; font-size: 11px; }
+.sc-venaerys-initiative .svi-you-pending { flex-wrap: wrap; align-items: center; }
+.sc-venaerys-initiative .svi-you-pending > span { flex: 1; min-width: 12em; }
+.sc-venaerys-initiative .svi-warning-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* ---------- Start confirmation ---------- */
 .sc-venaerys-initiative.svi-start-dialog .svi-start-lead { color: var(--svi-text); font-weight: 500; }

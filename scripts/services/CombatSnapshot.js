@@ -1,4 +1,4 @@
-import { COMBATANT_FLAGS, COMBAT_FLAGS, DC_SOURCES, MODULE_ID, SIDES } from "../constants/module-constants.js";
+import { COMBATANT_FLAGS, COMBAT_FLAGS, CRITICALS, DC_SOURCES, MODULE_ID, SIDES } from "../constants/module-constants.js";
 import { schemaEntry } from "../constants/settings-schema.js";
 import { validatePlan } from "../helpers/phase-plan.js";
 
@@ -50,11 +50,17 @@ export default class CombatSnapshot {
     return { source: DC_SOURCES.baseCr, base: number(dc.base), referenceCr: number(dc.referenceCr) };
   }
 
-  /** The natural d20 recorded for the combatant's current initiative; a later initiative makes it stale. */
+  /**
+   * The critical or fumble recorded for the combatant's current initiative; a
+   * later initiative makes it stale. Marks written as a natural 20 or 1 read
+   * as a critical or a fumble.
+   */
   static naturalOf(combatant) {
     const natural = CombatSnapshot.flagsOf(combatant)[COMBATANT_FLAGS.natural];
     if (!natural || natural.initiative !== combatant.initiative) return null;
-    return natural.value === 20 || natural.value === 1 ? natural.value : null;
+    if (natural.value === CRITICALS.critical || natural.value === 20) return CRITICALS.critical;
+    if (natural.value === CRITICALS.fumble || natural.value === 1) return CRITICALS.fumble;
+    return null;
   }
 
   /** An event marker: a combatant with no actor that the GM added to an event phase. */

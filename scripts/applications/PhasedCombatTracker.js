@@ -1,5 +1,5 @@
-import { I18N_ROOT, MODULE_ID, TEMPLATE_ROOT } from "../constants/module-constants.js";
-import { projectionSettings } from "../hooks/register-settings.js";
+import { I18N_ROOT, MODULE_ID, ROLL_SOURCES, TEMPLATE_ROOT } from "../constants/module-constants.js";
+import { projectionSettings, rollSettings } from "../hooks/register-settings.js";
 import CombatPhaseProjector from "../services/CombatPhaseProjector.js";
 import CombatSnapshot from "../services/CombatSnapshot.js";
 import ErrorGuard from "../services/ErrorGuard.js";
@@ -64,7 +64,19 @@ export default class PhasedCombatTracker {
       decimals: CONFIG.Combat.initiative?.decimals ?? 2,
       waitingForDialog: game.user.isActiveGM && probe.isWaiting(combat.id),
       expanded: PhasedCombatTracker.expanded,
+      dcName: (dc) => {
+        const key = adapter.dcName(dc);
+        return key ? game.i18n.localize(`${I18N_ROOT}.${key}`) : null;
+      },
+      rollProblem: PhasedCombatTracker.rollProblem(adapter),
     });
+  }
+
+  /** Why the system's own roll cannot work with the DC, when the GM uses it; null otherwise. */
+  static rollProblem(adapter) {
+    if (!game.user.isGM || rollSettings().source !== ROLL_SOURCES.system || !adapter.hasSystemRoll) return null;
+    const key = adapter.systemRollProblem();
+    return key ? game.i18n.localize(`${I18N_ROOT}.${key}`) : null;
   }
 
   /** The phase sections, each row joined with the core's own row context. */
@@ -201,6 +213,18 @@ export default class PhasedCombatTracker {
             const combat = combatOf(this);
             const group = PhasedCombatTracker.groupOf(PhasedCombatTracker.project(combat), target.dataset.key);
             if (group) services().doneMarkers.markGroup(combat, group.children.map((child) => child.id));
+          },
+          sviRoll(event, target) {
+            const combat = combatOf(this);
+            if (combat) services().roller.roll(combat, [target.dataset.combatantId]);
+          },
+          sviRollMine() {
+            const combat = combatOf(this);
+            if (combat) services().roller.rollOwn(combat);
+          },
+          sviRollPending() {
+            const combat = combatOf(this);
+            if (combat) services().roller.rollAll(combat);
           },
           sviAddMarker(event, target) {
             const combat = combatOf(this);

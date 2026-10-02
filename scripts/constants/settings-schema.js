@@ -1,4 +1,4 @@
-import { DC_RANGE, DC_SOURCES, NATURAL_RULES, SETTINGS } from "./module-constants.js";
+import { DC_RANGE, DC_SOURCES, NATURAL_RULES, ROLL_SOURCES, SETTINGS } from "./module-constants.js";
 import { DEFAULT_PHASES } from "./default-phases.js";
 import { normalizePlan } from "../helpers/phase-plan.js";
 import { DEFAULT_THEME, THEMES, normalizeTheme } from "../helpers/themes.js";
@@ -16,7 +16,7 @@ export const SETTING_TABS = Object.freeze([
 ].map(Object.freeze));
 
 /** Sections inside a tab, in order. */
-export const SETTING_SECTIONS = Object.freeze(["combat", "dc", "window", "theme"]);
+export const SETTING_SECTIONS = Object.freeze(["combat", "roll", "dc", "window", "theme"]);
 
 /**
  * Every module setting, described once: it drives both registration and the
@@ -28,13 +28,17 @@ export const SETTINGS_SCHEMA = Object.freeze([
   { key: SETTINGS.enabledByDefault, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
   { key: SETTINGS.autoAdvance, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: "view" },
   { key: SETTINGS.suggestFromSheet, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
+  { key: SETTINGS.rollSource, scope: "world", type: "choice", choices: Object.values(ROLL_SOURCES), default: ROLL_SOURCES.system, tab: "world", section: "roll", react: null },
+  // Empty means the system adapter's own default formula.
+  { key: SETTINGS.rollFormula, scope: "world", type: "string", maxLength: 200, default: "", tab: "world", section: "roll", react: null },
   { key: SETTINGS.defaultDc, scope: "world", type: "number", range: { ...DC_RANGE, step: 1 }, default: 15, tab: "world", section: "dc", react: null },
   { key: SETTINGS.dcSource, scope: "world", type: "choice", choices: Object.values(DC_SOURCES), default: DC_SOURCES.manual, tab: "world", section: "dc", react: "view" },
   { key: SETTINGS.dcBase, scope: "world", type: "number", range: { min: 0, max: 30, step: 1 }, default: 10, tab: "world", section: "dc", react: null },
   { key: SETTINGS.showDcToPlayers, scope: "world", type: "boolean", default: false, tab: "world", section: "dc", react: "view" },
-  { key: SETTINGS.natural20, scope: "world", type: "choice", choices: [NATURAL_RULES.none, NATURAL_RULES.autoSuccess], default: NATURAL_RULES.autoSuccess, tab: "world", section: "dc", react: null },
-  { key: SETTINGS.natural1, scope: "world", type: "choice", choices: [NATURAL_RULES.none, NATURAL_RULES.autoFail], default: NATURAL_RULES.autoFail, tab: "world", section: "dc", react: null },
+  { key: SETTINGS.natural20, scope: "world", type: "choice", choices: [NATURAL_RULES.none, NATURAL_RULES.autoSuccess, NATURAL_RULES.oneDegree], default: NATURAL_RULES.autoSuccess, tab: "world", section: "roll", react: null },
+  { key: SETTINGS.natural1, scope: "world", type: "choice", choices: [NATURAL_RULES.none, NATURAL_RULES.autoFail, NATURAL_RULES.oneDegree], default: NATURAL_RULES.autoFail, tab: "world", section: "roll", react: null },
   { key: SETTINGS.openOnStart, scope: "client", type: "boolean", default: true, tab: "client", section: "window", react: null },
+  { key: SETTINGS.rollPrompt, scope: "client", type: "boolean", default: true, tab: "client", section: "window", react: null },
   { key: SETTINGS.phaseTemplate, scope: "world", type: "array", default: DEFAULT_PHASES, tab: null, section: null, react: null },
   { key: SETTINGS.theme, scope: "world", type: "choice", choices: THEMES, default: DEFAULT_THEME, tab: "appearance", section: "theme", react: "theme" },
 ].map(Object.freeze));
@@ -54,6 +58,8 @@ export function coerceSetting(entry, raw) {
       const { min = -Infinity, max = Infinity } = entry.range ?? {};
       return Math.min(Math.max(Math.round(value), min), max);
     }
+    case "string":
+      return typeof raw === "string" ? raw.trim().slice(0, entry.maxLength ?? 200) : entry.default;
     case "choice":
       return entry.key === SETTINGS.theme ? normalizeTheme(raw) : entry.choices.includes(raw) ? raw : entry.default;
     case "array":

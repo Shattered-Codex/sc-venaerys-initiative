@@ -49,6 +49,9 @@ export const SETTINGS = Object.freeze({
   natural20: "natural20",
   natural1: "natural1",
   suggestFromSheet: "suggestFromSheet",
+  rollPrompt: "rollPrompt",
+  rollSource: "rollSource",
+  rollFormula: "rollFormula",
 });
 
 /** Combat flags. */
@@ -94,13 +97,25 @@ export const MARKER_IMG = "icons/svg/castle.svg";
 /** Mirrors CONST.TOKEN_DISPOSITIONS so pure code does not need Foundry loaded. */
 export const DISPOSITION = Object.freeze({ SECRET: -2, HOSTILE: -1, NEUTRAL: 0, FRIENDLY: 1 });
 
-export const DC_RANGE = Object.freeze({ min: 1, max: 40 });
+/** Wide enough for d100 thresholds and high-level DCs; a difficulty level (1, 2, 3) fits too. */
+export const DC_RANGE = Object.freeze({ min: 0, max: 100 });
 
 /** Where a combat's DC comes from: typed by the GM, or a base plus the reference CR. */
 export const DC_SOURCES = Object.freeze({ manual: "manual", baseCr: "baseCr" });
 
-/** What a natural 20 or 1 on the initiative d20 does. */
-export const NATURAL_RULES = Object.freeze({ none: "none", autoSuccess: "autoSuccess", autoFail: "autoFail" });
+/**
+ * What a critical or a fumble on the roll against the DC does: nothing, pass
+ * or fail outright, or move the result one degree (a pass within 10 of the
+ * DC, as a natural 20 or 1 does in Pathfinder 2e). The settings keep their
+ * original names, `natural20` and `natural1`.
+ */
+export const NATURAL_RULES = Object.freeze({ none: "none", autoSuccess: "autoSuccess", autoFail: "autoFail", oneDegree: "oneDegree" });
+
+/** A roll's extreme result, read by the system adapter (a natural 20 or 1, matching duality dice, a d100 01). */
+export const CRITICALS = Object.freeze({ critical: "critical", fumble: "fumble" });
+
+/** Where the roll against the DC comes from: the system's own initiative roll, or the GM's formula. */
+export const ROLL_SOURCES = Object.freeze({ system: "system", formula: "formula" });
 
 /** How long a phase advance may wait for its own write before the lock gives up. */
 export const ADVANCE_LOCK_MS = 5000;

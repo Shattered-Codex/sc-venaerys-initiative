@@ -75,7 +75,14 @@
             <li class="svi-chip">
                 {{#if img}}<img class="svi-portrait svi-small" src="{{ img }}" alt="" loading="lazy">{{/if}}
                 <span>{{ name }}</span>
+                {{#if roll}}
+                <button type="button" class="svi-btn svi-small svi-roll-btn" data-action="sviRoll" data-combatant-id="{{ id }}"
+                        aria-label="{{ roll.label }}" data-tooltip="{{ roll.label }}">
+                    <i class="fa-solid fa-dice-d20" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Roll" }}</span>
+                </button>
+                {{else}}
                 <span class="svi-muted"><i class="fa-solid fa-dice" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}</span>
+                {{/if}}
             </li>
             {{/each}}
         </ul>

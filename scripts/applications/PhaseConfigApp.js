@@ -16,7 +16,7 @@ import {
 } from "../helpers/phase-plan.js";
 import { CONSEQUENCE_KINDS, CONSEQUENCE_KIND_IDS, normalizeConsequence, normalizeConsequences } from "../helpers/consequence-kinds.js";
 import { THEME_FAMILIES, normalizeTheme } from "../helpers/themes.js";
-import { getSetting, setSetting } from "../hooks/register-settings.js";
+import { getSetting, registeredDefault, setSetting } from "../hooks/register-settings.js";
 import ThemeApplier from "../services/ThemeApplier.js";
 import SortableList from "./SortableList.js";
 
@@ -42,6 +42,9 @@ const SETTING_FIELD = "[data-setting]";
  * fields; switching tabs only touches the DOM. Players get "This client".
  */
 export default class PhaseConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
+  /** The running system's default roll formula, shown in the empty formula field; set at `init`. */
+  static defaultFormula = () => "";
+
   static DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-config`,
     classes: [MODULE_ID, "svi-config"],
@@ -222,11 +225,13 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
             isToggle: entry.type === "boolean",
             isNumber: entry.type === "number",
             isSelect: entry.type === "choice",
+            isText: entry.type === "string",
+            placeholder: entry.key === SETTINGS.rollFormula ? PhaseConfigApp.defaultFormula() : "",
             choices: entry.type === "choice"
               ? entry.choices.map((choice) => ({ value: choice, label: localize(T(`Settings.${entry.key}.Choices.${choice}`)), selected: choice === value }))
               : [],
             value,
-            defaultValue: String(entry.default),
+            defaultValue: String(registeredDefault(entry.key)),
             min: entry.range?.min,
             max: entry.range?.max,
             step: entry.range?.step ?? 1,

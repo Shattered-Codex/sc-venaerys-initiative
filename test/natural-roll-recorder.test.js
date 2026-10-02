@@ -28,14 +28,14 @@ describe("NaturalRollRecorder", () => {
     const { ana, recorder } = setup();
     await recorder.onCreateChatMessage(message());
     assert.equal(ana.updates.length, 1);
-    assert.deepEqual(ana.updates[0].data[NATURAL], { value: 20, initiative: 17 });
+    assert.deepEqual(ana.updates[0].data[NATURAL], { value: "critical", initiative: 17 });
     assert.deepEqual(ana.updates[0].options[KEY], { reason: "natural" });
   });
 
   it("finds the combatant by actor when the speaker has no token", async () => {
     const { ana, recorder } = setup();
     await recorder.onCreateChatMessage(message({ natural: 1, speaker: { actor: "actor-ana" } }));
-    assert.deepEqual(ana.updates[0].data[NATURAL], { value: 1, initiative: 17 });
+    assert.deepEqual(ana.updates[0].data[NATURAL], { value: "fumble", initiative: 17 });
   });
 
   it("ignores other people's messages, other rolls, other totals and combatants it does not own", async () => {
@@ -64,8 +64,16 @@ describe("NaturalRollRecorder", () => {
   });
 
   it("does not write the same natural twice", async () => {
-    const { ana, recorder } = setup({ flags: { natural: { value: 20, initiative: 17 } } });
+    const { ana, recorder } = setup({ flags: { natural: { value: "critical", initiative: 17 } } });
     await recorder.onCreateChatMessage(message());
+    assert.equal(ana.updates.length, 0);
+  });
+
+  it("leaves the module's own formula rolls alone: they carry their critical already", async () => {
+    const { ana, recorder } = setup();
+    const sent = message();
+    sent.getFlag = (scope, key) => (scope === "core" && key === "initiativeRoll") || (scope === KEY && key === "formulaRoll") || undefined;
+    await recorder.onCreateChatMessage(sent);
     assert.equal(ana.updates.length, 0);
   });
 });

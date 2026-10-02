@@ -45,8 +45,8 @@ describe("dc rules", () => {
   });
 
   it("keeps the suggestion inside the DC range", () => {
-    assert.equal(suggestedDc([enemy("tarrasque", "enemies", { cr: 30 })], 30).value, 40);
-    assert.equal(suggestedDc([], 0).value, 1);
+    assert.equal(suggestedDc([enemy("tarrasque", "enemies", { cr: 30 })], 80).value, 100);
+    assert.equal(suggestedDc([], 0).value, 0);
   });
 
   it("compares a stored DC with a suggestion", () => {

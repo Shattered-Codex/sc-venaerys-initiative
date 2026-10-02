@@ -30,8 +30,10 @@ export default class CombatPhaseProjector {
    * @param {number} [options.decimals]            CONFIG.Combat.initiative.decimals
    * @param {boolean} [options.waitingForDialog]   the active GM's advance waits on a dialog
    * @param {Set<string>} [options.expanded]       open groups and finished phases of this window
+   * @param {(dc: number) => string|null} [options.dcName]  the DC's name where the system reads it as a level
+   * @param {string|null} [options.rollProblem]     why the system's roll cannot work with the DC (GM only)
    */
-  static project(view, user, settings, { localize, format, decimals = 2, waitingForDialog = false, expanded = new Set() }) {
+  static project(view, user, settings, { localize, format, decimals = 2, waitingForDialog = false, expanded = new Set(), dcName = () => null, rollProblem = null }) {
     const isGM = !!user.isGM;
     const visible = visibleCombat(view, { isGM, showDcToPlayers: settings.showDcToPlayers });
     const phaseName = (id) => displayName(phaseById(view.plan, id), localize);
@@ -46,7 +48,14 @@ export default class CombatPhaseProjector {
       if (entry.waitingForGm) return { key: "waiting", waitingForGm: true, label: localize(T("Tracker.WaitingForGm")) };
       return CombatPhaseProjector.#phase(entry, ctx);
     });
-    const pending = visible.pending.map((c) => ({ id: c.id, name: c.name, img: c.img, mine: c.isOwner && !isGM }));
+    const pending = visible.pending.map((c) => ({
+      id: c.id,
+      name: c.name,
+      img: c.img,
+      mine: c.isOwner && !isGM,
+      // Whoever may roll it: its owner, or a GM rolling for an absent player.
+      roll: isGM || c.isOwner ? { label: format(T("Tracker.RollFor"), { name: c.name }) } : null,
+    }));
 
     return {
       enabled: view.enabled,
@@ -56,8 +65,8 @@ export default class CombatPhaseProjector {
       roundLabel: format(T("Tracker.Round"), { round: view.round }),
       stateLabel: localize(T(view.started ? "Tracker.InCombat" : "Tracker.NotStarted")),
       stateIcon: view.started ? "fa-solid fa-swords" : "fa-solid fa-pause",
-      dc: visible.showDc ? { value: view.dc, text: format(T("Tracker.Dc"), { dc: view.dc }) } : null,
-      gm: isGM ? CombatPhaseProjector.#gmPanel(view, settings, { ...ctx, current, currentName, waitingForDialog }) : null,
+      dc: visible.showDc ? { value: view.dc, text: CombatPhaseProjector.#dcText(view.dc, { format, dcName }) } : null,
+      gm: isGM ? CombatPhaseProjector.#gmPanel(view, settings, { ...ctx, current, currentName, waitingForDialog, rollProblem }) : null,
       phases,
       pending,
       hasPending: pending.length > 0,
@@ -167,6 +176,9 @@ export default class CombatPhaseProjector {
       doneButton: canToggle && !c.isDefeated && (current || (isGM && state === "past")) ? { pressed: done, label: doneLabel, big: !isGM && c.isOwner } : null,
       doneStatus: current && !canToggle && !c.isDefeated,
       skipButton: isGM && view.started && state === "future" && !c.isDefeated ? { pressed: done, label: format(T(done ? "Tracker.UnskipLabel" : "Tracker.SkipLabel"), { name: c.name }) } : null,
+      rollButton: c.side === SIDES.players && !Number.isFinite(c.initiative) && (isGM || c.isOwner)
+        ? { label: format(T("Tracker.RollFor"), { name: c.name }) }
+        : null,
       select: isGM ? CombatPhaseProjector.#select(c, ctx) : null,
     };
     return row;
@@ -186,8 +198,14 @@ export default class CombatPhaseProjector {
     };
   }
 
-  static #gmPanel(view, settings, { localize, format, current, currentName, waitingForDialog, phaseName }) {
+  static #dcText(dc, { format, dcName }) {
+    const name = dcName(dc);
+    return name ? format(T("Tracker.DcNamed"), { dc, name }) : format(T("Tracker.Dc"), { dc });
+  }
+
+  static #gmPanel(view, settings, { localize, format, current, currentName, waitingForDialog, phaseName, rollProblem }) {
     const warnings = [];
+    if (rollProblem) warnings.push({ icon: "fa-solid fa-dice-d20", text: localize(T("Roll.ProblemTitle")), hint: rollProblem, action: null });
     const pending = pendingOf(view).length;
     const target = view.started ? advanceTarget(view) : null;
     if (target?.waitRolls) {
@@ -196,6 +214,7 @@ export default class CombatPhaseProjector {
         text: pending === 1 ? localize(T("Gm.AwaitingRollsOne")) : format(T("Gm.AwaitingRollsMany"), { count: pending }),
         hint: format(T("Gm.AdvanceAnywayHint"), { slow: phaseName(BUILTIN_PHASE_IDS.slow), fast: phaseName(BUILTIN_PHASE_IDS.fast) }),
         action: { name: "advance", label: localize(T("Gm.AdvanceAnyway")) },
+        roll: { label: localize(T("Gm.RollForThem")) },
       });
     }
     if (waitingForDialog) warnings.push({ icon: "fa-solid fa-comment-dots", text: localize(T("Gm.DialogWait")), hint: localize(T("Gm.DialogWaitHint")), action: null });

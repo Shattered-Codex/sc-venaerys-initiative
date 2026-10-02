@@ -65,11 +65,13 @@ describe("CombatSnapshot", () => {
     assert.deepEqual({ phase: a.phase, side: a.side, done: a.done }, { phase: null, side: null, done: null });
   });
 
-  it("reads a natural only while the initiative is the one it came with", () => {
+  it("reads a critical or fumble only while the initiative is the one it came with, old natural 20/1 marks included", () => {
     const natural = (flag, initiative) => CombatSnapshot.naturalOf(fakeCombatant({ id: "a", initiative, flags: { natural: flag } }));
-    assert.equal(natural({ value: 20, initiative: 17 }, 17), 20);
-    assert.equal(natural({ value: 1, initiative: 17 }, 17), 1);
-    assert.equal(natural({ value: 20, initiative: 17 }, 12), null);
+    assert.equal(natural({ value: "critical", initiative: 17 }, 17), "critical");
+    assert.equal(natural({ value: "fumble", initiative: 17 }, 17), "fumble");
+    assert.equal(natural({ value: 20, initiative: 17 }, 17), "critical");
+    assert.equal(natural({ value: 1, initiative: 17 }, 17), "fumble");
+    assert.equal(natural({ value: "critical", initiative: 17 }, 12), null);
     assert.equal(natural({ value: 7, initiative: 17 }, 17), null);
     assert.equal(natural(undefined, 17), null);
   });

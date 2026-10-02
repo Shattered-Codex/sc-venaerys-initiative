@@ -57,10 +57,19 @@
     <div class="svi-warning" role="status">
       <div class="svi-warning-title"><i class="{{ icon }}" inert></i><span>{{ text }}</span></div>
       {{#if hint}}<p class="svi-warning-hint">{{ hint }}</p>{{/if}}
-      {{#if action}}
-      <button type="button" class="svi-btn svi-btn-primary svi-small" data-action="sviAdvance" data-tooltip="{{ hint }}">
-        <i class="fa-solid fa-forward" inert></i><span>{{ action.label }}</span>
-      </button>
+      {{#if (or action roll)}}
+      <div class="svi-warning-actions">
+        {{#if roll}}
+        <button type="button" class="svi-btn svi-btn-primary svi-small" data-action="sviRollPending">
+          <i class="fa-solid fa-dice-d20" inert></i><span>{{ roll.label }}</span>
+        </button>
+        {{/if}}
+        {{#if action}}
+        <button type="button" class="svi-btn svi-small" data-action="sviAdvance" data-tooltip="{{ hint }}">
+          <i class="fa-solid fa-forward" inert></i><span>{{ action.label }}</span>
+        </button>
+        {{/if}}
+      </div>
       {{/if}}
     </div>
     {{/each}}
@@ -71,7 +80,12 @@
   <div class="svi-player-panel">
     {{#if svi.dc}}<span class="svi-dc-badge">{{ svi.dc.text }}</span>{{/if}}
     {{#if svi.youPending}}
-    <div class="svi-you-pending" role="status"><i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.YouPending" }}</span></div>
+    <div class="svi-you-pending" role="status">
+      <i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.YouPending" }}</span>
+      <button type="button" class="svi-btn svi-btn-primary svi-small" data-action="sviRollMine">
+        <i class="fa-solid fa-dice-d20" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.RollNow" }}</span>
+      </button>
+    </div>
     {{/if}}
   </div>
   {{/if}}

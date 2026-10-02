@@ -41,17 +41,20 @@ describe("settings schema", () => {
       natural20: ["world", "autoSuccess"],
       natural1: ["world", "autoFail"],
       suggestFromSheet: ["world", true],
+      rollPrompt: ["client", true],
+      rollSource: ["world", "system"],
+      rollFormula: ["world", ""],
     };
     assert.deepEqual(SETTINGS_SCHEMA.map((e) => e.key).sort(), Object.keys(expected).sort());
     for (const [key, [scope, value]] of Object.entries(expected)) {
       assert.equal(schemaEntry(key).scope, scope, key);
       assert.deepEqual(schemaEntry(key).default, value, key);
     }
-    assert.deepEqual(schemaEntry("defaultDc").range, { min: 1, max: 40, step: 1 });
+    assert.deepEqual(schemaEntry("defaultDc").range, { min: 0, max: 100, step: 1 });
     assert.deepEqual(schemaEntry("dcBase").range, { min: 0, max: 30, step: 1 });
     assert.deepEqual(schemaEntry("dcSource").choices, ["manual", "baseCr"]);
-    assert.deepEqual(schemaEntry("natural20").choices, ["none", "autoSuccess"]);
-    assert.deepEqual(schemaEntry("natural1").choices, ["none", "autoFail"]);
+    assert.deepEqual(schemaEntry("natural20").choices, ["none", "autoSuccess", "oneDegree"]);
+    assert.deepEqual(schemaEntry("natural1").choices, ["none", "autoFail", "oneDegree"]);
   });
 
   it("labels every choice of the generated select rows in both languages", async () => {
@@ -79,12 +82,19 @@ describe("settings schema", () => {
 describe("coerceSetting", () => {
   const dc = schemaEntry("defaultDc");
 
-  it("keeps the DC between 1 and 40 and rejects garbage", () => {
-    assert.equal(coerceSetting(dc, "50"), 40);
-    assert.equal(coerceSetting(dc, 0), 1);
+  it("keeps the DC between 0 and 100 and rejects garbage", () => {
+    assert.equal(coerceSetting(dc, "150"), 100);
+    assert.equal(coerceSetting(dc, -3), 0);
     assert.equal(coerceSetting(dc, "abc"), 15);
     assert.equal(coerceSetting(dc, ""), 15);
     assert.equal(coerceSetting(dc, "17"), 17);
+  });
+
+  it("trims a formula and keeps it short", () => {
+    const formula = schemaEntry("rollFormula");
+    assert.equal(coerceSetting(formula, "  1d20 + @abilities.dex.mod "), "1d20 + @abilities.dex.mod");
+    assert.equal(coerceSetting(formula, "x".repeat(300)).length, 200);
+    assert.equal(coerceSetting(formula, 7), "");
   });
 
   it("keeps a choice inside its list", () => {

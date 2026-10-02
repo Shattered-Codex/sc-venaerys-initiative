@@ -1,7 +1,7 @@
-import { MODULE_ID, OPERATION_KEY, SETTINGS } from "./constants/module-constants.js";
+import { I18N_ROOT, MODULE_ID, OPERATION_KEY, SETTINGS } from "./constants/module-constants.js";
 import { backTarget } from "./helpers/phase-progression.js";
 import { registerKeybindings } from "./hooks/register-keybindings.js";
-import { getSetting, naturalRules, registerSettings, suggestFromSheet } from "./hooks/register-settings.js";
+import { getSetting, naturalRules, registerSettings, rollPrompt, rollSettings, suggestFromSheet } from "./hooks/register-settings.js";
 import PhaseConfigApp from "./applications/PhaseConfigApp.js";
 import PhasedCombatTracker from "./applications/PhasedCombatTracker.js";
 import AutoAdvanceWatcher from "./services/AutoAdvanceWatcher.js";
@@ -17,12 +17,14 @@ import ErrorGuard from "./services/ErrorGuard.js";
 import EventMarkers from "./services/EventMarkers.js";
 import GmBusyProbe from "./services/GmBusyProbe.js";
 import GmCommands from "./services/GmCommands.js";
+import InitiativeRoller from "./services/InitiativeRoller.js";
 import IntegrationHooks from "./services/IntegrationHooks.js";
 import ModuleConflictAdvisor from "./services/ModuleConflictAdvisor.js";
 import NaturalRollRecorder from "./services/NaturalRollRecorder.js";
 import PhaseAdvancer from "./services/PhaseAdvancer.js";
 import PhaseAutomationRunner from "./services/PhaseAutomationRunner.js";
 import PhasePlacementWriter from "./services/PhasePlacementWriter.js";
+import RollPrompter from "./services/RollPrompter.js";
 import ThemeApplier from "./services/ThemeApplier.js";
 import TurnInterceptor from "./services/TurnInterceptor.js";
 import AdapterFactory from "./services/adapters/AdapterFactory.js";
@@ -33,8 +35,7 @@ import AdapterFactory from "./services/adapters/AdapterFactory.js";
  */
 const services = {};
 
-function build() {
-  const adapter = AdapterFactory.create(game.system.id);
+function build(adapter) {
   const commands = new GmCommands();
   const writer = new PhasePlacementWriter({ adapter, advance: (combat, options) => advancer.advance(combat, options) });
   const advancer = new PhaseAdvancer({ adapter, writer });
@@ -46,11 +47,13 @@ function build() {
   const probe = new GmBusyProbe({ onChange: () => view.render() });
   const watcher = new AutoAdvanceWatcher({ adapter, advancer, probe });
   const interceptor = new TurnInterceptor({ adapter, commands, doneMarkers });
-  const startGuard = new CombatStartGuard({ adapter });
+  const roller = new InitiativeRoller({ adapter, settings: rollSettings });
+  const prompter = new RollPrompter({ roller, enabled: rollPrompt });
+  const startGuard = new CombatStartGuard({ adapter, roller });
   const automation = new PhaseAutomationRunner({ adapter });
   const integration = new IntegrationHooks({ adapter });
   const markers = new EventMarkers();
-  const tracker = { adapter, commands, doneMarkers, probe, openHelp: () => PhaseConfigApp.open("help") };
+  const tracker = { adapter, commands, doneMarkers, probe, roller, openHelp: () => PhaseConfigApp.open("help") };
   const view = new CombatWatcher({ patchDone: (ids) => PhasedCombatTracker.patchDone(ids) });
 
   const refuseBack = (combat) => (backTarget(CombatSnapshot.from(combat, adapter)).refuse ? "NoEarlierPhase" : null);
@@ -63,7 +66,7 @@ function build() {
   commands.register("assign", (combat, payload) => classifier.assign(combat, payload));
   commands.register("addMarker", (combat, payload) => markers.add(combat, payload));
 
-  Object.assign(services, { adapter, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, integration });
+  Object.assign(services, { adapter, roller, prompter, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, integration });
 }
 
 /** The keybinding actions: each answers whether it acted, so an unused key reaches other bindings. */
@@ -94,6 +97,7 @@ function keybindingActions() {
 }
 
 Hooks.once("init", () => {
+  const adapter = AdapterFactory.create(game.system.id);
   registerSettings({
     onViewChange: () => services.view?.render(),
     onThemeChange: () => {
@@ -101,8 +105,10 @@ Hooks.once("init", () => {
       services.view?.render();
     },
     SettingsMenu: PhaseConfigApp,
+    defaults: adapter.settingDefaults(),
   });
-  build();
+  build(adapter);
+  PhaseConfigApp.defaultFormula = () => adapter.defaultFormula();
   registerKeybindings(keybindingActions());
   CombatSorter.install();
   // Registered at init so the turn order is fixed before any other module's listener runs.
@@ -119,7 +125,7 @@ Hooks.once("setup", () => {
 });
 
 Hooks.once("ready", () => {
-  const { commands, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, automation, integration } = services;
+  const { commands, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, automation, integration, prompter } = services;
   startGuard.check();
   PhasedCombatTracker.check();
   commands.relay.start();
@@ -176,8 +182,13 @@ Hooks.once("ready", () => {
   // The module's own hooks for other modules, on every client; and on GM clients, conflicting settings at the start.
   ErrorGuard.on("updateCombat", "integration", (combat, changed, options) => integration.onUpdateCombat(combat, changed, options));
   ErrorGuard.on("updateCombatant", "integration", (combatant, changes) => integration.onUpdateCombatant(combatant, changes));
+  // A player with a character in the combat and no roll is asked to roll.
+  ErrorGuard.on("createCombatant", "roll-prompt", (combatant) => prompter.onCreateCombatant(combatant));
+  ErrorGuard.on("updateCombat", "roll-prompt", (combat, changed) => prompter.onUpdateCombat(combat, changed));
   ErrorGuard.on("updateCombat", "conflicts", (combat, changed, options) => ModuleConflictAdvisor.onUpdateCombat(combat, changed, options));
 
   if (game.user.isActiveGM) watcher.reviewAll();
+  if (game.user.isGM && services.adapter.experimental) ui.notifications.warn(game.i18n.localize(`${I18N_ROOT}.Roll.Experimental`));
   view.openIfRunning();
+  prompter.queue(game.combat);
 });

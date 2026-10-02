@@ -282,3 +282,5 @@
 .sc-venaerys-initiative .svi-action-field { display: flex; flex-direction: column; gap: 2px; color: var(--svi-text-dim); font-size: 11px; }
 .sc-venaerys-initiative .svi-file-field { display: flex; align-items: center; gap: 4px; }
 .sc-venaerys-initiative .svi-add-action { align-self: flex-start; }
+
+.sc-venaerys-initiative .svi-text-input { flex: 0 1 18em; min-width: 10em; height: 30px; padding: 4px 8px; font-family: var(--svi-font-mono); font-size: 12px; }

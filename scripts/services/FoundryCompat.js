@@ -32,6 +32,11 @@ export default class FoundryCompat {
     };
   }
 
+  /** Message options that show a roll to GMs only (v14 renamed `rollMode: "gmroll"` to `messageMode: "gm"`). */
+  static gmOnlyMessage() {
+    return FoundryCompat.generation >= 14 ? { messageMode: "gm" } : { rollMode: "gmroll" };
+  }
+
   /**
    * A context menu entry both versions read without a deprecation warning: v13
    * reads `name/condition/callback`, v14 prefers `label/visible/onClick`, and

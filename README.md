@@ -2,7 +2,7 @@
 
 Phased initiative for Foundry VTT v13 and v14. Instead of one turn at a time, combat runs in **phases**:
 
-- Characters roll their normal initiative against a **DC** set by the GM (or worked out as a base plus the enemies' CR). Those who meet it act in **Fast**, the rest in **Slow**. By default a natural 20 always acts in Fast and a natural 1 in Slow.
+- Characters roll against a **DC** set by the GM (or worked out as a base plus the enemies' CR): their system's own initiative roll by default, or a formula the GM sets (dice plus an attribute). Those who meet it act in **Fast**, the rest in **Slow**. By default a natural 20 (the system's critical) always acts in Fast and a natural 1 in Slow.
 - Enemies don't roll: they act together in **Enemies**, between Fast and Slow.
 - Everyone in a phase acts **at the same time**, each with a full normal turn. Each one marks **Done**; when everybody in the phase is done, the combat moves on to the next phase by itself.
 - The GM adds extra phases (Epic Boss, Boss, Mini-Boss, or any other) and drags them before, between or after the players' phases. **Event phases** such as Lair Actions only happen in combats where the GM adds an event marker to them. Who is the boss is decided per combat, right in the combat tracker; an enemy with an item named exactly like a phase (a feature called "Boss", for example) starts in that phase.
@@ -12,7 +12,7 @@ Everything happens in Foundry's own Combat Tracker (sidebar and popout): in a ph
 ## Using it
 
 1. Create a combat as usual. New combats use phases by default (a world setting); before the combat starts, the GM can switch phases on or off at the top of the combat tracker.
-2. Players roll initiative from their sheet or the combat tracker. The tracker shows who is still waiting for a roll.
+2. Players roll: a window asks them when their character joins a phased combat, and the tracker shows a **Roll** button on everyone still waiting (each player can turn the window off in their client settings). The GM can roll for anyone, or use **Roll for them** for everyone still waiting.
 3. Set the DC at the top of the tracker and start the combat. If someone has not rolled and starting now would skip the players' first phase, the GM is asked first.
 4. Mark **Done** when your turn is over. A player's "End turn" in the tracker does the same; the GM's "Next turn" and "Previous turn" become "Next phase" and "Previous phase".
 
@@ -34,10 +34,10 @@ When a phased combat starts, the combat tab comes forward on every client (a per
 
 Module settings → **SC - Venaerys's Initiative** → **Configure**. The window has a tab rail and a footer with **Reset tab**, **Close** and **Save**; a dot marks every tab with unsaved changes.
 
-- **World** (GM): phases in new combats, automatic advance, the phase suggested by an enemy's sheet, where the DC comes from (typed, or a base plus the highest CR among the enemies of the Enemies phase; a fractional CR counts 0), default DC and base, showing the DC to players, and what a natural 20 or 1 on initiative does.
+- **World** (GM): phases in new combats, automatic advance, the phase suggested by an enemy's sheet, the roll against the DC (the system's initiative roll or a formula such as `1d20 + @abilities.dex.mod`; an empty formula uses the system's default, shown in the field), what a critical or a fumble does (automatic, or one degree as in Pathfinder 2e), where the DC comes from (typed, or a base plus the highest CR among the enemies of the Enemies phase; a fractional CR counts 0), default DC and base, and showing the DC to players.
 - **Appearance** (GM): the theme of the module's screens and phase sections, previewed on your screen before you save. The combatant rows keep Foundry's own look.
 - **Phases** (GM): the phase order of new combats. Drag phases (or use the arrows) anywhere around Fast, Enemies and Slow, whose order is fixed. Add, rename, recolor or delete extra phases; **Add event phase** creates one that only event markers act in. Worlds that saved their phase order before Lair Actions existed can add it this way. Each phase can have **actions when it starts**: a message, a sound, a hook, a chat message, a macro, a roll table, and, with those modules active, an SC Jump Scare, an SC Puzzle or an SC Resources change. Macros only run if a GM wrote them, and actions that show or play something are not run for players who cannot see the phase. Combats in progress keep their own copy.
-- **This client**: showing the combat tracker when a phased combat starts.
+- **This client**: showing the combat tracker when a phased combat starts, and being asked to roll initiative.
 - **Help** (GM): how turn events, moving combatants, pending combatants and other modules behave with phases.
 
 ### Keybindings
@@ -55,11 +55,17 @@ On a player's client, a phase in which that player sees no one is reported as `n
 
 ## Systems
 
-The core works with any system that uses Foundry's initiative order; enemies then show 0 as their initiative, the DC is typed, and a natural 20 or 1 is read from the roll's single kept d20. With **dnd5e** (5.x on v13, 6.x on v14), enemies show their initiative score, which also keeps identical creatures grouped, the CR of NPCs can set the DC, and the natural roll is the kept d20 (a fixed initiative score has none).
+The core works with any system that uses Foundry's initiative order: the roll against the DC is the system's own initiative roll, or the GM's formula. Each supported system brings its own defaults:
+
+- **D&D 5e** (5.x on v13, 6.x on v14): enemies show their initiative score, which also keeps identical creatures grouped; the CR of NPCs can set the DC; a natural 20 or 1 is read from the kept d20. Default formula `1d20 + @attributes.init.total`.
+- **Pathfinder 2e**: the system's initiative roll (the statistic chosen on the sheet), without the modifiers dialog when the GM rolls for players. A natural 20 or 1 moves the result one degree by default. Default formula `1d20 + @actor.initiative.mod`.
+- **Call of Cthulhu 7e**: with the system's optional initiative rule (a DEX roll), the DC is the difficulty the Keeper asks for: 1 Regular, 2 Hard, 3 Extreme, shown by name. With the basic rule nothing is rolled and the GM is warned; use the optional rule or a formula (`@characteristics.dex.value - 1d100` against DC 0).
+- **Daggerheart** (experimental): it has no initiative of its own, so the module rolls a reaction roll, `1d12 + 1d12 + @system.traits.agility.value`; matching dice are a critical. It never gives Hope or Fear. Its own tracker passes the spotlight and may move turns and rounds by itself.
+- Any other system: its initiative formula; enemies show 0 as their initiative and the DC is typed.
 
 Systems that replace the combat tracker's row template (for example pf2e) lose their own row extras while a combat runs in phases; with phases off their tracker is untouched.
 
-Systems without an initiative order (for example Daggerheart) are not supported.
+A formula roll is the module's own: it reads the actor's data but not the sheet's situational bonuses (advantage, feats, bonus dice). Use the system's roll to keep them.
 
 ## Known limitations
 

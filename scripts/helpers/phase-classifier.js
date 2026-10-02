@@ -1,13 +1,13 @@
-import { BUILTIN_PHASE_IDS, DISPOSITION, NATURAL_RULES, SIDES } from "../constants/module-constants.js";
+import { BUILTIN_PHASE_IDS, CRITICALS, DISPOSITION, NATURAL_RULES, SIDES } from "../constants/module-constants.js";
 
 /**
  * Pure classification: which side a combatant is on, and which phase the
  * automatic rules put it in. Results are "changes" for the placement rules:
  * `{id, target?, side?, initiative?}`, where `target` is the automatic phase
  * (`null` = pending) and an absent `target` leaves the phase alone.
- * `naturals` holds the GM's rules for a natural 20 and 1
- * (`{natural20, natural1}`); a combatant's `natural` is the d20 of the roll
- * that gave its current initiative, or null. An enemy's `suggestedPhase`,
+ * `naturals` holds the GM's rules for a critical and a fumble
+ * (`{natural20, natural1}`); a combatant's `natural` is `"critical"`,
+ * `"fumble"` or null for the roll that gave its current initiative. An enemy's `suggestedPhase`,
  * when the caller filled it from the sheet, replaces Enemies as its automatic
  * phase. Event markers keep the phase the GM gave them and never roll.
  */
@@ -24,13 +24,21 @@ export function sideFor({ hasPlayerOwner, disposition, hasToken }) {
 
 /**
  * Meeting the DC is a pass; the total is compared as it is, tie-break
- * decimals included. A natural 20 or 1 overrides the total when the GM's
- * rules say so.
+ * decimals included. A critical or a fumble changes that when the GM's rules
+ * say so: outright, or by one degree (a critical passes within 9 under the
+ * DC; a fumble fails unless 10 over it).
  */
 export function phaseForRoll(total, dc, natural = null, naturals = NO_NATURALS) {
-  if (natural === 20 && naturals.natural20 === NATURAL_RULES.autoSuccess) return BUILTIN_PHASE_IDS.fast;
-  if (natural === 1 && naturals.natural1 === NATURAL_RULES.autoFail) return BUILTIN_PHASE_IDS.slow;
-  return total >= dc ? BUILTIN_PHASE_IDS.fast : BUILTIN_PHASE_IDS.slow;
+  const pass = (passed) => (passed ? BUILTIN_PHASE_IDS.fast : BUILTIN_PHASE_IDS.slow);
+  if (natural === CRITICALS.critical) {
+    if (naturals.natural20 === NATURAL_RULES.autoSuccess) return pass(true);
+    if (naturals.natural20 === NATURAL_RULES.oneDegree) return pass(total >= dc - 9);
+  }
+  if (natural === CRITICALS.fumble) {
+    if (naturals.natural1 === NATURAL_RULES.autoFail) return pass(false);
+    if (naturals.natural1 === NATURAL_RULES.oneDegree) return pass(total >= dc + 10);
+  }
+  return pass(total >= dc);
 }
 
 const rollPhase = (combatant, dc, naturals) => phaseForRoll(combatant.initiative, dc, combatant.natural ?? null, naturals);

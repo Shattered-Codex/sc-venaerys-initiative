@@ -16,8 +16,9 @@ export default class CombatStartGuard {
   #pending = new Map();
   #installed = null;
 
-  constructor({ adapter }) {
+  constructor({ adapter, roller = null }) {
     this.adapter = adapter;
+    this.roller = roller;
   }
 
   install() {
@@ -48,14 +49,18 @@ export default class CombatStartGuard {
     if (!startNeedsConfirmation(view)) return original.apply(combat, args);
     // One question per combat: the dock does not disable its start button while it waits.
     if (this.#pending.has(combat.id)) return this.#pending.get(combat.id);
+    // "Roll for them" rolls and does not start: the new rolls are placed first, then the GM starts.
     const answer = this.ask(view)
-      .then((choice) => (choice === "start" ? original.apply(combat, args) : combat))
+      .then(async (choice) => {
+        if (choice === "roll") await this.roller?.rollAll(combat);
+        return choice === "start" ? original.apply(combat, args) : combat;
+      })
       .finally(() => this.#pending.delete(combat.id));
     this.#pending.set(combat.id, answer);
     return answer;
   }
 
-  /** Resolves "start" or "wait"; closing the dialog (or Esc) waits. */
+  /** Resolves "start", "roll" or "wait"; closing the dialog (or Esc) waits. */
   async ask(view) {
     const localize = (key) => game.i18n.localize(key);
     const format = (key, data) => game.i18n.format(`${I18N_ROOT}.Start.${key}`, data);
@@ -77,10 +82,11 @@ export default class CombatStartGuard {
       buttons: [
         { action: "start", label: `${I18N_ROOT}.Start.StartAnyway`, icon: "fa-solid fa-play", default: info.defaultAction === "start" },
         { action: "wait", label: `${I18N_ROOT}.Start.Wait`, icon: "fa-solid fa-hourglass-half", default: info.defaultAction === "wait" },
+        ...(this.roller ? [{ action: "roll", label: `${I18N_ROOT}.Start.RollForThem`, icon: "fa-solid fa-dice-d20" }] : []),
       ],
       rejectClose: false,
       render: (event, dialog) => ThemeApplier.apply(dialog.element),
     });
-    return choice === "start" ? "start" : "wait";
+    return choice === "start" || choice === "roll" ? choice : "wait";
   }
 }

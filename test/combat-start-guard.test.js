@@ -81,6 +81,19 @@ describe("CombatStartGuard", () => {
     assert.equal(starts.length, 1);
   });
 
+  it("offers 'Roll for them' with a roller: it rolls the waiting characters and does not start", async () => {
+    const rolled = [];
+    guard = new CombatStartGuard({ adapter: null, roller: { rollAll: async (c) => rolled.push(c.id) } });
+    guard.install();
+    const combat = pendingCombat();
+    const pending = CONFIG.Combat.documentClass.prototype.startCombat.call(combat);
+    assert.ok(dialogs[0].buttons.some((b) => b.action === "roll"));
+    answer("roll");
+    assert.equal(await pending, combat);
+    assert.deepEqual(rolled, [combat.id]);
+    assert.equal(starts.length, 0);
+  });
+
   it("notices a Combat class swapped after setup", () => {
     assert.equal(guard.check(), true);
     const warn = console.warn;

@@ -20,6 +20,9 @@
         {{#each choices}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
       </select>
       {{/if}}
+      {{#if isText}}
+      <input type="text" class="svi-text-input" id="svi-setting-{{ key }}" data-setting="{{ key }}" data-default="{{ defaultValue }}" value="{{ value }}" placeholder="{{ placeholder }}" spellcheck="false">
+      {{/if}}
       {{#if isNumber}}
       <div class="svi-stepper" role="group" aria-label="{{ name }}">
         <button type="button" data-action="sviStep" data-step="-{{ step }}" aria-label="{{ decreaseLabel }}"><i class="fa-solid fa-minus" inert></i></button>

@@ -117,36 +117,45 @@ describe("rolls, resets and new DCs", () => {
   });
 });
 
-describe("natural 20 and 1", () => {
+describe("criticals and fumbles", () => {
   const on = { natural20: "autoSuccess", natural1: "autoFail" };
   const off = { natural20: "none", natural1: "none" };
 
   it("sends a natural 20 to Fast below the DC only with the rule on", () => {
-    assert.equal(phaseForRoll(17, 18, 20, on), "fast");
-    assert.equal(phaseForRoll(17, 18, 20, off), "slow");
+    assert.equal(phaseForRoll(17, 18, "critical", on), "fast");
+    assert.equal(phaseForRoll(17, 18, "critical", off), "slow");
   });
 
   it("sends a natural 1 to Slow above the DC only with the rule on", () => {
-    assert.equal(phaseForRoll(16, 15, 1, on), "slow");
-    assert.equal(phaseForRoll(16, 15, 1, off), "fast");
+    assert.equal(phaseForRoll(16, 15, "fumble", on), "slow");
+    assert.equal(phaseForRoll(16, 15, "fumble", off), "fast");
   });
 
   it("goes by the total without a natural, and with no rules given", () => {
     assert.equal(phaseForRoll(17, 18, null, on), "slow");
-    assert.equal(phaseForRoll(17, 18, 20), "slow");
+    assert.equal(phaseForRoll(17, 18, "critical"), "slow");
   });
 
   it("reclassifies a player when the natural of its roll arrives", () => {
-    assert.deepEqual(classifyRoll(player("a", "slow", { initiative: 17, natural: 20 }), 18, on), { id: "a", target: "fast" });
-    assert.equal(classifyRoll(player("a", "slow", { initiative: 17, natural: 20 }), 18, off), null);
+    assert.deepEqual(classifyRoll(player("a", "slow", { initiative: 17, natural: "critical" }), 18, on), { id: "a", target: "fast" });
+    assert.equal(classifyRoll(player("a", "slow", { initiative: 17, natural: "critical" }), 18, off), null);
+  });
+
+  it("moves the result one degree with the Pathfinder rule", () => {
+    const degree = { natural20: "oneDegree", natural1: "oneDegree" };
+    assert.equal(phaseForRoll(9, 18, "critical", degree), "fast");
+    assert.equal(phaseForRoll(8, 18, "critical", degree), "slow");
+    assert.equal(phaseForRoll(27, 18, "fumble", degree), "slow");
+    assert.equal(phaseForRoll(28, 18, "fumble", degree), "fast");
+    assert.equal(phaseForRoll(18, 18, null, degree), "fast");
   });
 
   it("applies the rules on entry, on a new DC and for the automatic phase", () => {
-    assert.equal(classifyCombatant(player("a", null, { side: null, initiative: 16, natural: 1 }), 15, on).target, "slow");
-    const view = combatView({ combatants: [player("a", "fast", { initiative: 17, natural: 20 })] });
+    assert.equal(classifyCombatant(player("a", null, { side: null, initiative: 16, natural: "fumble" }), 15, on).target, "slow");
+    const view = combatView({ combatants: [player("a", "fast", { initiative: 17, natural: "critical" })] });
     assert.deepEqual(classifyForDc(view, 19, on), []);
     assert.deepEqual(classifyAll({ ...view, dc: 19 }, on), []);
-    assert.equal(automaticPhaseOf(player("a", "boss", { initiative: 17, natural: 20 }), 18, true, on), "fast");
+    assert.equal(automaticPhaseOf(player("a", "boss", { initiative: 17, natural: "critical" }), 18, true, on), "fast");
   });
 });
 

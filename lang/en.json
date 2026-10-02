@@ -54,24 +54,42 @@
         "Hint": "Added to the reference CR when the DC is Base + CR. A fractional CR counts 0."
       },
       "natural20": {
-        "Name": "Natural 20 on initiative",
-        "Hint": "What a natural 20 on the kept d20 does. A fixed initiative score has no natural roll.",
+        "Name": "Critical",
+        "Hint": "A natural 20 (or the system's critical: matching duality dice, a d100 01). Automatic: always the first players' phase. One degree: passes if within 9 under the DC, as in Pathfinder 2e.",
         "Choices": {
           "none": "Nothing: only the total counts",
-          "autoSuccess": "Automatic success: acts in Fast"
+          "autoSuccess": "Automatic success: acts in Fast",
+          "oneDegree": "One degree better"
         }
       },
       "natural1": {
-        "Name": "Natural 1 on initiative",
-        "Hint": "What a natural 1 on the kept d20 does. A fixed initiative score has no natural roll.",
+        "Name": "Fumble",
+        "Hint": "A natural 1 (or the system's fumble). Automatic: always the last players' phase. One degree: fails unless 10 or more over the DC, as in Pathfinder 2e.",
         "Choices": {
           "none": "Nothing: only the total counts",
-          "autoFail": "Automatic failure: acts in Slow"
+          "autoFail": "Automatic failure: acts in Slow",
+          "oneDegree": "One degree worse"
         }
       },
       "suggestFromSheet": {
         "Name": "Suggest boss phases from the sheet",
         "Hint": "An enemy entering a combat goes to the creature phase named exactly like one of its items (a feature called \"Boss\" goes to Boss; \"Boss Fight\" does not). Only a default: the GM can still move it."
+      },
+      "rollPrompt": {
+        "Name": "Ask me to roll initiative",
+        "Hint": "When a character of yours joins a phased combat without a roll, a window asks you to roll. The roll button in the combat tracker stays either way."
+      },
+      "rollSource": {
+        "Name": "Roll",
+        "Hint": "The system's own initiative roll keeps every bonus of the sheet. A formula rolls the dice and attribute below instead. Systems without an initiative roll always use the formula.",
+        "Choices": {
+          "system": "The system's initiative roll",
+          "formula": "Formula"
+        }
+      },
+      "rollFormula": {
+        "Name": "Formula",
+        "Hint": "Dice plus @ references to the actor's data, e.g. 1d20 + @abilities.dex.mod. Empty uses the system's default shown in the field."
       }
     },
     "Config": {
@@ -90,7 +108,8 @@
         "combat": "Combat",
         "dc": "DC",
         "window": "Window",
-        "theme": "Theme"
+        "theme": "Theme",
+        "roll": "Roll against the DC"
       },
       "Range": "{min} to {max}",
       "Decrease": "Decrease {name}",
@@ -210,7 +229,11 @@
       "MoveTitle": "Move {name}",
       "Move": "Move",
       "CompleteGroupLabel": "Mark every {name} in {phase} done",
-      "AddMarkerLabel": "Add an event marker to {phase}"
+      "AddMarkerLabel": "Add an event marker to {phase}",
+      "Roll": "Roll",
+      "RollFor": "Roll initiative for {name}",
+      "RollNow": "Roll now",
+      "DcNamed": "DC {name} ({dc})"
     },
     "Gm": {
       "PhasesOn": "Phases on",
@@ -242,7 +265,8 @@
       "Recalculate": "Recalculate the DC from base + CR",
       "RecalculateLabel": "Recalculate the DC: base {base} + CR {cr}",
       "DcBaseOnly": "The DC is only the base",
-      "DcBaseOnlyHint": "No enemy has a CR of 1 or more, so the DC stays at {base}. Type a DC or add enemies."
+      "DcBaseOnlyHint": "No enemy has a CR of 1 or more, so the DC stays at {base}. Type a DC or add enemies.",
+      "RollForThem": "Roll for them"
     },
     "Start": {
       "Title": "Start combat",
@@ -253,7 +277,8 @@
       "IfStartMany": "If you start now, they act in {slow} this round. Anyone who rolls and beats the DC before {fast} ends joins {fast} right away.",
       "FastEmpty": "Nobody from the party is in {fast} yet: it will be skipped this round.",
       "StartAnyway": "Start anyway",
-      "Wait": "Wait for rolls"
+      "Wait": "Wait for rolls",
+      "RollForThem": "Roll for them"
     },
     "Notifications": {
       "NoEarlierPhase": "There is no previous phase: the combat started in this phase. To change who acts now, move the combatant to the current phase.",
@@ -383,6 +408,26 @@
       "showTracker": {
         "Name": "Show the combat tracker",
         "Hint": "Brings the combat tracker forward: its popout if open, otherwise the sidebar tab."
+      }
+    },
+    "RollPrompt": {
+      "Title": "Roll initiative",
+      "Body": "The combat runs in phases. Roll initiative for {names}: beat the DC to act in the first players' phase.",
+      "Roll": "Roll",
+      "Later": "Later"
+    },
+    "Roll": {
+      "Flavor": "{name} rolls against the DC",
+      "InvalidFormula": "The roll formula \"{formula}\" is not valid. Fix it in the module settings.",
+      "ProblemTitle": "The system's roll can't place anyone",
+      "CocBasicRule": "Call of Cthulhu is set to the basic initiative rule: initiative is DEX, nothing is rolled. Switch the system to the optional rule (DEX roll) or set the roll to a formula.",
+      "Experimental": "SC - Venaerys's Initiative: support for this system is experimental. Its own combat tracker may move turns and rounds by itself.",
+      "Difficulty": {
+        "Any": "Any success",
+        "Regular": "Regular",
+        "Hard": "Hard",
+        "Extreme": "Extreme",
+        "Critical": "Critical"
       }
     }
   }

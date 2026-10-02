@@ -19,13 +19,14 @@ describe("SystemAdapter", () => {
     assert.equal(adapter.challengeRating({ system: { details: { cr: 5 } } }), null);
   });
 
-  it("reads the kept d20 and nothing without a single kept d20", () => {
-    assert.equal(adapter.naturalOf({ dice: [d20({ result: 20, active: true })] }), 20);
-    assert.equal(adapter.naturalOf({ dice: [d20({ result: 5, active: false, discarded: true }, { result: 1, active: true })] }), 1);
-    assert.equal(adapter.naturalOf({ dice: [d20({ result: 5, active: true }, { result: 1, active: true })] }), null);
-    assert.equal(adapter.naturalOf({ dice: [{ faces: 6, results: [{ result: 6, active: true }] }] }), null);
-    assert.equal(adapter.naturalOf({ dice: [] }), null);
-    assert.equal(adapter.naturalOf(null), null);
+  it("reads a kept 20 or 1 on a d20 as a critical or a fumble, and nothing without a single kept d20", () => {
+    assert.equal(adapter.criticalOf({ dice: [d20({ result: 20, active: true })] }), "critical");
+    assert.equal(adapter.criticalOf({ dice: [d20({ result: 5, active: false, discarded: true }, { result: 1, active: true })] }), "fumble");
+    assert.equal(adapter.criticalOf({ dice: [d20({ result: 12, active: true })] }), null);
+    assert.equal(adapter.criticalOf({ dice: [d20({ result: 5, active: true }, { result: 1, active: true })] }), null);
+    assert.equal(adapter.criticalOf({ dice: [{ faces: 6, results: [{ result: 6, active: true }] }] }), null);
+    assert.equal(adapter.criticalOf({ dice: [] }), null);
+    assert.equal(adapter.criticalOf(null), null);
   });
 });
 
@@ -41,8 +42,9 @@ describe("Dnd5eAdapter", () => {
   });
 
   it("reads the kept die of a d20 roll and nothing for a fixed score", () => {
-    assert.equal(adapter.naturalOf({ validD20Roll: true, d20: { total: 20 } }), 20);
-    assert.equal(adapter.naturalOf({ validD20Roll: false, d20: undefined, total: 14 }), null);
-    assert.equal(adapter.naturalOf({ total: 14 }), null);
+    assert.equal(adapter.criticalOf({ validD20Roll: true, d20: { total: 20 } }), "critical");
+    assert.equal(adapter.criticalOf({ validD20Roll: true, d20: { total: 1 } }), "fumble");
+    assert.equal(adapter.criticalOf({ validD20Roll: false, d20: undefined, total: 14 }), null);
+    assert.equal(adapter.criticalOf({ total: 14 }), null);
   });
 });

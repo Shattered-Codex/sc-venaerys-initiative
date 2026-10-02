@@ -127,8 +127,8 @@ describe("CombatantClassifier", () => {
   it("keeps a typed DC inside the DC range", async () => {
     const combat = fakeCombat({ round: 0, turn: null, combatants: [] });
     const { classifier } = setup(combat);
-    await classifier.setDc(combat, { value: 99 });
-    assert.deepEqual(combat.flags[KEY].dc, { value: 40, source: "manual" });
+    await classifier.setDc(combat, { value: 140 });
+    assert.deepEqual(combat.flags[KEY].dc, { value: 100, source: "manual" });
   });
 
   it("reclassifies rolled, unpinned players on a new DC", async () => {

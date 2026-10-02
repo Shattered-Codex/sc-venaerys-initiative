@@ -77,9 +77,9 @@
         <input type="text" class="initiative-input" inputmode="numeric" pattern="^[+=\-]?\d*" value="{{ initiative }}"
                aria-label="{{ sviLabels.initiative }}" {{#unless @root.user.isGM}}readonly{{/unless}}>
         {{/if}}
-        {{else if isOwner}}
-        <button type="button" class="combatant-control roll" data-action="rollInitiative" data-tooltip
-                aria-label="{{ sviLabels.roll }}"
+        {{else if svi.rollButton}}
+        <button type="button" class="combatant-control roll" data-action="sviRoll" data-combatant-id="{{ id }}" data-tooltip
+                aria-label="{{ svi.rollButton.label }}"
                 style="--initiative-icon: url('{{ @root.initiativeIcon.icon }}'); --initiative-icon-hover: url('{{ @root.initiativeIcon.hover }}');"></button>
         {{/if}}
     </div>

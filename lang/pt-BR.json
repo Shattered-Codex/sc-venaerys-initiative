@@ -54,24 +54,42 @@
         "Hint": "Somada ao ND de referência quando a DC é Base + ND. ND fracionário conta 0."
       },
       "natural20": {
-        "Name": "20 natural na iniciativa",
-        "Hint": "O que um 20 natural no d20 mantido faz. Iniciativa fixa (escore) não tem rolagem natural.",
+        "Name": "Crítico",
+        "Hint": "Um 20 natural (ou o crítico do sistema: dados de dualidade iguais, 01 no d100). Automático: sempre a primeira fase dos jogadores. Um grau: passa se ficar até 9 abaixo da DC, como no Pathfinder 2e.",
         "Choices": {
           "none": "Nada: só o total conta",
-          "autoSuccess": "Sucesso automático: age em Rápida"
+          "autoSuccess": "Sucesso automático: age em Rápida",
+          "oneDegree": "Um grau melhor"
         }
       },
       "natural1": {
-        "Name": "1 natural na iniciativa",
-        "Hint": "O que um 1 natural no d20 mantido faz. Iniciativa fixa (escore) não tem rolagem natural.",
+        "Name": "Desastre",
+        "Hint": "Um 1 natural (ou o desastre do sistema). Automático: sempre a última fase dos jogadores. Um grau: falha a menos que fique 10 ou mais acima da DC, como no Pathfinder 2e.",
         "Choices": {
           "none": "Nada: só o total conta",
-          "autoFail": "Falha automática: age em Lenta"
+          "autoFail": "Falha automática: age em Lenta",
+          "oneDegree": "Um grau pior"
         }
       },
       "suggestFromSheet": {
         "Name": "Sugerir fases de chefe pela ficha",
         "Hint": "Um inimigo que entra no combate vai para a fase de criaturas com o nome exato de um dos seus itens (uma característica chamada \"Chefe\" vai para Chefe; \"Chefe Final\" não). É só um padrão: o Mestre ainda pode movê-lo."
+      },
+      "rollPrompt": {
+        "Name": "Pedir que eu role a iniciativa",
+        "Hint": "Quando um personagem seu entra num combate com fases sem rolagem, uma janela pede a rolagem. O botão de rolar no tracker de combate continua lá de qualquer jeito."
+      },
+      "rollSource": {
+        "Name": "Rolagem",
+        "Hint": "A rolagem de iniciativa do próprio sistema mantém todos os bônus da ficha. Uma fórmula rola os dados e o atributo abaixo no lugar dela. Sistemas sem rolagem de iniciativa sempre usam a fórmula.",
+        "Choices": {
+          "system": "Rolagem de iniciativa do sistema",
+          "formula": "Fórmula"
+        }
+      },
+      "rollFormula": {
+        "Name": "Fórmula",
+        "Hint": "Dados mais referências @ aos dados do ator, ex.: 1d20 + @abilities.dex.mod. Vazia usa o padrão do sistema mostrado no campo."
       }
     },
     "Config": {
@@ -90,7 +108,8 @@
         "combat": "Combate",
         "dc": "DC",
         "window": "Janela",
-        "theme": "Tema"
+        "theme": "Tema",
+        "roll": "Rolagem contra a DC"
       },
       "Range": "{min} a {max}",
       "Decrease": "Diminuir {name}",
@@ -210,7 +229,11 @@
       "MoveTitle": "Mover {name}",
       "Move": "Mover",
       "CompleteGroupLabel": "Marcar todos os {name} em {phase} como feitos",
-      "AddMarkerLabel": "Adicionar um marcador de evento em {phase}"
+      "AddMarkerLabel": "Adicionar um marcador de evento em {phase}",
+      "Roll": "Rolar",
+      "RollFor": "Rolar a iniciativa de {name}",
+      "RollNow": "Rolar agora",
+      "DcNamed": "DC {name} ({dc})"
     },
     "Gm": {
       "PhasesOn": "Fases ligadas",
@@ -242,7 +265,8 @@
       "Recalculate": "Recalcular a DC por base + ND",
       "RecalculateLabel": "Recalcular a DC: base {base} + ND {cr}",
       "DcBaseOnly": "A DC ficou só na base",
-      "DcBaseOnlyHint": "Nenhum inimigo tem ND 1 ou mais, então a DC fica em {base}. Digite uma DC ou adicione inimigos."
+      "DcBaseOnlyHint": "Nenhum inimigo tem ND 1 ou mais, então a DC fica em {base}. Digite uma DC ou adicione inimigos.",
+      "RollForThem": "Rolar por eles"
     },
     "Start": {
       "Title": "Iniciar combate",
@@ -253,7 +277,8 @@
       "IfStartMany": "Se iniciar agora, eles agem em {slow} nesta rodada. Quem rolar e passar na DC antes do fim de {fast} entra em {fast} na hora.",
       "FastEmpty": "Ninguém do grupo está em {fast} ainda: ela será pulada nesta rodada.",
       "StartAnyway": "Iniciar mesmo assim",
-      "Wait": "Aguardar rolagens"
+      "Wait": "Aguardar rolagens",
+      "RollForThem": "Rolar por eles"
     },
     "Notifications": {
       "NoEarlierPhase": "Não há fase anterior: o combate começou nesta fase. Para mudar quem age agora, mova o combatente para a fase atual.",
@@ -383,6 +408,26 @@
       "showTracker": {
         "Name": "Mostrar o tracker de combate",
         "Hint": "Traz o tracker de combate para a frente: a janela destacada, se aberta, senão a aba da barra lateral."
+      }
+    },
+    "RollPrompt": {
+      "Title": "Rolar iniciativa",
+      "Body": "O combate corre em fases. Role a iniciativa de {names}: quem bate a DC age na primeira fase dos jogadores.",
+      "Roll": "Rolar",
+      "Later": "Depois"
+    },
+    "Roll": {
+      "Flavor": "{name} rola contra a DC",
+      "InvalidFormula": "A fórmula de rolagem \"{formula}\" não é válida. Corrija-a nas configurações do módulo.",
+      "ProblemTitle": "A rolagem do sistema não coloca ninguém",
+      "CocBasicRule": "O Call of Cthulhu está com a regra básica de iniciativa: a iniciativa é a DES e nada é rolado. Troque o sistema para a regra opcional (rolagem de DES) ou use uma fórmula.",
+      "Experimental": "SC - Venaerys's Initiative: o suporte a este sistema é experimental. O tracker de combate dele pode mudar turnos e rodadas sozinho.",
+      "Difficulty": {
+        "Any": "Qualquer sucesso",
+        "Regular": "Normal",
+        "Hard": "Difícil",
+        "Extreme": "Extremo",
+        "Critical": "Crítico"
       }
     }
   }
