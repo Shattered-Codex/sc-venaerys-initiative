@@ -8,8 +8,6 @@
 ![Downloads](https://img.shields.io/github/downloads/Shattered-Codex/sc-venaerys-initiative/total?style=for-the-badge)
 ![Forks](https://img.shields.io/github/forks/Shattered-Codex/sc-venaerys-initiative.svg?style=for-the-badge)
 
-![Venaerys’s Initiative cover: a luminous golden V on a dark background](https://i.imgur.com/szqGqZ1.png)
-
 Run combat in **phases** in **Foundry VTT**. Players roll initiative against a DC, act together in **Fast** or **Slow**, and mark **Done** when they finish. Enemies act together between the player phases, while the GM places bosses and lair actions wherever the encounter needs them.
 
 The module works inside Foundry's own Combat Tracker, in both the sidebar and popout. Everyone in a phase takes a full normal turn; once all its combatants are done, combat advances automatically.
@@ -190,5 +188,3 @@ Screenshots from the [module's Imgur album](https://imgur.com/a/mdjIozg), stored
 ## Support and Feedback
 
 For questions, ideas, bug reports, or feature requests, join us on [Discord](https://discord.gg/6mWCQEJEwG). Documentation is available in the [official wiki](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative).
-
-For release automation and the required GitHub secrets, see [Release Setup](https://github.com/Shattered-Codex/sc-venaerys-initiative/blob/main/.github/RELEASE.md).
