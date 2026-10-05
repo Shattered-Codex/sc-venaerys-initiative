@@ -1,9 +1,3 @@
-<p align="center">
-  <a href="https://www.patreon.com/c/shatteredcodex?utm_source=sc-venaerys-initiative&utm_medium=github&utm_campaign=support_readme">
-    <img src="assets/branding/shattered-codex.png" alt="Shattered Codex" width="200" height="200" />
-  </a>
-</p>
-
 # SC - Venaerys's Initiative
 
 [![Wiki](https://img.shields.io/badge/Wiki-Venaerys%27s%20Initiative-1f6feb?logo=bookstack&logoColor=white&style=for-the-badge)](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative)
@@ -18,7 +12,9 @@
 
 Run combat in **phases** in **Foundry VTT**. Players roll initiative against a DC, act together in **Fast** or **Slow**, and mark **Done** when they finish. Enemies act together between the player phases, while the GM places bosses and lair actions wherever the encounter needs them.
 
-The module works inside Foundry's own Combat Tracker, in both the sidebar and popout. Everyone in a phase takes a full normal turn; once all its combatants are done, combat advances automatically. Inspired by Venaerys's community request.
+The module works inside Foundry's own Combat Tracker, in both the sidebar and popout. Everyone in a phase takes a full normal turn; once all its combatants are done, combat advances automatically.
+
+> **Community credit:** This module grew out of a suggestion shared in the Shattered Codex Discord community. Special thanks to **Venaerys** for proposing the phased initiative idea that inspired it.
 
 ## Installation
 
@@ -193,6 +189,6 @@ Screenshots from the [module's Imgur album](https://imgur.com/a/mdjIozg), stored
 
 ## Support and Feedback
 
-Questions and ideas are welcome on [Discord](https://discord.gg/6mWCQEJEwG). For bugs or feature requests, open a [GitHub issue](https://github.com/Shattered-Codex/sc-venaerys-initiative/issues). Documentation is available in the [official wiki](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative).
+For questions, ideas, bug reports, or feature requests, join us on [Discord](https://discord.gg/6mWCQEJEwG). Documentation is available in the [official wiki](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative).
 
 For release automation and the required GitHub secrets, see [Release Setup](https://github.com/Shattered-Codex/sc-venaerys-initiative/blob/main/.github/RELEASE.md).
