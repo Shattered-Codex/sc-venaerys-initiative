@@ -1,0 +1,63 @@
+<section class="svi-config-panel svi-banners-panel" data-tab-panel="{{ tab.id }}" role="tabpanel" {{#unless tab.active}}hidden{{/unless}}>
+  <header class="svi-panel-head">
+    <h2 class="svi-panel-title">{{ localize tab.title }}</h2>
+    <p class="svi-panel-hint">{{ localize tab.hint }}</p>
+  </header>
+
+  <div class="svi-transfer-bar">
+    <button type="button" class="svi-btn svi-btn-primary" data-action="addBanner"><i class="fa-solid fa-plus" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Add" }}</span></button>
+    <span class="svi-spacer"></span>
+    <button type="button" class="svi-btn" data-action="importConfig" data-kind="banners" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Config.Transfer.ImportBannersHint" }}"><i class="fa-solid fa-file-import" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Config.Transfer.Import" }}</span></button>
+    <button type="button" class="svi-btn" data-action="exportConfig" data-kind="banners" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Config.Transfer.ExportBannersHint" }}"><i class="fa-solid fa-file-export" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Config.Transfer.Export" }}</span></button>
+  </div>
+
+  <h3 class="svi-section-title">{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Mine" }}</h3>
+  {{#unless banners.mine.length}}<p class="svi-banner-empty">{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Empty" }}</p>{{/unless}}
+  <ul class="svi-banner-list">
+    {{#each banners.mine}}
+    <li class="svi-banner-card svi-banner-mine" data-banner-id="{{ id }}">
+      <div class="svi-banner svi-shown svi-banner-sample" style="{{ style }}" aria-hidden="true" inert>
+        <span class="svi-banner-title">{{#if name}}{{ name }}{{else}}{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Unnamed" }}{{/if}}</span>
+        <p class="svi-banner-text">{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.SampleText" }}</p>
+      </div>
+      <div class="svi-banner-form">
+        <div class="svi-banner-form-head">
+          <input type="text" class="svi-banner-name" data-banner-field="name" value="{{ name }}" maxlength="60" placeholder="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.NamePlaceholder" }}" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.NameLabel" }}">
+          <button type="button" class="svi-icon-btn" data-action="previewBanner" data-banner-source="{{ id }}" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Preview" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Preview" }}"><i class="fa-solid fa-eye" inert></i></button>
+          <button type="button" class="svi-icon-btn" data-action="copyBanner" data-banner-source="{{ id }}" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Copy" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Copy" }}"><i class="fa-solid fa-copy" inert></i></button>
+          <button type="button" class="svi-icon-btn svi-danger" data-action="deleteBanner" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Delete" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Delete" }}"><i class="fa-solid fa-trash" inert></i></button>
+        </div>
+        <div class="svi-banner-colors">
+          {{#each colors}}
+          <label class="svi-color-field">
+            <input type="color" data-banner-field="{{ field }}" value="{{ value }}">
+            <span>{{ localize label }}</span>
+          </label>
+          {{/each}}
+          <label class="svi-check svi-banner-corners">
+            <input type="checkbox" data-banner-field="corners"{{#if corners}} checked{{/if}}>
+            <span class="svi-check-box" aria-hidden="true"><i class="fa-solid fa-check" inert></i></span>
+            <span>{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Corners" }}</span>
+          </label>
+        </div>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+
+  <h3 class="svi-section-title">{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Ready" }}</h3>
+  <ul class="svi-banner-list svi-banner-ready">
+    {{#each banners.ready}}
+    <li class="svi-banner-card">
+      <div class="svi-banner svi-shown svi-banner-sample svi-banner-{{ id }}" aria-hidden="true" inert>
+        <span class="svi-banner-title">{{ name }}</span>
+        <p class="svi-banner-text">{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.SampleText" }}</p>
+      </div>
+      <div class="svi-banner-ready-actions">
+        <button type="button" class="svi-btn svi-small" data-action="previewBanner" data-banner-source="{{ id }}"><i class="fa-solid fa-eye" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.Preview" }}</span></button>
+        <button type="button" class="svi-btn svi-small" data-action="copyBanner" data-banner-source="{{ id }}"><i class="fa-solid fa-copy" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Config.Banners.CopyToMine" }}</span></button>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+</section>

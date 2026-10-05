@@ -135,7 +135,7 @@
   border-radius: var(--svi-radius-sm);
 }
 .sc-venaerys-initiative .svi-stepper button {
-  width: 28px;
+  width: 24px;
   height: 28px;
   margin: 0;
   padding: 0;
@@ -146,7 +146,7 @@
 }
 .sc-venaerys-initiative .svi-stepper button:hover { color: var(--svi-text); }
 .sc-venaerys-initiative .svi-stepper input {
-  width: 44px;
+  width: 32px;
   height: 28px;
   border: 0;
   background: transparent;
@@ -163,7 +163,18 @@
 .sc-venaerys-initiative .svi-gm-panel,
 .sc-venaerys-initiative .svi-player-panel { margin: 6px 6px 0; border-radius: var(--svi-radius-md); background: var(--svi-window-bg); }
 .sc-venaerys-initiative .svi-player-panel { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
-.sc-venaerys-initiative .svi-player-panel .svi-dc-badge { align-self: flex-start; }
+.sc-venaerys-initiative .svi-player-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sc-venaerys-initiative .svi-state-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+  color: var(--svi-muted);
+  font-size: 12px;
+  cursor: help;
+}
 .sc-venaerys-initiative .svi-dc-badge {
   padding: 2px 8px;
   border: 1px solid var(--svi-line);
@@ -172,11 +183,16 @@
   font-size: 12px;
 }
 .sc-venaerys-initiative .svi-gm-panel { display: flex; flex-direction: column; gap: 8px; padding: 8px; }
-.sc-venaerys-initiative .svi-gm-line { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.sc-venaerys-initiative .svi-gm-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sc-venaerys-initiative .svi-gm-line .svi-icon-btn { flex: none; }
 .sc-venaerys-initiative .svi-switch-wrap { display: flex; flex-direction: column; gap: 1px; }
 .sc-venaerys-initiative .svi-switch-wrap .svi-hint { padding-left: 38px; }
-.sc-venaerys-initiative .svi-gm-controls { display: flex; align-items: center; gap: 6px; }
-.sc-venaerys-initiative .svi-gm-controls .svi-btn:not(.svi-icon-btn) { flex: 1; }
+/* Two equal buttons and the way back; none of them ever shrinks out of shape. */
+.sc-venaerys-initiative .svi-gm-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 30px; gap: 6px; }
+.sc-venaerys-initiative .svi-gm-controls .svi-btn:not(.svi-icon-btn) { min-width: 0; padding: 0 6px; font-size: 12px; }
+.sc-venaerys-initiative .svi-gm-controls .svi-btn > span { overflow: hidden; text-overflow: ellipsis; }
+/* Off before the start: the hover goes to the group, which says why. */
+.sc-venaerys-initiative .svi-gm-controls .svi-btn:disabled { pointer-events: none; }
 .sc-venaerys-initiative .svi-warning {
   display: flex;
   flex-direction: column;
@@ -421,63 +437,11 @@
 .sc-venaerys-initiative .svi-phase-select:focus-visible { border-color: var(--svi-accent); }
 .sc-venaerys-initiative .svi-phase-select option { background: var(--svi-surface); color: var(--svi-text); }
 
-/* ---------- Pending strip ---------- */
-/* A card like a phase section: a header with the count (and the GM's "Roll all"),
-   then one row per character, all alike, the roll button lined up on the right. */
-.sc-venaerys-initiative.svi-pending {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px dashed var(--svi-pending);
-  border-radius: var(--svi-radius-md);
-  background: var(--svi-card);
-}
-.sc-venaerys-initiative .svi-pending-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 6px 0 8px;
-  border-bottom: 1px solid var(--svi-line);
-  color: var(--svi-text);
-}
-.sc-venaerys-initiative .svi-pending-head .svi-phase-icon { color: var(--svi-muted); }
-.sc-venaerys-initiative .svi-pending-title { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--svi-muted); }
-.sc-venaerys-initiative .svi-pending-list { display: flex; flex-direction: column; margin: 0; padding: 2px 0; list-style: none; }
-.sc-venaerys-initiative .svi-pending-row {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  padding: 0 6px 0 8px;
-  box-shadow: inset 2px 0 0 transparent;
-}
-.sc-venaerys-initiative .svi-pending-row + .svi-pending-row { border-top: 1px solid color-mix(in srgb, var(--svi-line) 60%, transparent); }
-.sc-venaerys-initiative .svi-pending-row.svi-mine { box-shadow: inset 2px 0 0 var(--svi-accent); }
-.sc-venaerys-initiative .svi-pending-row .svi-name { font-size: 13px; }
-.sc-venaerys-initiative .svi-pending-wait { display: grid; place-items: center; width: 26px; color: var(--svi-muted); font-size: 12px; }
-.sc-venaerys-initiative .svi-roll-btn {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 5px;
-  width: auto;
-  height: 24px;
-  margin: 0;
-  padding: 0 9px;
-  border: 1px solid var(--svi-accent-700);
-  border-radius: var(--svi-radius-sm);
-  background: transparent;
-  color: var(--svi-accent-200);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.sc-venaerys-initiative .svi-roll-btn:hover { border-color: var(--svi-accent); background: var(--svi-accent-900); color: var(--svi-accent-100); }
-.sc-venaerys-initiative .svi-roll-btn:focus-visible { outline: 2px solid var(--svi-accent); outline-offset: 1px; }
+/* ---------- Awaiting roll ---------- */
+/* A section like a phase, dashed because it is none: the same rows, each with
+   its own roll button where the initiative will be. */
+.sc-venaerys-initiative.svi-phase.svi-pending { --svi-phase-color: var(--svi-pending); border: 1px dashed var(--svi-pending); }
+.sc-venaerys-initiative.svi-pending .svi-phase-name { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--svi-muted); }
 .sc-venaerys-initiative .svi-you-pending {
   display: flex;
   align-items: flex-start;
@@ -491,6 +455,167 @@
 .sc-venaerys-initiative .svi-you-pending { flex-wrap: wrap; align-items: center; }
 .sc-venaerys-initiative .svi-you-pending > span { flex: 1; min-width: 12em; }
 .sc-venaerys-initiative .svi-warning-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- Message on screen ---------- */
+/* Above the canvas and the interface, below Foundry's own notifications; only a banner takes clicks. */
+.sc-venaerys-initiative.svi-banner-host {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(560px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-family: var(--svi-font-ui);
+}
+/* A title band over the text, four corner marks and an optional texture; each
+   banner style only sets the variables below. */
+.sc-venaerys-initiative .svi-banner {
+  --svi-phase-color: var(--svi-accent);
+  --svi-banner-line: var(--svi-phase-color);
+  --svi-banner-bg: var(--svi-bg);
+  --svi-banner-head: color-mix(in srgb, var(--svi-phase-color) 22%, var(--svi-bg));
+  --svi-banner-title: var(--svi-text);
+  --svi-banner-text: var(--svi-text);
+  --svi-banner-corner: var(--svi-phase-color);
+  --svi-banner-texture: none;
+  --svi-banner-glow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --svi-banner-radius: 4px;
+  --svi-banner-title-font: var(--svi-font-display);
+  --svi-banner-text-font: var(--svi-font-ui);
+  --svi-banner-spacing: 0.1em;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--svi-banner-line);
+  border-radius: var(--svi-banner-radius);
+  background: var(--svi-banner-texture), var(--svi-banner-bg);
+  box-shadow: var(--svi-banner-glow);
+  color: var(--svi-banner-text);
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-10px) scaleX(0.96);
+  transition: opacity 300ms var(--svi-ease), transform 300ms var(--svi-ease);
+}
+.sc-venaerys-initiative .svi-banner.svi-shown { opacity: 1; transform: none; }
+.sc-venaerys-initiative .svi-banner::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) top left / 12px 2px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) top left / 2px 12px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) top right / 12px 2px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) top right / 2px 12px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) bottom left / 12px 2px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) bottom left / 2px 12px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) bottom right / 12px 2px,
+    linear-gradient(var(--svi-banner-corner), var(--svi-banner-corner)) bottom right / 2px 12px;
+  background-repeat: no-repeat;
+}
+.sc-venaerys-initiative .svi-banner-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--svi-banner-line);
+  background: var(--svi-banner-head);
+  color: var(--svi-banner-title);
+  font-family: var(--svi-banner-title-font);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: var(--svi-banner-spacing);
+  text-transform: uppercase;
+}
+.sc-venaerys-initiative .svi-banner-title:last-child { border-bottom: 0; }
+.sc-venaerys-initiative .svi-banner-text {
+  margin: 0;
+  padding: 12px 24px 14px;
+  font-family: var(--svi-banner-text-font);
+  font-size: 15px;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+/* Banner styles */
+.sc-venaerys-initiative .svi-banner-hud {
+  --svi-banner-line: #2ad4e6;
+  --svi-banner-bg: rgba(18, 44, 58, 0.92);
+  --svi-banner-head: linear-gradient(180deg, rgba(42, 150, 175, 0.75), rgba(24, 96, 120, 0.75));
+  --svi-banner-title: #eafcff;
+  --svi-banner-text: #cfeef5;
+  --svi-banner-corner: #5ff2ff;
+  --svi-banner-texture: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 4px);
+  --svi-banner-glow: 0 0 18px rgba(42, 212, 230, 0.45), 0 10px 28px rgba(0, 0, 0, 0.5);
+  --svi-banner-radius: 2px;
+  --svi-banner-title-font: "Orbitron", "Eurostile", "Segoe UI", system-ui, sans-serif;
+  --svi-banner-text-font: "Rajdhani", "Segoe UI", system-ui, sans-serif;
+  --svi-banner-spacing: 0.14em;
+}
+.sc-venaerys-initiative .svi-banner-parchment {
+  --svi-banner-line: #8a6a3a;
+  --svi-banner-bg: #ead9b4;
+  --svi-banner-head: linear-gradient(180deg, #7b2d22, #5c1f18);
+  --svi-banner-title: #f6e7c4;
+  --svi-banner-text: #3a2a17;
+  --svi-banner-corner: #c9a45a;
+  --svi-banner-texture: radial-gradient(ellipse at center, transparent 55%, rgba(110, 78, 36, 0.28) 100%);
+  --svi-banner-glow: 0 10px 28px rgba(0, 0, 0, 0.55);
+  --svi-banner-title-font: "Cinzel", "IM Fell English SC", "Trajan Pro", serif;
+  --svi-banner-text-font: "IM Fell English", "Georgia", serif;
+}
+.sc-venaerys-initiative .svi-banner-blood {
+  --svi-banner-line: #b3261e;
+  --svi-banner-bg: rgba(22, 6, 6, 0.94);
+  --svi-banner-head: linear-gradient(180deg, #7a1410, #3d0a08);
+  --svi-banner-title: #ffd9d4;
+  --svi-banner-text: #f0c9c4;
+  --svi-banner-corner: #e0473c;
+  --svi-banner-texture: radial-gradient(ellipse at top, rgba(179, 38, 30, 0.28), transparent 70%);
+  --svi-banner-glow: 0 0 22px rgba(179, 38, 30, 0.5), 0 10px 28px rgba(0, 0, 0, 0.6);
+  --svi-banner-title-font: "Cinzel", "Trajan Pro", serif;
+}
+.sc-venaerys-initiative .svi-banner-arcane {
+  --svi-banner-line: #9d7bf0;
+  --svi-banner-bg: rgba(24, 16, 44, 0.93);
+  --svi-banner-head: linear-gradient(90deg, rgba(92, 58, 180, 0.2), rgba(124, 84, 220, 0.8), rgba(92, 58, 180, 0.2));
+  --svi-banner-title: #f1e9ff;
+  --svi-banner-text: #dcd0f7;
+  --svi-banner-corner: #c9b3ff;
+  --svi-banner-texture: radial-gradient(circle at 50% 120%, rgba(157, 123, 240, 0.3), transparent 60%);
+  --svi-banner-glow: 0 0 24px rgba(157, 123, 240, 0.5), 0 10px 28px rgba(0, 0, 0, 0.55);
+  --svi-banner-title-font: "Cinzel", "Trajan Pro", serif;
+}
+.sc-venaerys-initiative .svi-banner-frost {
+  --svi-banner-line: #a8d8f0;
+  --svi-banner-bg: rgba(226, 240, 248, 0.94);
+  --svi-banner-head: linear-gradient(180deg, #5b9cc4, #3f7ba3);
+  --svi-banner-title: #ffffff;
+  --svi-banner-text: #1d3a4d;
+  --svi-banner-corner: #3f7ba3;
+  --svi-banner-texture: linear-gradient(135deg, rgba(255, 255, 255, 0.55), transparent 45%);
+  --svi-banner-glow: 0 0 20px rgba(168, 216, 240, 0.55), 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+.sc-venaerys-initiative .svi-banner-minimal {
+  --svi-banner-line: rgba(255, 255, 255, 0.18);
+  --svi-banner-bg: rgba(12, 12, 14, 0.82);
+  --svi-banner-head: transparent;
+  --svi-banner-title: #ffffff;
+  --svi-banner-text: #d6d6da;
+  --svi-banner-corner: transparent;
+  --svi-banner-glow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --svi-banner-radius: 8px;
+  --svi-banner-title-font: var(--svi-font-ui);
+  --svi-banner-spacing: 0.06em;
+}
 
 /* ---------- Start confirmation ---------- */
 .sc-venaerys-initiative.svi-start-dialog .svi-start-lead { color: var(--svi-text); font-weight: 500; }
@@ -532,3 +657,30 @@
 .sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice:hover { background: var(--svi-hover); }
 .sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice:has(input:checked) { background: var(--svi-accent-soft); color: var(--svi-text); }
 .sc-venaerys-initiative.svi-actor-phase-dialog .svi-actor-phase-choice i { width: 16px; color: var(--svi-accent); text-align: center; }
+
+/* ---------- Community links (Foundry's settings window) ---------- */
+/* Foundry's own buttons, three in a row; only the icons carry a color. */
+.sc-venaerys-initiative.svi-community-links {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border-light-tertiary, rgba(255, 255, 255, 0.1));
+}
+.sc-venaerys-initiative .svi-community-link {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: auto;
+  min-width: 0;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.sc-venaerys-initiative .svi-community-link span { overflow: hidden; text-overflow: ellipsis; }
+.sc-venaerys-initiative .svi-community-link-wiki i { color: #3cba54; }
+.sc-venaerys-initiative .svi-community-link-patreon i { color: #ff6b5a; }
+.sc-venaerys-initiative .svi-community-link-discord i { color: #7d8cf5; }
+.sc-venaerys-initiative .svi-community-link:hover i { filter: brightness(1.25); }

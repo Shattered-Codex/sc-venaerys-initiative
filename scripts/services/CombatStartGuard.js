@@ -76,7 +76,7 @@ export default class CombatStartGuard {
     ];
     if (info.fastEmpty) paragraphs.push(`<p class="svi-start-note">${format("FastEmpty", phases)}</p>`);
     const choice = await foundry.applications.api.DialogV2.wait({
-      classes: [MODULE_ID, "svi-start-dialog"],
+      classes: [MODULE_ID, "svi-dialog", "svi-start-dialog"],
       window: { title: `${I18N_ROOT}.Start.Title`, icon: "fa-solid fa-swords" },
       content: paragraphs.join(""),
       buttons: [

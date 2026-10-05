@@ -135,7 +135,10 @@ describe("editing extras", () => {
 
   it("adds an event phase on request", () => {
     const next = addPhase(defaultPlan(), () => "ritual", { event: true });
-    assert.deepEqual(next.at(-1), { id: "ritual", type: "event", nameKey: "SC_VENAERYS_INITIATIVE.Phase.NewEvent", name: null, icon: "fa-solid fa-wand-sparkles", color: "#9184d9" });
+    const { onEnter, ...phase } = next.at(-1);
+    assert.deepEqual(phase, { id: "ritual", type: "event", nameKey: "SC_VENAERYS_INITIATIVE.Phase.NewEvent", name: null, icon: "fa-solid fa-wand-sparkles", color: "#9184d9" });
+    // Like every phase, it starts with a message on screen that shows its name.
+    assert.deepEqual(onEnter.map((row) => [row.kind, row.params.text]), [["screenMessage", ""]]);
     assert.ok(validatePlan(next));
   });
 

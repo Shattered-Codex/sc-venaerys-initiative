@@ -113,7 +113,7 @@ export function movePhase(plan, id, offset) {
 
 /** Appends a new creatures phase, or an event phase. `makeId` must return an id not used in the plan. */
 export function addPhase(plan, makeId, { event = false } = {}) {
-  return [...plan, { id: makeId(), ...(event ? NEW_EVENT_PHASE : NEW_PHASE) }];
+  return [...plan, { id: makeId(), ...structuredClone(event ? NEW_EVENT_PHASE : NEW_PHASE) }];
 }
 
 /** Renames an extra phase; null for built-ins and empty names. */

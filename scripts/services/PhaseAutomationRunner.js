@@ -2,15 +2,18 @@ import { I18N_ROOT, MODULE_ID, OPERATION_KEY } from "../constants/module-constan
 import { consequencesToRun, normalizeConsequences } from "../helpers/consequence-kinds.js";
 import { displayName, phaseById } from "../helpers/phase-plan.js";
 import { currentPhaseId } from "../helpers/phase-progression.js";
+import { customSound } from "../helpers/phase-sound.js";
 import { startKey, startedPhase } from "../helpers/phase-triggers.js";
 import { visibleCombat } from "../helpers/phase-visibility.js";
 import CombatSnapshot from "./CombatSnapshot.js";
+import PhaseBanner from "./PhaseBanner.js";
 
 const escape = (text) => foundry.utils.escapeHTML(String(text ?? ""));
 
 /**
- * Runs a phase's "actions when it starts" on every client, from the same
- * combat update, with no socket: "gm" actions on the active GM only, "local"
+ * Runs a phase's own sound and its "actions when it starts" on every client,
+ * from the same combat update, with no socket: the sound where someone of the
+ * phase is visible, "gm" actions on the active GM only, "local"
  * ones where someone of the phase is visible (a hidden boss's sound never
  * reaches a player). Each phase runs once per round per client; a failing
  * action is reported to the GM and the rest still run. Macros run only when
@@ -42,9 +45,11 @@ export default class PhaseAutomationRunner {
   async run(combat, view, phaseId) {
     const phase = phaseById(view.plan, phaseId);
     const rows = normalizeConsequences(phase?.onEnter);
-    if (!rows.length) return;
+    const sound = customSound(phase);
+    if (!rows.length && !sound) return;
     const isGM = game.user.isGM;
     const seen = visibleCombat(view, { isGM, showDcToPlayers: false }).phases.some((p) => p.phase?.id === phaseId && p.members.length);
+    if (sound && (isGM || seen)) PhaseAutomationRunner.#play(sound);
     const toRun = consequencesToRun(rows, {
       visible: isGM || seen,
       isGM,
@@ -65,9 +70,18 @@ export default class PhaseAutomationRunner {
     }
   }
 
+  /** A missing or broken file must not stop the phase's actions. */
+  static #play({ src, volume }) {
+    try {
+      Promise.resolve(foundry.audio.AudioHelper.play({ src, volume, loop: false }, false)).catch((error) => console.warn(`${MODULE_ID} | Phase sound "${src}" failed.`, error));
+    } catch (error) {
+      console.warn(`${MODULE_ID} | Phase sound "${src}" failed.`, error);
+    }
+  }
+
   static #HANDLERS = {
     screenMessage: (params, { phase }) => {
-      if (params.text) ui.notifications.info(`${phase.displayName}: ${params.text}`);
+      PhaseBanner.show({ title: phase.displayName, text: params.text, icon: phase.icon, color: phase.color, style: params.style, seconds: params.seconds });
     },
 
     sound: (params) => {

@@ -5,14 +5,23 @@
  * and Reset, Close and Save). Every color comes from the theme tokens.
  */
 
-/* Window chrome */
-.sc-venaerys-initiative.svi-config {
+/* Roll prompt: who rolls, as pictures, and the DC when the players may see it */
+.sc-venaerys-initiative.svi-dialog .svi-roll-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.sc-venaerys-initiative.svi-dialog .svi-roll-card { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 112px; margin: 0; font-size: 13px; text-align: center; overflow-wrap: anywhere; }
+.sc-venaerys-initiative.svi-dialog .svi-roll-card img { width: 104px; height: 104px; border: 2px solid var(--svi-accent); border-radius: var(--svi-radius-md); background: var(--svi-bg-2); object-fit: cover; object-position: top; }
+.sc-venaerys-initiative.svi-dialog .window-content p.svi-roll-dc { display: flex; justify-content: center; margin: 12px 0 0; }
+.sc-venaerys-initiative.svi-dialog .svi-roll-dc .svi-dc-badge { padding: 3px 12px; border-color: var(--svi-accent); color: var(--svi-accent-200); font-size: 13px; }
+
+/* Window chrome: the configuration screen and every dialog of the module */
+.sc-venaerys-initiative.svi-config,
+.sc-venaerys-initiative.svi-dialog {
   border: 1px solid var(--svi-border);
   border-radius: var(--svi-radius-lg);
   background: var(--svi-bg);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
 }
-.sc-venaerys-initiative.svi-config .window-header {
+.sc-venaerys-initiative.svi-config .window-header,
+.sc-venaerys-initiative.svi-dialog .window-header {
   border-top: 2px solid var(--svi-accent);
   border-bottom: 1px solid var(--svi-border);
   background: var(--svi-bg-2);
@@ -21,7 +30,9 @@
   letter-spacing: 0.04em;
 }
 .sc-venaerys-initiative.svi-config .window-header button,
-.sc-venaerys-initiative.svi-config .window-header .header-control {
+.sc-venaerys-initiative.svi-dialog .window-header button,
+.sc-venaerys-initiative.svi-config .window-header .header-control,
+.sc-venaerys-initiative.svi-dialog .window-header .header-control {
   width: 1.8rem;
   height: 1.8rem;
   min-height: 1.8rem;
@@ -33,12 +44,52 @@
   box-shadow: none;
 }
 .sc-venaerys-initiative.svi-config .window-header button:hover,
+.sc-venaerys-initiative.svi-dialog .window-header button:hover,
 .sc-venaerys-initiative.svi-config .window-header button:focus-visible,
+.sc-venaerys-initiative.svi-dialog .window-header button:focus-visible,
 .sc-venaerys-initiative.svi-config .window-header .header-control:hover,
-.sc-venaerys-initiative.svi-config .window-header .header-control:focus-visible {
+.sc-venaerys-initiative.svi-dialog .window-header .header-control:hover,
+.sc-venaerys-initiative.svi-config .window-header .header-control:focus-visible,
+.sc-venaerys-initiative.svi-dialog .window-header .header-control:focus-visible {
   background: var(--svi-bg-hover);
   color: var(--svi-text);
 }
+
+/* Dialogs: the roll prompt, the start confirmation, "Move to phase" and the like */
+.sc-venaerys-initiative.svi-dialog .window-content {
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--svi-bg);
+  color: var(--svi-text);
+  font-family: var(--svi-font-ui);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.sc-venaerys-initiative.svi-dialog .window-content p { margin: 0 0 6px; color: var(--svi-text); }
+.sc-venaerys-initiative.svi-dialog .window-content p:last-child { margin-bottom: 0; }
+.sc-venaerys-initiative.svi-dialog .window-content label { color: var(--svi-text-dim); }
+.sc-venaerys-initiative.svi-dialog .window-content select {
+  height: 30px;
+  border: 1px solid var(--svi-border);
+  border-radius: var(--svi-radius-sm);
+  background: var(--svi-bg-1);
+  color: var(--svi-text);
+}
+.sc-venaerys-initiative.svi-dialog .window-content select option { background: var(--svi-bg-1); color: var(--svi-text); }
+.sc-venaerys-initiative.svi-dialog .window-content footer { gap: 8px; margin: 0; padding-top: 12px; border-top: 1px solid var(--svi-border); }
+.sc-venaerys-initiative.svi-dialog .window-content footer button {
+  height: 32px;
+  border: 1px solid var(--svi-line);
+  border-radius: var(--svi-radius-sm);
+  background: transparent;
+  color: var(--svi-text);
+  font-family: inherit;
+  font-size: 13px;
+  box-shadow: none;
+}
+.sc-venaerys-initiative.svi-dialog .window-content footer button:hover { background: var(--svi-hover); }
+.sc-venaerys-initiative.svi-dialog .window-content footer button[autofocus] { border-color: var(--svi-accent); color: var(--svi-accent-200); }
+.sc-venaerys-initiative.svi-dialog .window-content footer button[autofocus]:hover { background: color-mix(in srgb, var(--svi-accent) 22%, transparent); }
 
 /* Frame: rail | panel on top, footer across the bottom. Each tab is its own render part. */
 .sc-venaerys-initiative.svi-config .window-content {
@@ -251,10 +302,18 @@
 .sc-venaerys-initiative .svi-status-pill.svi-dirty { border-color: var(--svi-warn); background: var(--svi-warn-soft); color: var(--svi-warn); }
 .sc-venaerys-initiative .svi-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentcolor; }
 
-/* Appearance: the theme select and a specimen of the phased tracker */
+/* Appearance: the choices in a column on the left, a specimen of the phased tracker on the right */
+.sc-venaerys-initiative .svi-appearance { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 4px; }
+.sc-venaerys-initiative .svi-appearance-options { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sc-venaerys-initiative .svi-appearance-field { display: flex; flex-direction: column; gap: 6px; }
+.sc-venaerys-initiative .svi-appearance-field .svi-select-wrap { min-width: 0; }
+.sc-venaerys-initiative .svi-custom-colors { display: none; flex-direction: column; gap: 8px; margin: 0; padding: 10px 12px 12px; border: 1px solid var(--svi-border); border-radius: var(--svi-radius-md); background: var(--svi-bg-1); }
+.sc-venaerys-initiative .svi-appearance-options:has(option[value="custom"]:checked) .svi-custom-colors { display: flex; }
+.sc-venaerys-initiative .svi-custom-colors legend { padding: 0 4px; color: var(--svi-text-dim); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+.sc-venaerys-initiative .svi-color-field { display: flex; align-items: center; gap: 10px; color: var(--svi-text); font-size: 12.5px; cursor: pointer; }
+.sc-venaerys-initiative .svi-color-field input { flex: none; width: 36px; height: 26px; padding: 0; border: 1px solid var(--svi-border-strong); border-radius: var(--svi-radius-sm); background: transparent; cursor: pointer; }
 .sc-venaerys-initiative .svi-theme-preview {
   overflow: hidden;
-  margin-top: 16px;
   border: 1px solid var(--svi-border);
   border-radius: var(--svi-radius-lg);
   background: var(--svi-bg);
@@ -407,17 +466,59 @@
 .sc-venaerys-initiative .svi-help-topic > summary { display: flex; align-items: center; gap: 8px; min-height: var(--svi-row-h); font-weight: 500; cursor: pointer; }
 .sc-venaerys-initiative .svi-help-topic > p { margin: 0 0 10px 24px; color: var(--svi-text-dim); }
 
+.sc-venaerys-initiative .svi-transfer-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.sc-venaerys-initiative .svi-phase-actions { align-items: center; }
+
+/* Banner themes: the GM's own with their colors, then the ready-made ones as samples */
+.sc-venaerys-initiative .svi-banner-list { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 0 0 18px; padding: 0; list-style: none; }
+.sc-venaerys-initiative .svi-banner-ready { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.sc-venaerys-initiative .svi-banner-card { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 10px; border: 1px solid var(--svi-border); border-radius: var(--svi-radius-md); background: var(--svi-bg-1); }
+.sc-venaerys-initiative .svi-banner-mine { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 14px; align-items: center; }
+.sc-venaerys-initiative .svi-banner-sample { cursor: default; pointer-events: none; }
+.sc-venaerys-initiative .svi-banner-sample .svi-banner-title { padding: 7px 14px; font-size: 14px; }
+.sc-venaerys-initiative .svi-banner-sample .svi-banner-text { padding: 8px 14px 10px; font-size: 12.5px; }
+.sc-venaerys-initiative .svi-banner-form { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sc-venaerys-initiative .svi-banner-form-head { display: flex; align-items: center; gap: 4px; }
+.sc-venaerys-initiative .svi-banner-name { flex: 1; min-width: 0; }
+.sc-venaerys-initiative .svi-banner-colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px 12px; }
+.sc-venaerys-initiative .svi-banner-corners { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.sc-venaerys-initiative .svi-banner-ready-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.sc-venaerys-initiative .svi-banner-empty { margin: 0 0 14px; color: var(--svi-text-mute); font-size: 12px; }
+
+/* Sound when a phase starts */
+.sc-venaerys-initiative .svi-phase-sound { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0 4px 4px 34px; color: var(--svi-text-dim); font-size: 12px; }
+.sc-venaerys-initiative.svi-config .svi-phase-sound .svi-select { width: auto; min-width: 190px; }
+.sc-venaerys-initiative .svi-phase-sound .svi-file-field { flex: 1 1 220px; min-width: 0; }
+.sc-venaerys-initiative .svi-phase-sound .svi-file-field input { flex: 1; min-width: 0; }
+.sc-venaerys-initiative .svi-phase-sound-volume { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.sc-venaerys-initiative .svi-phase-sound-volume input { width: 60px; }
+
 /* Actions when a phase starts */
 .sc-venaerys-initiative .svi-actions { margin: 0 4px 6px 34px; }
 .sc-venaerys-initiative .svi-actions > summary { display: flex; align-items: center; gap: 6px; min-height: 26px; color: var(--svi-text-dim); font-size: 12px; cursor: pointer; }
-.sc-venaerys-initiative .svi-actions-count { color: var(--svi-text-mute); font-size: 11px; }
+.sc-venaerys-initiative .svi-actions > summary { list-style: none; }
+.sc-venaerys-initiative .svi-actions > summary::-webkit-details-marker { display: none; }
+.sc-venaerys-initiative .svi-actions > summary:hover { color: var(--svi-text); }
+.sc-venaerys-initiative .svi-actions-chevron { width: 10px; font-size: 10px; transition: transform 120ms var(--svi-ease); }
+.sc-venaerys-initiative .svi-actions[open] .svi-actions-chevron { transform: rotate(90deg); }
+.sc-venaerys-initiative .svi-actions-count { padding: 1px 7px; border-radius: 999px; background: var(--svi-accent-soft); color: var(--svi-text); font-size: 11px; }
+/* With no action yet, the row says what a click does. */
+.sc-venaerys-initiative .svi-actions-add { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border: 1px dashed var(--svi-border-strong); border-radius: var(--svi-radius-sm); color: var(--svi-text-dim); font-size: 11px; }
+.sc-venaerys-initiative .svi-actions > summary:hover .svi-actions-add { border-color: var(--svi-accent); color: var(--svi-accent); }
+.sc-venaerys-initiative .svi-actions[open] .svi-actions-add { display: none; }
 .sc-venaerys-initiative .svi-actions-body { display: flex; flex-direction: column; gap: 6px; padding: 6px 0 4px; }
 .sc-venaerys-initiative .svi-actions-note { display: flex; gap: 6px; margin: 0; color: var(--svi-text-mute); font-size: 11px; }
 .sc-venaerys-initiative .svi-action-row { padding: 6px 8px; border: 1px solid var(--svi-line); border-radius: var(--svi-radius-sm); background: var(--svi-bg-1); }
 .sc-venaerys-initiative .svi-action-head { display: flex; align-items: center; gap: 6px; }
 .sc-venaerys-initiative .svi-action-name { font-weight: 600; }
 .sc-venaerys-initiative .svi-action-where { color: var(--svi-text-mute); font-size: 11px; }
-.sc-venaerys-initiative .svi-action-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px 10px; padding-top: 6px; }
+/* Long text takes the whole row; the short fields share the next one in equal columns. */
+.sc-venaerys-initiative .svi-action-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 10px; padding-top: 8px; }
+.sc-venaerys-initiative .svi-action-field:has(textarea) { grid-column: 1 / -1; }
+.sc-venaerys-initiative .svi-action-field textarea { min-height: 52px; resize: vertical; }
+.sc-venaerys-initiative .svi-action-field input,
+.sc-venaerys-initiative .svi-action-field select,
+.sc-venaerys-initiative .svi-action-field textarea { width: 100%; }
 .sc-venaerys-initiative .svi-action-field { display: flex; flex-direction: column; gap: 2px; color: var(--svi-text-dim); font-size: 11px; }
 .sc-venaerys-initiative .svi-file-field { display: flex; align-items: center; gap: 4px; }
 .sc-venaerys-initiative .svi-add-action { align-self: flex-start; }

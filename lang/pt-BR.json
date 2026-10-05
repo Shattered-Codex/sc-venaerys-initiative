@@ -71,6 +71,22 @@
           "oneDegree": "Um grau pior"
         }
       },
+      "hideEmptyPhases": {
+        "Name": "Ocultar fases vazias",
+        "Hint": "O tracker do Mestre deixa de fora as fases sem ninguém. As fases de evento continuam, para ainda dar para adicionar um marcador. Para mover alguém para uma fase oculta, use o seletor de fase na linha."
+      },
+      "customAccent": {
+        "Name": "Destaque",
+        "Hint": "Botões, realces e a fase atual."
+      },
+      "customBackground": {
+        "Name": "Fundo",
+        "Hint": "A superfície mais escura; painéis e bordas partem dela."
+      },
+      "customText": {
+        "Name": "Texto",
+        "Hint": "O texto principal; o texto mais apagado parte dele."
+      },
       "suggestFromSheet": {
         "Name": "Sugerir fases de chefe pela ficha",
         "Hint": "Um inimigo que entra no combate vai para a fase de criaturas com o nome exato de um dos seus itens (uma característica chamada \"Chefe\" vai para Chefe; \"Chefe Final\" não). É só um padrão: o Mestre ainda pode movê-lo."
@@ -78,6 +94,18 @@
       "rollPrompt": {
         "Name": "Pedir que eu role a iniciativa",
         "Hint": "Quando um personagem seu entra num combate com fases sem rolagem, uma janela pede a rolagem. O botão de rolar no tracker de combate continua lá de qualquer jeito."
+      },
+      "bannerThemes": {
+        "Name": "Temas de faixa",
+        "Hint": "Seus próprios visuais para a mensagem na tela de uma fase, editados na aba Faixas."
+      },
+      "rollPromptImage": {
+        "Name": "Imagem no pedido de rolagem",
+        "Hint": "Qual imagem de cada personagem aparece na janela que pede a rolagem aos jogadores.",
+        "Choices": {
+          "token": "A do token",
+          "portrait": "O retrato da ficha"
+        }
       },
       "rollSource": {
         "Name": "Rolagem",
@@ -114,6 +142,7 @@
         "world": "Mundo",
         "appearance": "Aparência",
         "phases": "Fases",
+        "banners": "Faixas",
         "client": "Este cliente",
         "help": "Ajuda"
       },
@@ -129,6 +158,18 @@
       "Saved": "Configurações salvas.",
       "Phases": {
         "Intro": "Ordem das fases em cada rodada. Combates em andamento não mudam.",
+        "Sound": {
+          "Title": "Som ao começar",
+          "Label": "Som quando {name} começa",
+          "FilePlaceholder": "Caminho do arquivo de áudio",
+          "Pick": "Escolher ou enviar um arquivo de áudio",
+          "Preview": "Tocar o som",
+          "Modes": {
+            "theme": "Som de combate do Foundry",
+            "none": "Sem som",
+            "custom": "Meu próprio arquivo"
+          }
+        },
         "Band": "Turno do grupo: fases extras aqui agem no meio dele",
         "Drag": "Arrastar {name}",
         "Icon": "Ícone de {name}",
@@ -188,6 +229,7 @@
         "world": "Regras só do Mestre para todos os combates deste mundo.",
         "appearance": "Cores das telas do módulo e das seções de fase, para todos neste mundo. As linhas dos combatentes mantêm o visual do Foundry.",
         "phases": "Ordem das fases em cada rodada. Combates em andamento não mudam.",
+        "banners": "Visuais da mensagem na tela de uma fase. Escolha um em cada ação \"Mensagem na tela\" da aba Fases.",
         "client": "Suas preferências, só neste computador.",
         "help": "Como as fases se comportam com eventos de turno, pendentes e outros módulos."
       },
@@ -197,8 +239,52 @@
       "ResetTab": "Restaurar aba",
       "Close": "Fechar",
       "UnsavedTab": "{tab}: alterações não salvas",
+      "Transfer": {
+        "Export": "Exportar",
+        "Import": "Importar",
+        "ExportPhasesHint": "Salvar em arquivo as fases na tela, com seus sons e ações.",
+        "ImportPhasesHint": "Trocar as fases na tela pelas de um arquivo exportado aqui. Nada é gravado até você clicar em Salvar.",
+        "ExportBannersHint": "Salvar em arquivo os seus temas de faixa.",
+        "ImportBannersHint": "Juntar aos seus os temas de faixa de um arquivo exportado aqui. Nada é gravado até você clicar em Salvar.",
+        "Imported": "{count} importados. Clique em Salvar para manter.",
+        "Errors": {
+          "NotJson": "Esse arquivo não é um JSON válido.",
+          "WrongFile": "Esse arquivo não foi exportado por este módulo.",
+          "WrongKind": "Esse arquivo guarda outra coisa: fases e temas de faixa são importados cada um na sua aba.",
+          "Invalid": "O conteúdo do arquivo não é válido, então nada foi importado."
+        }
+      },
+      "Banners": {
+        "Add": "Adicionar tema de faixa",
+        "NewName": "Novo tema de faixa",
+        "Mine": "Meus temas de faixa",
+        "Ready": "Prontos",
+        "Empty": "Nenhum ainda. Copie um tema pronto abaixo para começar o seu.",
+        "Unnamed": "Tema sem nome",
+        "NamePlaceholder": "Nome do tema",
+        "NameLabel": "Nome do tema de faixa",
+        "Preview": "Mostrar na tela",
+        "Copy": "Duplicar",
+        "CopyToMine": "Copiar para editar",
+        "Delete": "Excluir tema de faixa",
+        "CopyName": "{name} (cópia)",
+        "Corners": "Cantoneiras",
+        "SampleText": "Sua mensagem aparece aqui.",
+        "ResetTitle": "Excluir meus temas de faixa",
+        "ResetBody": "Excluir todos os seus temas de faixa? As mensagens que os usam voltam ao tema do módulo.",
+        "ResetConfirm": "Excluir",
+        "Fields": {
+          "line": "Borda e brilho",
+          "background": "Fundo",
+          "head": "Faixa do título",
+          "title": "Título",
+          "text": "Texto"
+        }
+      },
       "Appearance": {
         "Previewing": "Pré-visualizando {theme} só neste computador. Feche sem salvar para voltar a {saved}.",
+        "CustomTitle": "Cores do tema personalizado",
+        "CustomHint": "Todas as outras cores são derivadas destas três. Vale para todos neste mundo.",
         "PreviewTitle": "Tracker de combate"
       }
     },
@@ -268,7 +354,6 @@
       "Move": "Mover",
       "CompleteGroupLabel": "Marcar todos os {name} em {phase} como feitos",
       "AddMarkerLabel": "Adicionar um marcador de evento em {phase}",
-      "Roll": "Rolar",
       "RollFor": "Rolar a iniciativa de {name}",
       "RollNow": "Rolar agora",
       "DcNamed": "DC {name} ({dc})",
@@ -284,7 +369,7 @@
       "UnmarkMovedLabel": "Desmarcar o movimento de {name} em {phase}",
       "Moving": "Movendo",
       "NotStartedHint": "O combate ainda não começou. Quando o Mestre iniciar, marque Feito aqui quando o seu turno na sua fase acabar.",
-      "RollAll": "Rolar todos"
+      "RollPlayers": "Rolar PJs"
     },
     "Gm": {
       "PhasesOn": "Fases ligadas",
@@ -354,6 +439,7 @@
       "catacomb": "Catacumba",
       "sanctuary": "Santuário",
       "underworld": "Submundo",
+      "custom": "Personalizado (minhas cores)",
       "moss": "Musgo",
       "holo": "Holograma",
       "phosphor": "Fósforo",
@@ -366,6 +452,7 @@
       "contrast": "Alto contraste"
     },
     "ThemeFamily": {
+      "Custom": "Personalizado",
       "Dark": "Escuros",
       "Light": "Claros",
       "Stone": "Pedra",
@@ -375,7 +462,12 @@
       "Title": "Ações ao começar",
       "CountOne": "1 ação",
       "CountMany": "{count} ações",
-      "Empty": "Nenhuma ação",
+      "Preview": "Ver a mensagem na tela",
+      "AddShort": "Adicionar ação",
+      "Hint": "Som, mensagem, macro, susto e mais, executados quando esta fase começa. Clique para abrir.",
+      "NoScare": "— escolha um susto —",
+      "NoPuzzle": "— escolha um puzzle —",
+      "MissingChoice": "{id} (não encontrado)",
       "Add": "Adicionar ação…",
       "Requires": "Exige o módulo {module}",
       "Note": "Macros só rodam se o autor for o Mestre. Ações locais não aparecem para jogadores que não veem a fase.",
@@ -395,7 +487,7 @@
       "Kinds": {
         "screenMessage": "Mensagem na tela",
         "sound": "Som",
-        "hook": "Hook",
+        "hook": "Disparar evento (hook)",
         "chatMessage": "Mensagem no chat",
         "macro": "Macro",
         "rollTable": "Tabela de rolagem",
@@ -408,10 +500,12 @@
         "audience": "Quem vê",
         "src": "Arquivo de áudio",
         "volume": "Volume (%)",
-        "name": "Nome do hook",
+        "style": "Tema da faixa",
+        "seconds": "Segundos na tela",
+        "name": "Nome do evento (hook)",
         "macroUuid": "Macro",
         "tableUuid": "Tabela de rolagem",
-        "scareId": "Id do susto",
+        "scareId": "Susto",
         "puzzleUuid": "Página do puzzle",
         "action": "Ação",
         "target": "Recurso de quem",
@@ -421,6 +515,13 @@
         "amount": "Quantidade"
       },
       "Choices": {
+        "themed": "Tema do módulo (cor da fase)",
+        "hud": "HUD sci-fi",
+        "parchment": "Pergaminho",
+        "blood": "Sangue",
+        "arcane": "Arcano",
+        "frost": "Gelo",
+        "minimal": "Minimalista",
         "all": "Todos",
         "gm": "Só o Mestre",
         "open": "Abrir",
@@ -459,9 +560,14 @@
         "Hint": "Traz o tracker de combate para a frente: a janela destacada, se aberta, senão a aba da barra lateral."
       }
     },
+    "Links": {
+      "Aria": "Links da comunidade",
+      "wiki": { "Label": "Abrir a wiki", "Hint": "Abrir a wiki de documentação do SC - Venaerys' Initiative." },
+      "patreon": { "Label": "Apoiar no Patreon", "Hint": "Apoiar o desenvolvimento da Shattered Codex no Patreon." },
+      "discord": { "Label": "Discord", "Hint": "Entrar no servidor de Discord da Shattered Codex." }
+    },
     "RollPrompt": {
       "Title": "Rolar iniciativa",
-      "Body": "O combate corre em fases. Role a iniciativa de {names}: quem bate a DC age na primeira fase dos jogadores.",
       "Roll": "Rolar",
       "Later": "Depois"
     },

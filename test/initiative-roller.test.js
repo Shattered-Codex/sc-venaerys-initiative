@@ -149,6 +149,17 @@ describe("the DC and the roll in the tracker", () => {
   });
 });
 
+describe("roll prompt pictures", () => {
+  it("shows the token or the sheet's portrait as set, never a video, and always something", () => {
+    const hero = { img: "token.webp", token: { texture: { src: "token.webp" } }, actor: { img: "portrait.webp" } };
+    assert.equal(RollPrompter.imageOf(hero, "token"), "token.webp");
+    assert.equal(RollPrompter.imageOf(hero, "portrait"), "portrait.webp");
+    assert.equal(RollPrompter.imageOf({ token: { texture: { src: "spin.webm" } }, img: "spin.webm", actor: { img: "portrait.webp" } }, "token"), "portrait.webp");
+    assert.equal(RollPrompter.imageOf({ img: "only.webp" }, "portrait"), "only.webp");
+    assert.equal(RollPrompter.imageOf({}, "token"), "icons/svg/mystery-man.svg");
+  });
+});
+
 describe("roll buttons in the tracker", () => {
   const options = { localize: (key) => key, format: (key, data) => `${key}${JSON.stringify(data)}`, decimals: 2 };
   const settings = { showDcToPlayers: false, autoAdvance: true };
@@ -156,17 +167,22 @@ describe("roll buttons in the tracker", () => {
   it("give the owner and the GM a roll button on a waiting character, and the GM a 'Roll for them' while the start waits", () => {
     const view = combatView({ round: 1, on: "boss", combatants: [enemy("boss", "boss"), player("ana", null, { isOwner: true }), player("bruno", null)] });
     const forPlayer = CombatPhaseProjector.project(view, { isGM: false }, settings, options);
-    assert.match(forPlayer.pending.find((p) => p.id === "ana").roll.label, /Tracker\.RollFor/);
-    assert.equal(forPlayer.pending.find((p) => p.id === "bruno").roll, null);
+    assert.match(forPlayer.pending.find((p) => p.id === "ana").rollButton.label, /Tracker\.RollFor/);
+    assert.deepEqual([forPlayer.pending.find((p) => p.id === "bruno").rollButton, forPlayer.pending.find((p) => p.id === "bruno").awaiting], [null, true]);
     assert.equal(forPlayer.youPending, true);
+    assert.equal(forPlayer.rollPlayers, null);
     const forGm = CombatPhaseProjector.project(view, { isGM: true }, settings, options);
-    assert.ok(forGm.pending.every((p) => p.roll));
+    assert.ok(forGm.pending.every((p) => p.rollButton && p.select && !p.doneButton));
+    assert.deepEqual(forGm.rollPlayers, { label: "SC_VENAERYS_INITIATIVE.Tracker.RollPlayers", disabled: false });
     const wait = forGm.gm.warnings.find((w) => w.action?.name === "advance");
     assert.equal(wait?.roll.label, "SC_VENAERYS_INITIATIVE.Gm.RollForThem");
   });
 
   it("keeps the module roll available after an unrolled character is placed in Slow", () => {
     const view = combatView({ round: 1, on: "slow", combatants: [player("ana", null, { isOwner: true, phase: "slow" })] });
+    assert.equal(CombatPhaseProjector.project(view, { isGM: true }, settings, options).rollPlayers.disabled, false);
+    const rolled = combatView({ round: 1, on: "slow", combatants: [player("ana", 12, { phase: "slow" })] });
+    assert.equal(CombatPhaseProjector.project(rolled, { isGM: true }, settings, options).rollPlayers.disabled, true);
     const model = CombatPhaseProjector.project(view, { isGM: false }, settings, options);
     const slow = model.phases.find((phase) => phase.id === "slow");
     assert.ok(slow.rows.find((row) => row.id === "ana")?.rollButton);

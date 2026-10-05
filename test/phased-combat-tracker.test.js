@@ -86,6 +86,14 @@ describe("PhasedCombatTracker", () => {
     assert.equal(typeof x.sviLabels.hidden, "string");
   });
 
+  it("gives whoever awaits a roll the same joined row, found by the context menu too", () => {
+    const model = { phases: [{ id: "fast", rows: [{ id: "a" }] }], pending: [{ id: "p", rollButton: { label: "Roll" } }, { id: "gone" }] };
+    const rows = PhasedCombatTracker.joinRows(model.pending, [{ id: "p", css: "active" }, { id: "a", css: "" }]);
+    assert.deepEqual(rows.map((row) => [row.id, row.css, row.svi.rollButton.label]), [["p", "", "Roll"]]);
+    assert.equal(PhasedCombatTracker.rowOf(model, "p"), model.pending[0]);
+    assert.equal(PhasedCombatTracker.rowOf(model, "nobody"), null);
+  });
+
   it("gives a player no trace of a hidden combatant", () => {
     setup({
       isGM: false,

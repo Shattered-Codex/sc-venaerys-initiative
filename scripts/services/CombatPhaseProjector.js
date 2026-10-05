@@ -2,6 +2,7 @@ import { BUILTIN_PHASE_IDS, DC_SOURCES, HALVES, I18N_ROOT, SIDES } from "../cons
 import { canEnterPhase, displayName, isEventPhase, phaseById } from "../helpers/phase-plan.js";
 import {
   advanceTarget,
+  canStillRoll,
   canToggleDone,
   currentHalf,
   currentPhaseId,
@@ -26,7 +27,7 @@ export default class CombatPhaseProjector {
   /**
    * @param {object} view                         CombatSnapshot.from(combat)
    * @param {{isGM: boolean}} user
-   * @param {{showDcToPlayers: boolean, autoAdvance: boolean, dcSource?: string}} settings
+   * @param {{showDcToPlayers: boolean, autoAdvance: boolean, dcSource?: string, hideEmptyPhases?: boolean}} settings
    * @param {object} [options]
    * @param {(key: string) => string} options.localize
    * @param {(key: string, data: object) => string} options.format
@@ -38,7 +39,7 @@ export default class CombatPhaseProjector {
    */
   static project(view, user, settings, { localize, format, decimals = 2, waitingForDialog = false, expanded = new Set(), dcName = () => null, rollProblem = null }) {
     const isGM = !!user.isGM;
-    const visible = visibleCombat(view, { isGM, showDcToPlayers: settings.showDcToPlayers });
+    const visible = visibleCombat(view, { isGM, showDcToPlayers: settings.showDcToPlayers, hideEmptyPhases: settings.hideEmptyPhases });
     const phaseName = (id) => displayName(phaseById(view.plan, id), localize);
     const current = currentPhaseId(view);
     const half = currentHalf(view);
@@ -54,14 +55,8 @@ export default class CombatPhaseProjector {
       if (entry.waitingForGm) return { key: "waiting", waitingForGm: true, label: localize(T("Tracker.WaitingForGm")) };
       return CombatPhaseProjector.#phase(entry, ctx);
     });
-    const pending = visible.pending.map((c) => ({
-      id: c.id,
-      name: c.name,
-      img: c.img,
-      mine: c.isOwner && !isGM,
-      // Whoever may roll it: its owner, or a GM rolling for an absent player.
-      roll: isGM || c.isOwner ? { label: format(T("Tracker.RollFor"), { name: c.name }) } : null,
-    }));
+    // Whoever hasn't rolled has no phase yet: the same rows, under "Awaiting roll".
+    const pending = visible.pending.map((c) => CombatPhaseProjector.#row(c, { ...ctx, phase: null, name: localize(T("Tracker.AwaitingRoll")), state: "pending" }));
 
     return {
       enabled: view.enabled,
@@ -77,9 +72,10 @@ export default class CombatPhaseProjector {
       pending,
       hasPending: pending.length > 0,
       pendingCount: pending.length,
-      // The GM rolls everyone still waiting at once, from the strip's header.
-      rollAll: isGM && pending.length > 1 ? { label: localize(T("Gm.RollForThem")) } : null,
-      youPending: pending.some((p) => p.mine),
+      // The GM rolls every player character still waiting at once, from the tracker's header.
+      // Off only when nobody may still roll: the roller's own rule, so a character placed in a phase without a roll counts.
+      rollPlayers: isGM && view.enabled ? { label: localize(T("Tracker.RollPlayers")), disabled: !view.combatants.some(canStillRoll) } : null,
+      youPending: !isGM && visible.pending.some((c) => c.isOwner),
     };
   }
 
@@ -170,6 +166,8 @@ export default class CombatPhaseProjector {
     const marker = c.side === SIDES.event;
     const rollsNot = c.side === SIDES.enemies || marker;
     const doneLabel = format(T(done ? "Tracker.UnmarkDoneLabel" : "Tracker.MarkDoneLabel"), { name: c.name, phase });
+    // Whoever may roll it: its owner, or a GM rolling for an absent player.
+    const canRoll = canStillRoll(c) && (isGM || c.isOwner);
     const row = {
       isGroup: false,
       id: c.id,
@@ -198,9 +196,9 @@ export default class CombatPhaseProjector {
       doneStatus: current && !canToggle && !c.isDefeated && !moving,
       movedStatus: current && moving && !canToggle && !c.isDefeated ? { moved } : null,
       skipButton: isGM && view.started && state === "future" && !c.isDefeated ? { pressed: done, label: format(T(done ? "Tracker.UnskipLabel" : "Tracker.SkipLabel"), { name: c.name }) } : null,
-      rollButton: c.side === SIDES.players && !Number.isFinite(c.initiative) && (isGM || c.isOwner)
-        ? { label: format(T("Tracker.RollFor"), { name: c.name }) }
-        : null,
+      rollButton: canRoll ? { label: format(T("Tracker.RollFor"), { name: c.name }) } : null,
+      // Someone else's character with no phase yet: nothing to click, only the wait.
+      awaiting: state === "pending" && !canRoll,
       select: isGM ? CombatPhaseProjector.#select(c, ctx) : null,
     };
     return row;

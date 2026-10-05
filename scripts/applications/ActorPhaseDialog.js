@@ -61,7 +61,7 @@ export default class ActorPhaseDialog {
       `<label class="svi-actor-phase-choice"><input type="radio" name="phaseId" value="${escape(choice.value)}"${choice.checked ? " checked" : ""}>`
       + `<i class="${escape(choice.icon)}" inert></i><span>${escape(choice.label)}</span></label>`);
     const phaseId = await foundry.applications.api.DialogV2.prompt({
-      classes: [MODULE_ID, "svi-actor-phase-dialog"],
+      classes: [MODULE_ID, "svi-dialog", "svi-actor-phase-dialog"],
       window: { title: game.i18n.format(`${I18N_ROOT}.ActorPhase.Title`, { name: actor.name }), icon: "fa-solid fa-layer-group" },
       content: `<p class="svi-actor-phase-hint">${escape(game.i18n.localize(`${I18N_ROOT}.ActorPhase.Hint`))}</p>`
         + `<fieldset class="svi-actor-phase-list"><legend>${escape(game.i18n.localize(`${I18N_ROOT}.ActorPhase.Legend`))}</legend>${radios.join("")}</fieldset>`,

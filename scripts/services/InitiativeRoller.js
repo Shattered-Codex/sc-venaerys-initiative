@@ -1,4 +1,5 @@
-import { COMBATANT_FLAGS, I18N_ROOT, MODULE_ID, ROLL_SOURCES, SIDES } from "../constants/module-constants.js";
+import { COMBATANT_FLAGS, I18N_ROOT, MODULE_ID, ROLL_SOURCES } from "../constants/module-constants.js";
+import { canStillRoll } from "../helpers/phase-progression.js";
 import CombatSnapshot from "./CombatSnapshot.js";
 import FoundryCompat from "./FoundryCompat.js";
 
@@ -25,11 +26,7 @@ export default class InitiativeRoller {
   /** Characters of the players' side with no roll yet; `own` keeps the ones this user owns. */
   static waiting(combat, { own = false } = {}) {
     if (!CombatSnapshot.isPhased(combat)) return [];
-    return CombatSnapshot.from(combat, null).combatants.filter((c) => {
-      const side = c.side ?? (c.hasPlayerOwner ? SIDES.players : null);
-      if (side !== SIDES.players || Number.isFinite(c.initiative)) return false;
-      return own ? c.isOwner : game.user.isGM || c.isOwner;
-    });
+    return CombatSnapshot.from(combat, null).combatants.filter((c) => canStillRoll(c) && (own ? c.isOwner : game.user.isGM || c.isOwner));
   }
 
   /** The formula rolled when the source is a formula: the GM's, else the system's default. */

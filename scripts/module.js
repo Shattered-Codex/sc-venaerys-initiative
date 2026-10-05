@@ -1,12 +1,13 @@
 import { I18N_ROOT, MODULE_ID, OPERATION_KEY, SETTINGS } from "./constants/module-constants.js";
 import { backTarget } from "./helpers/phase-progression.js";
 import { registerKeybindings } from "./hooks/register-keybindings.js";
-import { getSetting, naturalRules, registerSettings, rollPrompt, rollSettings, suggestFromSheet } from "./hooks/register-settings.js";
+import { getSetting, naturalRules, registerSettings, rollPrompt, rollPromptView, rollSettings, suggestFromSheet } from "./hooks/register-settings.js";
 import ActorPhaseDialog from "./applications/ActorPhaseDialog.js";
 import PhaseConfigApp from "./applications/PhaseConfigApp.js";
 import PhasedCombatTracker from "./applications/PhasedCombatTracker.js";
 import AutoAdvanceWatcher from "./services/AutoAdvanceWatcher.js";
 import CombatSetup from "./services/CombatSetup.js";
+import CommunityLinks from "./services/CommunityLinks.js";
 import CombatSnapshot from "./services/CombatSnapshot.js";
 import CombatSorter from "./services/CombatSorter.js";
 import CombatStartGuard from "./services/CombatStartGuard.js";
@@ -25,6 +26,7 @@ import NaturalRollRecorder from "./services/NaturalRollRecorder.js";
 import PhaseAdvancer from "./services/PhaseAdvancer.js";
 import PhaseAutomationRunner from "./services/PhaseAutomationRunner.js";
 import PhasePlacementWriter from "./services/PhasePlacementWriter.js";
+import PhaseSoundGuard from "./services/PhaseSoundGuard.js";
 import PhaseTurnMarkers from "./services/PhaseTurnMarkers.js";
 import RollPrompter from "./services/RollPrompter.js";
 import ThemeApplier from "./services/ThemeApplier.js";
@@ -50,9 +52,10 @@ function build(adapter) {
   const watcher = new AutoAdvanceWatcher({ adapter, advancer, probe });
   const interceptor = new TurnInterceptor({ adapter, commands, doneMarkers });
   const roller = new InitiativeRoller({ adapter, settings: rollSettings });
-  const prompter = new RollPrompter({ roller, enabled: rollPrompt });
+  const prompter = new RollPrompter({ roller, enabled: rollPrompt, view: rollPromptView });
   const startGuard = new CombatStartGuard({ adapter, roller });
   const automation = new PhaseAutomationRunner({ adapter });
+  const soundGuard = new PhaseSoundGuard({ adapter });
   const integration = new IntegrationHooks({ adapter });
   const markers = new EventMarkers();
   const turnMarkers = new PhaseTurnMarkers({ adapter, enabled: () => getSetting(SETTINGS.phaseTurnMarkers) });
@@ -69,7 +72,7 @@ function build(adapter) {
   commands.register("assign", (combat, payload) => classifier.assign(combat, payload));
   commands.register("addMarker", (combat, payload) => markers.add(combat, payload));
 
-  Object.assign(services, { adapter, roller, prompter, turnMarkers, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, integration });
+  Object.assign(services, { adapter, roller, prompter, turnMarkers, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, soundGuard, integration });
 }
 
 /** The keybinding actions: each answers whether it acted, so an unused key reaches other bindings. */
@@ -121,6 +124,7 @@ Hooks.once("init", () => {
 
 Hooks.once("setup", () => {
   services.startGuard.install();
+  services.soundGuard.install();
   // The system's document classes are final by now.
   services.adapter.guardEventMarkers((combatant) => CombatSnapshot.isEventMarker(combatant));
   services.turnMarkers.install();
@@ -132,6 +136,8 @@ Hooks.once("setup", () => {
 Hooks.once("ready", () => {
   const { commands, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, automation, integration, prompter } = services;
   startGuard.check();
+  // The custom theme's palette is a rule of the module's own, written once the settings can be read.
+  ThemeApplier.refresh();
   PhasedCombatTracker.check();
   commands.relay.start();
   game.modules.get(MODULE_ID).api = {
@@ -205,6 +211,9 @@ Hooks.once("ready", () => {
   ErrorGuard.on("createCombatant", "roll-prompt", (combatant) => prompter.onCreateCombatant(combatant));
   ErrorGuard.on("updateCombat", "roll-prompt", (combat, changed) => prompter.onUpdateCombat(combat, changed));
   ErrorGuard.on("updateCombat", "conflicts", (combat, changed, options) => ModuleConflictAdvisor.onUpdateCombat(combat, changed, options));
+
+  // Wiki, Patreon and Discord, at the end of the module's section in Foundry's settings window.
+  ErrorGuard.on("renderSettingsConfig", "community-links", (_app, html) => CommunityLinks.inject(html));
 
   if (game.user.isActiveGM) watcher.reviewAll();
   if (game.user.isGM && services.adapter.experimental) ui.notifications.warn(game.i18n.localize(`${I18N_ROOT}.Roll.Experimental`));

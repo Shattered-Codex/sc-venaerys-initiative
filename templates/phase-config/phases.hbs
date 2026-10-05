@@ -42,11 +42,31 @@
         {{else}}<button type="button" class="svi-icon-btn svi-danger" data-action="deletePhase" aria-label="{{deleteLabel}}" data-tooltip="{{deleteLabel}}"><i class="fa-solid fa-trash" inert></i></button>{{/if}}
       </div>
       {{#if error}}<p class="svi-error" id="svi-error-{{id}}" role="alert"><i class="fa-solid fa-circle-exclamation" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.NameEmpty"}}</p>{{/if}}
+      <div class="svi-phase-sound" role="group" aria-label="{{sound.label}}">
+        <i class="fa-solid fa-volume-high" inert></i>
+        <span class="svi-phase-sound-title">{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Sound.Title"}}</span>
+        <select class="svi-select" data-sound-field="mode" aria-label="{{sound.label}}">
+          {{#each sound.modes}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{localize label}}</option>{{/each}}
+        </select>
+        {{#if sound.custom}}
+        <span class="svi-file-field">
+          <input type="text" data-sound-field="src" value="{{sound.src}}" placeholder="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Sound.FilePlaceholder"}}" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Fields.src"}}">
+          <button type="button" class="svi-icon-btn" data-action="pickFile" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Sound.Pick"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Sound.Pick"}}"><i class="fa-solid fa-file-audio" inert></i></button>
+          <button type="button" class="svi-icon-btn" data-action="previewSound" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Sound.Preview"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Sound.Preview"}}"><i class="fa-solid fa-play" inert></i></button>
+        </span>
+        <label class="svi-phase-sound-volume">
+          <span>{{localize "SC_VENAERYS_INITIATIVE.Automation.Fields.volume"}}</span>
+          <input type="number" data-sound-field="volume" value="{{sound.volume}}" min="0" max="100">
+        </label>
+        {{/if}}
+      </div>
       <details class="svi-actions"{{#if actions.open}} open{{/if}}>
-        <summary>
+        <summary data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.Hint"}}">
+          <i class="fa-solid fa-chevron-right svi-actions-chevron" inert></i>
           <i class="fa-solid fa-bolt-lightning" inert></i>
           <span>{{localize "SC_VENAERYS_INITIATIVE.Automation.Title"}}</span>
-          <span class="svi-actions-count">{{#if actions.count}}{{localize actions.countLabel}}{{else}}{{localize "SC_VENAERYS_INITIATIVE.Automation.Empty"}}{{/if}}</span>
+          {{#if actions.count}}<span class="svi-actions-count">{{localize actions.countLabel}}</span>
+          {{else}}<span class="svi-actions-add"><i class="fa-solid fa-plus" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Automation.AddShort"}}</span>{{/if}}
         </summary>
         <div class="svi-actions-body">
           <p class="svi-actions-note"><i class="fa-solid fa-circle-info" inert></i>{{localize "SC_VENAERYS_INITIATIVE.Automation.Note"}}</p>
@@ -61,6 +81,7 @@
                 <input type="checkbox" data-action-field="enabled" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Enabled"}}"{{#if enabled}} checked{{/if}}>
                 <span class="svi-check-box" aria-hidden="true"><i class="fa-solid fa-check" inert></i></span>
               </label>
+              {{#if canPreview}}<button type="button" class="svi-icon-btn" data-action="previewMessage" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Preview"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.Preview"}}"><i class="fa-solid fa-eye" inert></i></button>{{/if}}
               <button type="button" class="svi-icon-btn" data-action="moveAction" data-step="-1" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveUp"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveUp"}}" {{#unless canUp}}disabled{{/unless}}><i class="fa-solid fa-arrow-up" inert></i></button>
               <button type="button" class="svi-icon-btn" data-action="moveAction" data-step="1" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveDown"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.MoveDown"}}" {{#unless canDown}}disabled{{/unless}}><i class="fa-solid fa-arrow-down" inert></i></button>
               <button type="button" class="svi-icon-btn svi-danger" data-action="deleteAction" aria-label="{{localize "SC_VENAERYS_INITIATIVE.Automation.Delete"}}" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Automation.Delete"}}"><i class="fa-solid fa-trash" inert></i></button>
@@ -75,6 +96,7 @@
                 {{#if isSelect}}<select data-action-field="{{name}}">{{#each choices}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
                 {{#if isMacro}}<select data-action-field="{{name}}"><option value="">{{localize "SC_VENAERYS_INITIATIVE.Automation.NoMacro"}}</option>{{#each macros}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
                 {{#if isUuid}}<input type="text" data-action-field="{{name}}" data-drop-uuid value="{{value}}" placeholder="{{localize "SC_VENAERYS_INITIATIVE.Automation.DropHint"}}">{{/if}}
+                {{#if isPick}}<select data-action-field="{{name}}">{{#if pickEmpty}}<option value="">{{localize pickEmpty}}</option>{{/if}}{{#each picks}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
                 {{#if isFile}}
                 <span class="svi-file-field">
                   <input type="text" data-action-field="{{name}}" value="{{value}}">
@@ -98,5 +120,8 @@
   <div class="svi-phase-actions">
     <button type="button" class="svi-btn" data-action="addPhase"><i class="fa-solid fa-plus" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.Add"}}</span></button>
     <button type="button" class="svi-btn" data-action="addEventPhase" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.EventHint"}}"><i class="fa-solid fa-flag" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Phases.AddEvent"}}</span></button>
+    <span class="svi-spacer"></span>
+    <button type="button" class="svi-btn" data-action="importConfig" data-kind="phases" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Config.Transfer.ImportPhasesHint"}}"><i class="fa-solid fa-file-import" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Transfer.Import"}}</span></button>
+    <button type="button" class="svi-btn" data-action="exportConfig" data-kind="phases" data-tooltip="{{localize "SC_VENAERYS_INITIATIVE.Config.Transfer.ExportPhasesHint"}}"><i class="fa-solid fa-file-export" inert></i><span>{{localize "SC_VENAERYS_INITIATIVE.Config.Transfer.Export"}}</span></button>
   </div>
 </section>

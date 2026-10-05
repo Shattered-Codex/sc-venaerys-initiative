@@ -336,3 +336,12 @@
   --svi-text-mute: #b0b0b0;
   --svi-danger: #ff6b6b;
 }
+
+/* Custom: the GM's own three colors. The real palette is written at runtime
+   (ThemeApplier); this block is what shows until then. */
+.sc-venaerys-initiative[data-theme="custom"] {
+  --svi-accent: #1fa971;
+  --svi-accent-soft: #1fa97122;
+  --svi-accent-dim: #14573e;
+  --svi-text-on-acc: #06231a;
+}

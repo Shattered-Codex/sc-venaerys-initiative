@@ -55,6 +55,12 @@ export const SETTINGS = Object.freeze({
   rollFormula: "rollFormula",
   splitPhases: "splitPhases",
   phaseTurnMarkers: "phaseTurnMarkers",
+  hideEmptyPhases: "hideEmptyPhases",
+  rollPromptImage: "rollPromptImage",
+  bannerThemes: "bannerThemes",
+  customAccent: "customAccent",
+  customBackground: "customBackground",
+  customText: "customText",
 });
 
 /** Combat flags. */
@@ -127,6 +133,12 @@ export const CRITICALS = Object.freeze({ critical: "critical", fumble: "fumble" 
 /** Which phases split into a movement half and an actions half; event phases never do. */
 export const SPLIT_MODES = Object.freeze({ off: "off", players: "players", all: "all" });
 
+/** The picture of a character in the roll prompt: its token's, or the sheet's portrait. */
+export const PROMPT_IMAGES = Object.freeze({ token: "token", portrait: "portrait" });
+
+/** What is heard when a phase starts: nothing (the default), the core's combat theme, or the GM's own file. */
+export const SOUND_MODES = Object.freeze({ none: "none", theme: "theme", custom: "custom" });
+
 /** The two halves of a split phase. */
 export const HALVES = Object.freeze({ move: "move", act: "act" });
 
@@ -186,3 +198,14 @@ export const PHASE_COLORS = Object.freeze([
   "#9184d9",
   "#b56fb0",
 ]);
+
+/**
+ * The outbound links of the module, in the order the settings strip shows
+ * them. Their addresses live in the manifest (`flags.<module id>.links`), with
+ * the module's other URLs: the scripts name no remote address.
+ */
+export const COMMUNITY_LINKS = Object.freeze([
+  { id: "wiki", icon: "fa-solid fa-hat-wizard" },
+  { id: "patreon", icon: "fa-solid fa-heart" },
+  { id: "discord", icon: "fa-brands fa-discord" },
+].map(Object.freeze));

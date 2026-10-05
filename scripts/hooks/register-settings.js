@@ -1,7 +1,7 @@
 import { I18N_ROOT, MODULE_ID, SETTINGS } from "../constants/module-constants.js";
 import { SETTINGS_SCHEMA, coerceSetting, schemaEntry } from "../constants/settings-schema.js";
 
-const TYPES = { boolean: Boolean, number: Number, array: Array, choice: String, string: String };
+const TYPES = { boolean: Boolean, number: Number, array: Array, choice: String, string: String, color: String };
 
 /**
  * Registers every setting of SETTINGS_SCHEMA. None shows in the core menu:
@@ -56,7 +56,13 @@ export function projectionSettings() {
     showDcToPlayers: getSetting(SETTINGS.showDcToPlayers),
     autoAdvance: getSetting(SETTINGS.autoAdvance),
     dcSource: getSetting(SETTINGS.dcSource),
+    hideEmptyPhases: getSetting(SETTINGS.hideEmptyPhases),
   };
+}
+
+/** The three colors the GM chose for the "custom" theme. */
+export function customThemeColors() {
+  return { accent: getSetting(SETTINGS.customAccent), background: getSetting(SETTINGS.customBackground), text: getSetting(SETTINGS.customText) };
 }
 
 /** Where the roll against the DC comes from, and the GM's formula (empty: the system's default). */
@@ -67,6 +73,16 @@ export function rollSettings() {
 /** Whether this player is asked to roll when a character of theirs joins without a roll. */
 export function rollPrompt() {
   return getSetting(SETTINGS.rollPrompt);
+}
+
+/** The GM's own banner themes for a phase's message on screen. */
+export function bannerThemes() {
+  return getSetting(SETTINGS.bannerThemes);
+}
+
+/** What the roll prompt shows: the DC when players may see it, and which picture of each character. */
+export function rollPromptView() {
+  return { showDc: getSetting(SETTINGS.showDcToPlayers), image: getSetting(SETTINGS.rollPromptImage) };
 }
 
 /** Whether an enemy's items may suggest its phase when it enters. */

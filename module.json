@@ -7,7 +7,14 @@
     "verified": "14"
   },
   "flags": {
-    "canUpload": true
+    "canUpload": true,
+    "sc-venaerys-initiative": {
+      "links": {
+        "wiki": "https://wiki.shattered-codex.com/modules/sc-venaerys-initiative",
+        "patreon": "https://www.patreon.com/c/shatteredcodex?utm_source=sc-venaerys-initiative&utm_medium=foundry_module&utm_campaign=support_settings",
+        "discord": "https://discord.gg/6mWCQEJEwG"
+      }
+    }
   },
   "description": "Phased initiative for any system: characters roll against a DC and act together in Fast or Slow, enemies act together between them, and the GM places bosses in their own phases.",
   "authors": [

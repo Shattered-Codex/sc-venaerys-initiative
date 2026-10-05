@@ -12,7 +12,7 @@ import { fakeCombat, fakeCombatant } from "./helpers/fake-combat.js";
  * use them.
  */
 const STORED = {
-  settings: ["enabledByDefault", "phaseTemplate", "defaultDc", "showDcToPlayers", "autoAdvance", "openOnStart", "theme", "dcSource", "dcBase", "natural20", "natural1", "suggestFromSheet", "rollPrompt", "rollSource", "rollFormula", "splitPhases", "phaseTurnMarkers"],
+  settings: ["enabledByDefault", "phaseTemplate", "defaultDc", "showDcToPlayers", "autoAdvance", "openOnStart", "theme", "dcSource", "dcBase", "natural20", "natural1", "suggestFromSheet", "rollPrompt", "rollSource", "rollFormula", "splitPhases", "phaseTurnMarkers", "hideEmptyPhases", "rollPromptImage", "bannerThemes", "customAccent", "customBackground", "customText"],
   combatFlags: ["enabled", "plan", "dc", "suspendedAdvance", "split", "actionsHalf"],
   combatantFlags: ["side", "phase", "nextPhase", "pinned", "done", "moved", "natural"],
   actorFlags: ["defaultPhase"],

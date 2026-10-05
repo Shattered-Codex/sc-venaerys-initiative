@@ -3,25 +3,33 @@
     <h2 class="svi-panel-title">{{ localize tab.title }}</h2>
     <p class="svi-panel-hint">{{ localize tab.hint }}</p>
   </header>
-  <div class="svi-rows">
-    <label class="svi-setting" for="svi-setting-theme">
-      <span class="svi-setting-text">
-        <span class="svi-setting-name">{{ localize "SC_VENAERYS_INITIATIVE.Settings.theme.Name" }}</span>
-        <span class="svi-setting-hint">{{ localize "SC_VENAERYS_INITIATIVE.Settings.theme.Hint" }}</span>
+  <div class="svi-appearance">
+  <div class="svi-appearance-options">
+    <label class="svi-appearance-field" for="svi-setting-theme">
+      <span class="svi-setting-name">{{ localize "SC_VENAERYS_INITIATIVE.Settings.theme.Name" }}</span>
+      <span class="svi-select-wrap">
+        <select class="svi-select" id="svi-setting-theme" data-setting="theme" data-default="{{ themeDefault }}">
+          {{#each families}}
+          <optgroup label="{{ localize label }}">
+            {{#each themes}}<option value="{{ id }}"{{#if selected}} selected{{/if}}>{{ localize label }}</option>{{/each}}
+          </optgroup>
+          {{/each}}
+        </select>
+        <i class="fa-solid fa-chevron-down svi-select-chev" inert></i>
       </span>
-      <span class="svi-setting-control">
-        <span class="svi-select-wrap">
-          <select class="svi-select" id="svi-setting-theme" data-setting="theme" data-default="{{ themeDefault }}">
-            {{#each families}}
-            <optgroup label="{{ localize label }}">
-              {{#each themes}}<option value="{{ id }}"{{#if selected}} selected{{/if}}>{{ localize label }}</option>{{/each}}
-            </optgroup>
-            {{/each}}
-          </select>
-          <i class="fa-solid fa-chevron-down svi-select-chev" inert></i>
-        </span>
-      </span>
+      <span class="svi-setting-hint">{{ localize "SC_VENAERYS_INITIATIVE.Settings.theme.Hint" }}</span>
     </label>
+    {{!-- Shown while the select above says "Custom". --}}
+    <fieldset class="svi-custom-colors">
+      <legend>{{ localize "SC_VENAERYS_INITIATIVE.Config.Appearance.CustomTitle" }}</legend>
+      {{#each customColors}}
+      <label class="svi-color-field" for="{{ id }}" data-tooltip="{{ localize hint }}">
+        <input type="color" id="{{ id }}" data-setting="{{ key }}" data-custom-color="true" data-default="{{ fallback }}" value="{{ value }}">
+        <span>{{ localize label }}</span>
+      </label>
+      {{/each}}
+      <p class="svi-setting-hint">{{ localize "SC_VENAERYS_INITIATIVE.Config.Appearance.CustomHint" }}</p>
+    </fieldset>
   </div>
 
   {{!-- A specimen of the phased combat tracker, painted by the same tokens; inert and outside the form. --}}
@@ -51,6 +59,7 @@
         <span class="svi-btn"><i class="fa-solid fa-check-double"></i>{{ localize "SC_VENAERYS_INITIATIVE.Gm.Complete" }}</span>
       </div>
     </div>
+  </div>
   </div>
   <p class="svi-preview-note" role="status" hidden><i class="fa-solid fa-circle-info" inert></i><span class="svi-preview-note-label"></span></p>
 </section>

@@ -27,7 +27,9 @@ const TEMPLATES = Object.freeze({
  * the row's select, by dragging the row onto a phase, or with "Move to
  * phase…" in the row's context menu, and marks a group of identical
  * creatures done from the group's header. The "+" on an event phase adds
- * an event marker to it.
+ * an event marker to it. Whoever hasn't rolled keeps the same row, with its
+ * own roll button, under "Awaiting roll"; the GM rolls all of them at once
+ * with "Roll PCs", next to the core's bulk rolls in the header.
  */
 export default class PhasedCombatTracker {
   static #installed = null;
@@ -79,8 +81,8 @@ export default class PhasedCombatTracker {
     return key ? game.i18n.localize(`${I18N_ROOT}.${key}`) : null;
   }
 
-  /** The phase sections, each row joined with the core's own row context. */
-  static layout(model, turns) {
+  /** Projected rows joined with the core's own row context; a row the core does not show is dropped. */
+  static joinRows(rows, turns) {
     const byId = new Map(turns.map((turn) => [turn.id, turn]));
     const join = (row) => {
       if (row.isGroup) return { ...row, children: row.children.map(join).filter(Boolean) };
@@ -90,10 +92,15 @@ export default class PhasedCombatTracker {
       const css = String(turn.css ?? "").split(" ").filter((c) => c && c !== "active").join(" ");
       return { ...turn, css, sviLabels: FoundryCompat.trackerRowLabels(turn), svi: row };
     };
-    return model.phases.map((phase) => (phase.waitingForGm ? phase : { ...phase, rows: (phase.rows ?? []).map(join).filter(Boolean) }));
+    return rows.map(join).filter(Boolean);
   }
 
-  /** One combatant's row in a projected model, looking inside groups. */
+  /** The phase sections, each row joined with the core's own row context. */
+  static layout(model, turns) {
+    return model.phases.map((phase) => (phase.waitingForGm ? phase : { ...phase, rows: PhasedCombatTracker.joinRows(phase.rows ?? [], turns) }));
+  }
+
+  /** One combatant's row in a projected model, looking inside groups and among those awaiting a roll. */
   static rowOf(model, combatantId) {
     for (const phase of model?.phases ?? []) {
       for (const row of phase.rows ?? []) {
@@ -101,7 +108,7 @@ export default class PhasedCombatTracker {
         if (found) return found;
       }
     }
-    return null;
+    return model?.pending?.find((row) => row.id === combatantId) ?? null;
   }
 
   /** One group of identical creatures in a projected model, by its key. */
@@ -120,7 +127,7 @@ export default class PhasedCombatTracker {
     const escape = (text) => foundry.utils.escapeHTML(String(text));
     const options = row.select.options.map((o) => `<option value="${escape(o.value)}"${o.selected ? " selected" : ""}>${escape(o.label)}</option>`);
     const phaseId = await foundry.applications.api.DialogV2.prompt({
-      classes: [MODULE_ID, "svi-move-dialog"],
+      classes: [MODULE_ID, "svi-dialog", "svi-move-dialog"],
       window: { title: game.i18n.format(`${I18N_ROOT}.Tracker.MoveTitle`, { name: row.name }), icon: "fa-solid fa-layer-group" },
       content: `<div class="form-group"><label for="svi-move-phase">${escape(row.select.label)}</label>`
         + `<select id="svi-move-phase" name="phaseId">${options.join("")}</select></div>`,
@@ -274,7 +281,13 @@ export default class PhasedCombatTracker {
         const result = await super._prepareTrackerContext(context, options);
         if (!this.sviPhased || !context.svi || !context.turns) return result;
         context.sviPhases = PhasedCombatTracker.layout(context.svi, context.turns);
+        context.sviPending = PhasedCombatTracker.joinRows(context.svi.pending, context.turns);
         return result;
+      }
+
+      async _onRender(context, options) {
+        await super._onRender?.(context, options);
+        this.#sviRenderRollPlayers(this.sviPhased ? context.svi?.rollPlayers : null);
       }
 
       _attachFrameListeners() {
@@ -296,6 +309,37 @@ export default class PhasedCombatTracker {
           onClick: (li) => PhasedCombatTracker.choosePhase(combatOf(this), li.dataset.combatantId),
         }));
         return entries;
+      }
+
+      /**
+       * "Roll PCs" beside the core's "Roll all" and "Roll NPCs". The header is
+       * the core's template, so the button is added to it after each render; a
+       * spacer on the other side keeps the round title centered. Like the
+       * core's, it hides while disabled: nobody is left to roll.
+       */
+      #sviRenderRollPlayers(rollPlayers) {
+        const controls = this.element?.querySelector?.(".combat-tracker-header .encounter-controls");
+        const bulk = controls?.querySelector(".control-buttons.left");
+        if (!bulk) return;
+        let button = bulk.querySelector("[data-action=sviRollPending]");
+        if (!rollPlayers) {
+          button?.remove();
+          controls.querySelector(".svi-roll-spacer")?.remove();
+          return;
+        }
+        if (!button) {
+          button = document.createElement("button");
+          button.type = "button";
+          button.className = "inline-control icon fa-solid fa-user-group";
+          button.dataset.action = "sviRollPending";
+          bulk.append(button);
+          const spacer = document.createElement("div");
+          spacer.className = "spacer svi-roll-spacer";
+          controls.querySelector(".control-buttons.right")?.prepend(spacer);
+        }
+        button.disabled = rollPlayers.disabled;
+        button.dataset.tooltip = rollPlayers.label;
+        button.setAttribute("aria-label", rollPlayers.label);
       }
 
       /** The phase section under a drag of a combatant row, or null. */

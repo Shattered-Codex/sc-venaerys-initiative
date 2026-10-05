@@ -19,7 +19,7 @@ describe("settings schema", () => {
   });
 
   it("lays the screen out in the suite's tabs, with only the client tab for players", () => {
-    assert.deepEqual(SETTING_TABS.map((tab) => tab.id), ["world", "appearance", "phases", "client", "help"]);
+    assert.deepEqual(SETTING_TABS.map((tab) => tab.id), ["world", "appearance", "phases", "banners", "client", "help"]);
     assert.deepEqual(SETTING_TABS.filter((tab) => !tab.gm).map((tab) => tab.id), ["client"]);
     for (const entry of SETTINGS_SCHEMA.filter((e) => e.tab)) {
       const tab = SETTING_TABS.find((t) => t.id === entry.tab);
@@ -46,6 +46,12 @@ describe("settings schema", () => {
       rollFormula: ["world", ""],
       splitPhases: ["world", "off"],
       phaseTurnMarkers: ["world", true],
+      hideEmptyPhases: ["world", false],
+      rollPromptImage: ["world", "token"],
+      bannerThemes: ["world", []],
+      customAccent: ["world", "#1fa971"],
+      customBackground: ["world", "#15181a"],
+      customText: ["world", "#e6e8ea"],
     };
     assert.deepEqual(SETTINGS_SCHEMA.map((e) => e.key).sort(), Object.keys(expected).sort());
     for (const [key, [scope, value]] of Object.entries(expected)) {

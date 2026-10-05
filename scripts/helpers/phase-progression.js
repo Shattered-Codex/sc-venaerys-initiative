@@ -65,6 +65,14 @@ export const isPending = (combatant) => combatant.side === SIDES.players && comb
 export const hasNoRoll = (combatant) =>
   combatant.side === SIDES.players && combatant.phase !== null && !Number.isFinite(combatant.initiative) && !combatant.pinned;
 
+/**
+ * Whoever may still roll against the DC: a character of the players' side
+ * with no initiative, pending or already placed in a phase. A combatant not
+ * classified yet counts by its player owner.
+ */
+export const canStillRoll = (combatant) =>
+  (combatant.side ?? (combatant.hasPlayerOwner ? SIDES.players : null)) === SIDES.players && !Number.isFinite(combatant.initiative);
+
 export function pendingOf(view) {
   return view.combatants.filter(isPending);
 }

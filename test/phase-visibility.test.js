@@ -73,4 +73,12 @@ describe("GM visibility", () => {
     const view = combatView({ round: 0, combatants: [player("a", "fast")] });
     assert.ok(visibleCombat(view, asGM).phases.every((p) => p.state === "future"));
   });
+
+  it("hides the GM's empty phases when asked, keeping the event phases for their markers", () => {
+    const view = combatView({ round: 2, on: "a", combatants: [player("a", "fast"), enemy("g")] });
+    const plan = view.plan.map((p) => p.id);
+    assert.deepEqual(phaseIds(visibleCombat(view, asGM)), plan);
+    const kept = phaseIds(visibleCombat(view, { ...asGM, hideEmptyPhases: true }));
+    assert.deepEqual(kept, plan.filter((id) => ["fast", "enemies"].includes(id) || view.plan.find((p) => p.id === id).type === "event"));
+  });
 });

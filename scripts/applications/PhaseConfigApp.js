@@ -1,4 +1,4 @@
-import { BUILTIN_PHASE_IDS, I18N_ROOT, MODULE_ID, PHASE_COLORS, PHASE_COLOR_NAMES, PHASE_ICONS, SETTINGS, TEMPLATE_ROOT, iconName } from "../constants/module-constants.js";
+import { BUILTIN_PHASE_IDS, I18N_ROOT, MODULE_ID, PHASE_COLORS, PHASE_COLOR_NAMES, PHASE_ICONS, SETTINGS, SOUND_MODES, TEMPLATE_ROOT, iconName } from "../constants/module-constants.js";
 import { defaultPlan } from "../constants/default-phases.js";
 import { SETTINGS_SCHEMA, SETTING_SECTIONS, SETTING_TABS, coerceSetting, schemaEntry } from "../constants/settings-schema.js";
 import {
@@ -14,15 +14,21 @@ import {
   reorderPlan,
   restylePhase,
 } from "../helpers/phase-plan.js";
+import { BANNER_COLOR_FIELDS, BANNER_PRESETS, BANNER_STYLES, bannerVariables, copyBannerTheme, normalizeBannerThemes } from "../helpers/banner-themes.js";
+import { TRANSFER_KINDS, exportFileName, exportPayload, mergeBannerThemes, parseImport } from "../helpers/config-transfer.js";
 import { CONSEQUENCE_KINDS, CONSEQUENCE_KIND_IDS, normalizeConsequence, normalizeConsequences } from "../helpers/consequence-kinds.js";
+import { phaseSound, setPhaseSound } from "../helpers/phase-sound.js";
 import { THEME_FAMILIES, isLegacyTheme, normalizeTheme } from "../helpers/themes.js";
-import { getSetting, registeredDefault, setSetting } from "../hooks/register-settings.js";
+import { customThemeColors, getSetting, registeredDefault, setSetting } from "../hooks/register-settings.js";
+import PhaseBanner from "../services/PhaseBanner.js";
 import ThemeApplier from "../services/ThemeApplier.js";
 import SortableList from "./SortableList.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const T = (key) => `${I18N_ROOT}.${key}`;
 const PART = (name) => `${TEMPLATE_ROOT}/phase-config/${name}.hbs`;
+/** The journal page type the SC Puzzle Engine registers for its puzzles. */
+const PUZZLE_PAGE_TYPE = "sc-puzzle-engine.puzzle";
 const HELP_TOPICS = [
   { key: "TurnEvents", icon: "fa-solid fa-arrows-rotate" },
   { key: "Unconfirmed", icon: "fa-solid fa-play" },
@@ -64,7 +70,15 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
       pickColor: PhaseConfigApp.#onPickLook,
       moveAction: PhaseConfigApp.#onMoveAction,
       deleteAction: PhaseConfigApp.#onDeleteAction,
+      previewMessage: PhaseConfigApp.#onPreviewMessage,
       pickFile: PhaseConfigApp.#onPickFile,
+      previewSound: PhaseConfigApp.#onPreviewSound,
+      addBanner: PhaseConfigApp.#onAddBanner,
+      exportConfig: PhaseConfigApp.#onExport,
+      importConfig: PhaseConfigApp.#onImport,
+      copyBanner: PhaseConfigApp.#onCopyBanner,
+      deleteBanner: PhaseConfigApp.#onDeleteBanner,
+      previewBanner: PhaseConfigApp.#onPreviewBanner,
     },
   };
 
@@ -73,6 +87,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     world: { template: PART("settings"), scrollable: [""] },
     appearance: { template: PART("appearance"), scrollable: [""] },
     phases: { template: PART("phases"), scrollable: [".svi-phase-list"] },
+    banners: { template: PART("banners"), scrollable: [""] },
     client: { template: PART("settings"), scrollable: [""] },
     help: { template: PART("help"), scrollable: [""] },
     footer: { template: PART("footer") },
@@ -103,6 +118,9 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
   #activeTab = null;
   #plan = null;
   #phasesDirty = false;
+  /** The GM's banner themes as edited here, saved with the rest. */
+  #banners = null;
+  #bannersDirty = false;
   #errors = new Set();
   #flash = null;
   #focus = null;
@@ -127,6 +145,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     const tabs = this.#tabs();
     if (!tabs.some((tab) => tab.id === this.#activeTab)) this.#activeTab = tabs[0].id;
     this.#plan ??= getSetting(SETTINGS.phaseTemplate);
+    this.#banners ??= getSetting(SETTINGS.bannerThemes);
     return Object.assign(context, {
       tabs: tabs.map((tab) => ({ ...tab, label: T(`Config.Tabs.${tab.id}`), active: tab.id === this.#activeTab })),
       tabsLabel: T("Config.TabsLabel"),
@@ -141,7 +160,9 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     part.sections = tab.settings && tab.id !== "appearance" ? this.#sections(tab.id) : [];
     part.families = tab.id === "appearance" ? this.#themeFamilies() : [];
     part.themeDefault = registeredDefault(SETTINGS.theme);
+    part.customColors = tab.id === "appearance" ? PhaseConfigApp.#customColorRows() : [];
     part.phases = tab.id === "phases" ? this.#phaseRows() : [];
+    part.banners = tab.id === "banners" ? this.#bannerContext() : null;
     part.help = tab.id === "help" ? HELP_TOPICS.map((topic, index) => ({ ...topic, open: index === 0, title: T(`Help.${topic.key}.Title`), body: T(`Help.${topic.key}.Body`) })) : [];
     return part;
   }
@@ -175,7 +196,12 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
   async _onFirstRender(context, options) {
     await super._onFirstRender(context, options);
     this.element.addEventListener("change", (event) => this.#onFieldChange(event));
-    this.element.addEventListener("input", () => this.#refreshState());
+    this.element.addEventListener("input", (event) => {
+      // A color changes while the picker is open: the preview follows it.
+      if (event.target.dataset?.customColor) this.#previewCustomColors();
+      if (event.target.dataset?.bannerField) this.#editBanner(event.target);
+      this.#refreshState();
+    });
     this.element.addEventListener("keydown", (event) => this.#onRailKey(event));
   }
 
@@ -197,6 +223,8 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     ThemeApplier.endPreview();
     this.#plan = null;
     this.#phasesDirty = false;
+    this.#banners = null;
+    this.#bannersDirty = false;
     this.#errors.clear();
     this.#baseline.clear();
     this.#openActions.clear();
@@ -241,6 +269,18 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     return sections.map((section) => ({ ...section, showTitle: sections.length > 1 }));
   }
 
+  /** The three color fields of the custom theme. */
+  static #customColorRows() {
+    return [SETTINGS.customAccent, SETTINGS.customBackground, SETTINGS.customText].map((key) => ({
+      key,
+      id: `svi-setting-${key}`,
+      label: T(`Settings.${key}.Name`),
+      hint: T(`Settings.${key}.Hint`),
+      value: getSetting(key),
+      fallback: registeredDefault(key),
+    }));
+  }
+
   #themeFamilies() {
     const saved = normalizeTheme(getSetting(SETTINGS.theme));
     const shown = ThemeApplier.current();
@@ -283,9 +323,45 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
         deleteLabel: format("Delete"),
         icons: PHASE_ICONS.map((cls) => ({ cls, label: localize(T(`Config.Phases.Icons.${iconName(cls)}`)), selected: cls === phase.icon })),
         colors: PHASE_COLORS.map((hex) => ({ hex, label: localize(T(`Config.Phases.Colors.${PHASE_COLOR_NAMES[hex]}`)), selected: hex.toLowerCase() === phase.color.toLowerCase() })),
+        sound: this.#soundContext(phase, name),
         actions: this.#actionsContext(phase),
       };
     });
+  }
+
+  /** The sound of one phase when it starts, ready for the template. */
+  #soundContext(phase, name) {
+    const sound = phaseSound(phase);
+    return {
+      ...sound,
+      custom: sound.mode === SOUND_MODES.custom,
+      label: game.i18n.format(T("Config.Phases.Sound.Label"), { name }),
+      modes: Object.values(SOUND_MODES).map((mode) => ({ value: mode, label: T(`Config.Phases.Sound.Modes.${mode}`), selected: mode === sound.mode })),
+    };
+  }
+
+  /** The SC Jump Scare library as options, through the module's own API; empty without the module. */
+  static #scares() {
+    const api = game.modules.get("sc-jump-scare")?.active ? game.modules.get("sc-jump-scare").api : null;
+    return (api?.choices?.() ?? []).map((scare) => ({ value: scare.id, label: scare.name }));
+  }
+
+  /** The world's puzzles: the journal pages of the SC Puzzle Engine's type, named with their journal. */
+  static #puzzles() {
+    const puzzles = [];
+    for (const journal of game.journal ?? []) {
+      for (const page of journal.pages ?? []) {
+        if (page.type === PUZZLE_PAGE_TYPE) puzzles.push({ value: page.uuid, label: `${journal.name} — ${page.name}` });
+      }
+    }
+    return puzzles.sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  /** A saved choice that is no longer listed stays in the select, named as missing, so opening the screen never drops it. */
+  static #pickOptions(choices, value) {
+    const options = choices.map((choice) => ({ ...choice, selected: choice.value === value }));
+    if (value && !options.some((o) => o.selected)) options.push({ value, label: game.i18n.format(T("Automation.MissingChoice"), { id: value }), selected: true });
+    return options;
   }
 
   /** The "actions when it starts" of one phase, ready for the template. */
@@ -293,6 +369,8 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     const rows = phase.onEnter ?? [];
     const localize = (key) => game.i18n.localize(key);
     const macros = [...(game.macros ?? [])].map((m) => ({ value: m.uuid, label: m.name }));
+    const picks = { scare: PhaseConfigApp.#scares(), puzzle: PhaseConfigApp.#puzzles(), banner: this.#bannerChoices() };
+    const pickEmpty = { scare: T("Automation.NoScare"), puzzle: T("Automation.NoPuzzle") };
     return {
       open: this.#openActions.has(phase.id),
       count: rows.length,
@@ -311,6 +389,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
           label: T(`Automation.Kinds.${row.kind}`),
           where: T(kind?.where === "gm" ? "Automation.Gm" : "Automation.Local"),
           enabled: row.enabled !== false,
+          canPreview: row.kind === "screenMessage",
           canUp: index > 0,
           canDown: index < rows.length - 1,
           fields: (kind?.fields ?? []).map((field) => {
@@ -326,6 +405,9 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
               isMacro: field.type === "macro",
               isFile: field.type === "file",
               isUuid: field.type === "uuid",
+              isPick: field.type in picks,
+              picks: field.type in picks ? PhaseConfigApp.#pickOptions(picks[field.type], value) : [],
+              pickEmpty: pickEmpty[field.type] ?? null,
               min: field.min,
               max: field.max,
               choices: (field.choices ?? []).map((c) => ({ value: c, label: localize(T(`Automation.Choices.${c}`)), selected: c === value })),
@@ -392,6 +474,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
       if (this.#baseline.get(key) !== value) dirty.add(schemaEntry(key)?.tab);
     }
     if (this.#phasesDirty) dirty.add("phases");
+    if (this.#bannersDirty) dirty.add("banners");
     return dirty;
   }
 
@@ -416,14 +499,26 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     const field = event.target;
     if (field.matches?.("select.svi-add-action")) return this.#addAction(field);
     if (field.dataset?.actionField) return this.#editAction(field);
+    if (field.dataset?.soundField) return this.#editSound(field);
+    if (field.dataset?.bannerField) return this.#editBanner(field, { committed: true });
     if (field.dataset?.setting === SETTINGS.theme) this.#previewTheme(field.value);
+    if (field.dataset?.customColor) this.#previewCustomColors();
     this.#refreshState();
     return undefined;
+  }
+
+  /** The custom colors on screen, previewed on this client while they differ from the saved ones; back at the saved ones, the preview ends. */
+  #previewCustomColors() {
+    const read = (key) => this.element.querySelector(`[data-setting="${key}"]`)?.value;
+    const colors = { accent: read(SETTINGS.customAccent), background: read(SETTINGS.customBackground), text: read(SETTINGS.customText) };
+    const saved = customThemeColors();
+    ThemeApplier.previewColors(Object.keys(saved).some((name) => colors[name] !== saved[name]) ? colors : null);
   }
 
   #previewTheme(theme) {
     if (theme === normalizeTheme(getSetting(SETTINGS.theme))) ThemeApplier.endPreview();
     else ThemeApplier.preview(theme);
+    this.#previewCustomColors();
     const note = this.element.querySelector(".svi-preview-note");
     if (!note) return;
     note.hidden = !ThemeApplier.previewing;
@@ -477,7 +572,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
 
   static async #confirm(title, body, confirmLabel) {
     return foundry.applications.api.DialogV2.confirm({
-      classes: [MODULE_ID],
+      classes: [MODULE_ID, "svi-dialog"],
       render: (event, dialog) => ThemeApplier.apply(dialog.element),
       window: { title },
       content: `<p>${body}</p>`,
@@ -517,6 +612,133 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     }), { render: false });
   }
 
+  /* ------------------------------------------------------------------ */
+  /*  Banner themes                                                     */
+  /* ------------------------------------------------------------------ */
+
+  /** Every banner theme a message can use: the ready-made ones, then the GM's own. */
+  #bannerChoices() {
+    const ready = BANNER_STYLES.map((id) => ({ value: id, label: game.i18n.localize(T(`Automation.Choices.${id}`)) }));
+    return [...ready, ...(this.#banners ?? []).map((theme) => ({ value: theme.id, label: theme.name || game.i18n.localize(T("Config.Banners.Unnamed")) }))];
+  }
+
+  static #bannerStyle(theme) {
+    return Object.entries(bannerVariables(theme)).map(([name, value]) => `${name}: ${value}`).join("; ");
+  }
+
+  /** The Banners tab: the ready-made themes as samples, and the GM's own with their fields. */
+  #bannerContext() {
+    const localize = (key) => game.i18n.localize(key);
+    return {
+      ready: BANNER_STYLES.map((id) => ({ id, name: localize(T(`Automation.Choices.${id}`)) })),
+      mine: this.#banners.map((theme) => ({
+        ...theme,
+        style: PhaseConfigApp.#bannerStyle(theme),
+        colors: BANNER_COLOR_FIELDS.map((field) => ({ field, label: T(`Config.Banners.Fields.${field}`), value: theme[field] })),
+      })),
+    };
+  }
+
+  /** A field of one of the GM's banner themes: the draft and its sample follow; a new name also reaches the Phases tab. */
+  #editBanner(field, { committed = false } = {}) {
+    const card = field.closest("[data-banner-id]");
+    const name = field.dataset.bannerField;
+    const value = field.type === "checkbox" ? field.checked : field.value;
+    this.#banners = normalizeBannerThemes(this.#banners.map((theme) => (theme.id === card.dataset.bannerId ? { ...theme, [name]: value } : theme)));
+    this.#bannersDirty = true;
+    const theme = this.#banners.find((t) => t.id === card.dataset.bannerId);
+    const sample = card.querySelector(".svi-banner");
+    if (theme && sample) {
+      for (const [variable, color] of Object.entries(bannerVariables(theme))) sample.style.setProperty(variable, color);
+      if (name === "name") sample.querySelector(".svi-banner-title")?.replaceChildren(theme.name || game.i18n.localize(T("Config.Banners.Unnamed")));
+    }
+    if (committed && name === "name") this.render({ parts: ["phases"] });
+    this.#refreshState();
+  }
+
+  #changeBanners(next, { focus = null } = {}) {
+    this.#banners = normalizeBannerThemes(next);
+    this.#bannersDirty = true;
+    this.#focus = focus;
+    this.render({ parts: ["banners", "phases"] });
+  }
+
+  /** A new theme of the GM's own, from the module's colors. */
+  static #onAddBanner() {
+    const id = `banner-${foundry.utils.randomID(8)}`;
+    const theme = copyBannerTheme(BANNER_PRESETS.themed, { id, name: game.i18n.localize(T("Config.Banners.NewName")) });
+    this.#changeBanners([...this.#banners, theme], { focus: `[data-banner-id="${id}"] input[data-banner-field="name"]` });
+  }
+
+  /** Saves the phases or the banner themes on screen, unsaved changes included, as a JSON file. */
+  static #onExport(event, target) {
+    const kind = target.dataset.kind;
+    const data = kind === TRANSFER_KINDS.banners ? this.#banners : this.#plan;
+    foundry.utils.saveDataToFile(exportPayload(kind, data), "application/json", exportFileName(kind));
+  }
+
+  /** Reads a file exported here into the draft: phases replace the list, banner themes join the GM's own. Nothing is saved yet. */
+  static #onImport(event, target) {
+    const kind = target.dataset.kind;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const result = parseImport(await file.text(), kind);
+      if (result.error) return void ui.notifications.error(game.i18n.localize(T(`Config.Transfer.Errors.${result.error}`)));
+      if (kind === TRANSFER_KINDS.banners) this.#changeBanners(mergeBannerThemes(this.#banners, result.data));
+      else this.#changePlan(result.data);
+      ui.notifications.info(game.i18n.format(T("Config.Transfer.Imported"), { count: result.data.length }));
+    });
+    input.click();
+  }
+
+  /** A new theme of the GM's own, starting as a copy of a ready-made one or of another of theirs. */
+  static #onCopyBanner(event, target) {
+    const sourceId = target.dataset.bannerSource;
+    const own = this.#banners.find((theme) => theme.id === sourceId);
+    const sourceName = own ? own.name : game.i18n.localize(T(`Automation.Choices.${sourceId}`));
+    const id = `banner-${foundry.utils.randomID(8)}`;
+    const copy = copyBannerTheme(own ?? BANNER_PRESETS[sourceId], { id, name: game.i18n.format(T("Config.Banners.CopyName"), { name: sourceName }) });
+    this.#changeBanners([...this.#banners, copy], { focus: `[data-banner-id="${id}"] input[data-banner-field="name"]` });
+  }
+
+  static #onDeleteBanner(event, target) {
+    const id = target.closest("[data-banner-id]").dataset.bannerId;
+    this.#changeBanners(this.#banners.filter((theme) => theme.id !== id));
+  }
+
+  /** Shows a banner theme on this client, as it is in the draft. */
+  static #onPreviewBanner(event, target) {
+    const style = target.dataset.bannerSource;
+    const own = this.#banners.find((theme) => theme.id === style);
+    PhaseBanner.show({
+      title: own ? own.name || game.i18n.localize(T("Config.Banners.Unnamed")) : game.i18n.localize(T(`Automation.Choices.${style}`)),
+      text: game.i18n.localize(T("Config.Banners.SampleText")),
+      style,
+      seconds: 4,
+      themes: this.#banners,
+    });
+  }
+
+  /** The sound of a phase; only another choice of sound changes what the row shows. */
+  #editSound(field) {
+    const phaseId = field.closest("[data-id]").dataset.id;
+    const name = field.dataset.soundField;
+    const next = setPhaseSound(this.#plan, phaseId, { [name]: field.value });
+    if (name === "mode") return this.#changePlan(next, { focus: `[data-id="${phaseId}"] [data-sound-field="mode"]` });
+    this.#plan = next;
+    this.#phasesDirty = true;
+    return this.#refreshState();
+  }
+
+  static #onPreviewSound(event, target) {
+    const sound = phaseSound(phaseById(this.#plan, target.closest("[data-id]").dataset.id));
+    if (sound.src) foundry.audio.AudioHelper.play({ src: sound.src, volume: sound.volume / 100, loop: false }, false);
+  }
+
   /** A document dropped on a UUID field (roll table, puzzle page, actor). */
   #onDropUuid(event, input) {
     event.preventDefault();
@@ -538,6 +760,12 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
   /** The active tab back to the registered defaults, unsaved; on Phases, the default phases after a confirmation. */
   static async #onResetTab() {
     const tab = this.#activeTab;
+    if (tab === "banners") {
+      if (!this.#banners.length) return;
+      const ok = await PhaseConfigApp.#confirm(T("Config.Banners.ResetTitle"), game.i18n.localize(T("Config.Banners.ResetBody")), T("Config.Banners.ResetConfirm"));
+      if (ok) this.#changeBanners([]);
+      return;
+    }
     if (tab === "phases") {
       const ok = await PhaseConfigApp.#confirm(T("Config.Phases.RestoreTitle"), game.i18n.localize(T("Config.Phases.RestoreBody")), T("Config.Phases.RestoreConfirm"));
       if (ok) this.#changePlan(defaultPlan());
@@ -551,6 +779,7 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
       else field.value = fallback;
       if (field.dataset.setting === SETTINGS.theme && (field.type !== "radio" || field.checked)) this.#previewTheme(field.value);
     }
+    if (tab === "appearance") this.#previewCustomColors();
     this.#refreshState();
   }
 
@@ -583,6 +812,10 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
       await setSetting(SETTINGS.phaseTemplate, this.#plan);
       this.#phasesDirty = false;
       this.render({ parts: ["phases"] });
+    }
+    if (this.#bannersDirty && game.user.isGM) {
+      await setSetting(SETTINGS.bannerThemes, this.#banners);
+      this.#bannersDirty = false;
     }
     // The preview is the saved theme now.
     ThemeApplier.endPreview();
@@ -646,6 +879,16 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
     });
   }
 
+  /** Shows a message on screen as it is in the draft, on this client only. */
+  static #onPreviewMessage(event, target) {
+    const phase = phaseById(this.#plan, target.closest("[data-id]").dataset.id);
+    const row = (phase?.onEnter ?? []).find((r) => r.id === target.closest("[data-action-id]").dataset.actionId);
+    if (!row) return;
+    const title = displayName(phase, (key) => game.i18n.localize(key));
+    const text = row.params.text;
+    PhaseBanner.show({ title, text, icon: phase.icon, color: phase.color, style: row.params.style, seconds: 4, themes: this.#banners });
+  }
+
   static async #onDeleteAction(event, target) {
     const phaseId = target.closest("[data-id]").dataset.id;
     const rowId = target.closest("[data-action-id]").dataset.actionId;
@@ -663,7 +906,8 @@ export default class PhaseConfigApp extends HandlebarsApplicationMixin(Applicati
       current: input.value,
       callback: (path) => {
         input.value = path;
-        this.#editAction(input);
+        if (input.dataset.soundField) this.#editSound(input);
+        else this.#editAction(input);
       },
     }).render({ force: true });
   }

@@ -28,11 +28,16 @@
         <i class="fa-solid fa-calculator" inert></i>
       </button>
       {{/if}}
+      <button type="button" class="svi-btn svi-icon-btn" data-action="sviHelp"
+              aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Gm.Help" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Gm.Help" }}">
+        <i class="fa-solid fa-circle-question" inert></i>
+      </button>
       {{/if}}
     </div>
 
     {{#if svi.gm.phasesOn}}
-    <div class="svi-gm-controls">
+    {{!-- Before the start the controls are off: hovering them says why. --}}
+    <div class="svi-gm-controls" role="group"{{#unless svi.started}} aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Gm.NotStartedHint" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Gm.NotStartedHint" }}"{{/unless}}>
       <button type="button" class="svi-btn svi-btn-primary {{#if svi.gm.advanceStrong}}svi-strong{{/if}}" data-action="sviAdvance"
               aria-label="{{ svi.gm.advanceLabel }}" data-tooltip="{{ svi.gm.advanceLabel }}" {{#if svi.gm.controlsDisabled}}disabled aria-disabled="true"{{/if}}>
         <i class="fa-solid fa-forward-step" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Gm.Advance" }}</span>
@@ -45,12 +50,7 @@
               aria-label="{{ svi.gm.backLabel }}" data-tooltip="{{ svi.gm.backLabel }}" {{#if svi.gm.controlsDisabled}}disabled aria-disabled="true"{{/if}}>
         <i class="fa-solid fa-rotate-left" inert></i>
       </button>
-      <button type="button" class="svi-btn svi-icon-btn" data-action="sviHelp"
-              aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Gm.Help" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Gm.Help" }}">
-        <i class="fa-solid fa-circle-question" inert></i>
-      </button>
     </div>
-    {{#unless svi.started}}<p class="svi-hint svi-hint-block" role="status"><i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Gm.NotStartedHint" }}</span></p>{{/unless}}
     {{/if}}
 
     {{#each svi.gm.warnings}}
@@ -78,8 +78,16 @@
   {{else if svi.enabled}}
   {{#if (or svi.dc svi.youPending (not svi.started))}}
   <div class="svi-player-panel">
-    {{#unless svi.started}}<p class="svi-hint svi-hint-block" role="status"><i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.NotStartedHint" }}</span></p>{{/unless}}
-    {{#if svi.dc}}<span class="svi-dc-badge">{{ svi.dc.text }}</span>{{/if}}
+    {{#if (or svi.dc (not svi.started))}}
+    <div class="svi-player-line">
+      {{#if svi.dc}}<span class="svi-dc-badge">{{ svi.dc.text }}</span>{{/if}}
+      {{#unless svi.started}}
+      <span class="svi-state-chip" role="status" tabindex="0" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.NotStartedHint" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.NotStartedHint" }}">
+        <i class="{{ svi.stateIcon }}" inert></i><span>{{ svi.stateLabel }}</span>
+      </span>
+      {{/unless}}
+    </div>
+    {{/if}}
     {{#if svi.youPending}}
     <div class="svi-you-pending" role="status">
       <i class="fa-solid fa-circle-info" inert></i><span>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.YouPending" }}</span>

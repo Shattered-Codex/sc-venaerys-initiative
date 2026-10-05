@@ -71,6 +71,22 @@
           "oneDegree": "One degree worse"
         }
       },
+      "hideEmptyPhases": {
+        "Name": "Hide empty phases",
+        "Hint": "The GM's tracker leaves out the phases with nobody in them. Event phases stay, so a marker can still be added. To move someone to a hidden phase, use the phase select on the row."
+      },
+      "customAccent": {
+        "Name": "Accent",
+        "Hint": "Buttons, highlights and the current phase."
+      },
+      "customBackground": {
+        "Name": "Background",
+        "Hint": "The darkest surface; panels and borders are stepped from it."
+      },
+      "customText": {
+        "Name": "Text",
+        "Hint": "The main text; dimmer text is stepped from it."
+      },
       "suggestFromSheet": {
         "Name": "Suggest boss phases from the sheet",
         "Hint": "An enemy entering a combat goes to the creature phase named exactly like one of its items (a feature called \"Boss\" goes to Boss; \"Boss Fight\" does not). Only a default: the GM can still move it."
@@ -78,6 +94,18 @@
       "rollPrompt": {
         "Name": "Ask me to roll initiative",
         "Hint": "When a character of yours joins a phased combat without a roll, a window asks you to roll. The roll button in the combat tracker stays either way."
+      },
+      "bannerThemes": {
+        "Name": "Banner themes",
+        "Hint": "Your own looks for a phase's message on screen, edited in the Banners tab."
+      },
+      "rollPromptImage": {
+        "Name": "Picture in the roll prompt",
+        "Hint": "Which picture of each character the window that asks players to roll shows.",
+        "Choices": {
+          "token": "The token's",
+          "portrait": "The sheet's portrait"
+        }
       },
       "rollSource": {
         "Name": "Roll",
@@ -114,6 +142,7 @@
         "world": "World",
         "appearance": "Appearance",
         "phases": "Phases",
+        "banners": "Banners",
         "client": "This client",
         "help": "Help"
       },
@@ -129,6 +158,18 @@
       "Saved": "Settings saved.",
       "Phases": {
         "Intro": "Order of the phases in each round. Combats in progress don't change.",
+        "Sound": {
+          "Title": "Sound when it starts",
+          "Label": "Sound when {name} starts",
+          "FilePlaceholder": "Path of the audio file",
+          "Pick": "Choose or upload an audio file",
+          "Preview": "Play the sound",
+          "Modes": {
+            "theme": "Foundry's combat sound",
+            "none": "No sound",
+            "custom": "My own file"
+          }
+        },
         "Band": "Party turn: extra phases here act in the middle of it",
         "Drag": "Drag {name}",
         "Icon": "Icon of {name}",
@@ -188,6 +229,7 @@
         "world": "GM-only rules for every combat in this world.",
         "appearance": "Colors of the module's screens and phase sections, for everyone in this world. The combatant rows keep Foundry's own look.",
         "phases": "Order of the phases in each round. Combats in progress don't change.",
+        "banners": "Looks for a phase's message on screen. Pick one in each \"Message on screen\" action of the Phases tab.",
         "client": "Your own preferences, on this computer only.",
         "help": "How phases behave with turn events, pending combatants and other modules."
       },
@@ -197,8 +239,52 @@
       "ResetTab": "Reset tab",
       "Close": "Close",
       "UnsavedTab": "{tab}: unsaved changes",
+      "Transfer": {
+        "Export": "Export",
+        "Import": "Import",
+        "ExportPhasesHint": "Save the phases on screen, with their sounds and actions, as a file.",
+        "ImportPhasesHint": "Replace the phases on screen with the ones of a file exported here. Nothing is saved until you press Save.",
+        "ExportBannersHint": "Save your banner themes as a file.",
+        "ImportBannersHint": "Add the banner themes of a file exported here to your own. Nothing is saved until you press Save.",
+        "Imported": "Imported {count}. Press Save to keep them.",
+        "Errors": {
+          "NotJson": "That file is not valid JSON.",
+          "WrongFile": "That file was not exported by this module.",
+          "WrongKind": "That file holds something else: phases and banner themes are imported each in its own tab.",
+          "Invalid": "The file's content is not valid, so nothing was imported."
+        }
+      },
+      "Banners": {
+        "Add": "Add banner theme",
+        "NewName": "New banner theme",
+        "Mine": "My banner themes",
+        "Ready": "Ready-made",
+        "Empty": "None yet. Copy a ready-made theme below to start one of your own.",
+        "Unnamed": "Unnamed theme",
+        "NamePlaceholder": "Theme name",
+        "NameLabel": "Name of the banner theme",
+        "Preview": "Show on screen",
+        "Copy": "Duplicate",
+        "CopyToMine": "Copy to edit",
+        "Delete": "Delete banner theme",
+        "CopyName": "{name} (copy)",
+        "Corners": "Corner marks",
+        "SampleText": "Your message appears here.",
+        "ResetTitle": "Delete my banner themes",
+        "ResetBody": "Delete every banner theme of your own? Messages that use them go back to the module's theme.",
+        "ResetConfirm": "Delete them",
+        "Fields": {
+          "line": "Border and glow",
+          "background": "Background",
+          "head": "Title band",
+          "title": "Title",
+          "text": "Text"
+        }
+      },
       "Appearance": {
         "Previewing": "Previewing {theme} on this computer only. Close without saving to go back to {saved}.",
+        "CustomTitle": "Custom theme colors",
+        "CustomHint": "Every other color is derived from these three. Saved for everyone in this world.",
         "PreviewTitle": "Combat tracker"
       }
     },
@@ -268,7 +354,6 @@
       "Move": "Move",
       "CompleteGroupLabel": "Mark every {name} in {phase} done",
       "AddMarkerLabel": "Add an event marker to {phase}",
-      "Roll": "Roll",
       "RollFor": "Roll initiative for {name}",
       "RollNow": "Roll now",
       "DcNamed": "DC {name} ({dc})",
@@ -284,7 +369,7 @@
       "UnmarkMovedLabel": "Unmark {name}'s movement in {phase}",
       "Moving": "Moving",
       "NotStartedHint": "The combat hasn't started yet. Once the GM starts it, mark Done here when your turn in your phase is over.",
-      "RollAll": "Roll all"
+      "RollPlayers": "Roll PCs"
     },
     "Gm": {
       "PhasesOn": "Phases on",
@@ -354,6 +439,7 @@
       "catacomb": "Catacomb",
       "sanctuary": "Sanctuary",
       "underworld": "Underworld",
+      "custom": "Custom (my own colors)",
       "moss": "Moss",
       "holo": "Hologram",
       "phosphor": "Phosphor",
@@ -366,6 +452,7 @@
       "contrast": "High contrast"
     },
     "ThemeFamily": {
+      "Custom": "Custom",
       "Dark": "Dark",
       "Light": "Light",
       "Stone": "Stone",
@@ -375,7 +462,12 @@
       "Title": "Actions when it starts",
       "CountOne": "1 action",
       "CountMany": "{count} actions",
-      "Empty": "No action",
+      "Preview": "Preview the message on screen",
+      "AddShort": "Add action",
+      "Hint": "Sound, message, macro, jump scare and more, run when this phase starts. Click to open.",
+      "NoScare": "— choose a scare —",
+      "NoPuzzle": "— choose a puzzle —",
+      "MissingChoice": "{id} (not found)",
       "Add": "Add action…",
       "Requires": "Needs the module {module}",
       "Note": "Macros only run if a GM wrote them. Local actions are not shown to players who cannot see the phase.",
@@ -395,7 +487,7 @@
       "Kinds": {
         "screenMessage": "Message on screen",
         "sound": "Sound",
-        "hook": "Hook",
+        "hook": "Fire an event (hook)",
         "chatMessage": "Chat message",
         "macro": "Macro",
         "rollTable": "Roll table",
@@ -408,10 +500,12 @@
         "audience": "Who sees it",
         "src": "Audio file",
         "volume": "Volume (%)",
-        "name": "Hook name",
+        "style": "Banner theme",
+        "seconds": "Seconds on screen",
+        "name": "Event name (hook)",
         "macroUuid": "Macro",
         "tableUuid": "Roll table",
-        "scareId": "Scare id",
+        "scareId": "Jump scare",
         "puzzleUuid": "Puzzle page",
         "action": "Action",
         "target": "Whose resource",
@@ -421,6 +515,13 @@
         "amount": "Amount"
       },
       "Choices": {
+        "themed": "Module theme (phase color)",
+        "hud": "Sci-fi HUD",
+        "parchment": "Parchment",
+        "blood": "Blood",
+        "arcane": "Arcane",
+        "frost": "Frost",
+        "minimal": "Minimal",
         "all": "Everyone",
         "gm": "GM only",
         "open": "Open",
@@ -459,9 +560,14 @@
         "Hint": "Brings the combat tracker forward: its popout if open, otherwise the sidebar tab."
       }
     },
+    "Links": {
+      "Aria": "Community links",
+      "wiki": { "Label": "Open wiki", "Hint": "Open the SC - Venaerys' Initiative documentation wiki." },
+      "patreon": { "Label": "Patreon support", "Hint": "Support Shattered Codex development on Patreon." },
+      "discord": { "Label": "Discord", "Hint": "Join the Shattered Codex Discord server." }
+    },
     "RollPrompt": {
       "Title": "Roll initiative",
-      "Body": "The combat runs in phases. Roll initiative for {names}: beat the DC to act in the first players' phase.",
       "Roll": "Roll",
       "Later": "Later"
     },

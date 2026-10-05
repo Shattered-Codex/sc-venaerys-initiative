@@ -1,3 +1,5 @@
+import { DEFAULT_BANNER_STYLE } from "./banner-themes.js";
+
 /**
  * What a phase can do when it starts, with the consequence vocabulary of the
  * SC Combat Wheel (itself in the spirit of the SC Puzzle Engine). Each kind
@@ -6,7 +8,9 @@
  * talks to another module). `requires` names a module that must be active.
  *
  * Field types: text, textarea, number, select (with `choices`), macro, file,
- * uuid (accepts a dropped document).
+ * uuid (accepts a dropped document), scare (a scare of the SC Jump Scare
+ * library, by id), puzzle (a puzzle page of the SC Puzzle Engine, by UUID),
+ * banner (a ready-made banner theme or one of the GM's own, by id).
  */
 export const CONSEQUENCE_KINDS = Object.freeze({
   screenMessage: {
@@ -15,6 +19,8 @@ export const CONSEQUENCE_KINDS = Object.freeze({
     fields: [
       { name: "text", type: "textarea", default: "" },
       { name: "audience", type: "select", choices: ["all", "gm"], default: "all" },
+      { name: "style", type: "banner", default: DEFAULT_BANNER_STYLE },
+      { name: "seconds", type: "number", min: 2, max: 30, default: 6 },
     ],
   },
   sound: {
@@ -52,14 +58,14 @@ export const CONSEQUENCE_KINDS = Object.freeze({
     where: "gm",
     icon: "fa-solid fa-ghost",
     requires: "sc-jump-scare",
-    fields: [{ name: "scareId", type: "text", default: "" }],
+    fields: [{ name: "scareId", type: "scare", default: "" }],
   },
   puzzle: {
     where: "gm",
     icon: "fa-solid fa-puzzle-piece",
     requires: "sc-puzzle-engine",
     fields: [
-      { name: "puzzleUuid", type: "uuid", documentName: "JournalEntryPage", default: "" },
+      { name: "puzzleUuid", type: "puzzle", default: "" },
       { name: "action", type: "select", choices: ["open", "arm", "trigger"], default: "open" },
     ],
   },
@@ -94,7 +100,7 @@ export function normalizeConsequence(raw = {}, makeId = () => Math.random().toSt
     } else if (field.type === "select") {
       params[field.name] = field.choices.includes(value) ? value : field.default;
     } else {
-      params[field.name] = String(value ?? field.default).trim();
+      params[field.name] = String(value ?? field.default).trim() || field.default;
     }
   }
   return { id: String(raw.id || makeId()), kind: raw.kind, enabled: raw.enabled !== false, params };
