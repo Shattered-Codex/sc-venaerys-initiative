@@ -1,7 +1,7 @@
 {
   "id": "sc-venaerys-initiative",
   "title": "SC - Venaerys's Initiative",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "media": [
     {
       "type": "setup",
@@ -52,5 +52,5 @@
   "socket": true,
   "url": "https://github.com/Shattered-Codex/sc-venaerys-initiative",
   "manifest": "https://github.com/Shattered-Codex/sc-venaerys-initiative/releases/latest/download/module.json",
-  "download": "https://github.com/Shattered-Codex/sc-venaerys-initiative/releases/download/v1.0.2/sc-venaerys-initiative.zip"
+  "download": "https://github.com/Shattered-Codex/sc-venaerys-initiative/releases/download/v1.0.3/sc-venaerys-initiative.zip"
 }
