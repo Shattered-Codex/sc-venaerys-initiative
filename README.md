@@ -1,81 +1,198 @@
+<p align="center">
+  <a href="https://www.patreon.com/c/shatteredcodex?utm_source=sc-venaerys-initiative&utm_medium=github&utm_campaign=support_readme">
+    <img src="assets/branding/shattered-codex.png" alt="Shattered Codex" width="200" height="200" />
+  </a>
+</p>
+
 # SC - Venaerys's Initiative
 
-Phased initiative for Foundry VTT v13 and v14. Instead of one turn at a time, combat runs in **phases**:
+[![Wiki](https://img.shields.io/badge/Wiki-Venaerys%27s%20Initiative-1f6feb?logo=bookstack&logoColor=white&style=for-the-badge)](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative)
+[![Support on Patreon](https://img.shields.io/badge/Patreon-Shattered%20Codex-FF424D?logo=patreon&logoColor=white&style=for-the-badge)](https://www.patreon.com/c/shatteredcodex?utm_source=sc-venaerys-initiative&utm_medium=github&utm_campaign=support_readme)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/6mWCQEJEwG)
+![Foundry VTT 13-14](https://img.shields.io/badge/Foundry%20VTT-v13%20%7C%20v14-orange?logo=foundry-vtt&logoColor=white&style=for-the-badge)
+![Systems](https://img.shields.io/badge/Systems-Multiple-blue?style=for-the-badge)
+![Downloads](https://img.shields.io/github/downloads/Shattered-Codex/sc-venaerys-initiative/total?style=for-the-badge)
+![Forks](https://img.shields.io/github/forks/Shattered-Codex/sc-venaerys-initiative.svg?style=for-the-badge)
 
-- Characters roll against a **DC** set by the GM (or worked out as a base plus the enemies' CR): their system's own initiative roll by default, or a formula the GM sets (dice plus an attribute). Those who meet it act in **Fast**, the rest in **Slow**. By default a natural 20 (the system's critical) always acts in Fast and a natural 1 in Slow.
-- Enemies don't roll: they act together in **Enemies**, between Fast and Slow.
-- Everyone in a phase acts **at the same time**, each with a full normal turn. Each one marks **Done**; when everybody in the phase is done, the combat moves on to the next phase by itself.
-- The GM adds extra phases (Epic Boss, Boss, Mini-Boss, or any other) and drags them before, between or after the players' phases. **Event phases** such as Lair Actions only happen in combats where the GM adds an event marker to them. Who is the boss is decided per combat, right in the combat tracker; an enemy with an item named exactly like a phase (a feature called "Boss", for example) starts in that phase.
+![Venaerys’s Initiative cover: a luminous golden V on a dark background](https://i.imgur.com/szqGqZ1.png)
 
-Everything happens in Foundry's own Combat Tracker (sidebar and popout): in a phased combat it shows the phases, who is done and, for the GM, the phase controls. Foundry keeps seeing a normal combat, and with phases turned off the tracker and the combat are exactly Foundry's.
+Run combat in **phases** in **Foundry VTT**. Players roll initiative against a DC, act together in **Fast** or **Slow**, and mark **Done** when they finish. Enemies act together between the player phases, while the GM places bosses and lair actions wherever the encounter needs them.
 
-## Using it
+The module works inside Foundry's own Combat Tracker, in both the sidebar and popout. Everyone in a phase takes a full normal turn; once all its combatants are done, combat advances automatically. Inspired by Venaerys's community request.
 
-1. Create a combat as usual. New combats use phases by default (a world setting); before the combat starts, the GM can switch phases on or off at the top of the combat tracker.
-2. Players roll: a window asks them when their character joins a phased combat, and the tracker shows a **Roll** button on everyone still waiting (each player can turn the window off in their client settings). The GM can roll for anyone, or use **Roll for them** for everyone still waiting.
-3. Set the DC at the top of the tracker and start the combat. If someone has not rolled and starting now would skip the players' first phase, the GM is asked first.
-4. Mark **Done** when your turn is over. A player's "End turn" in the tracker does the same; the GM's "Next turn" and "Previous turn" become "Next phase" and "Previous phase".
+## Installation
 
-When a phased combat starts, the combat tab comes forward on every client (a per-user setting).
+Requires **Foundry VTT v13 or v14**. No other module is required. See [Supported Systems](#supported-systems) for system-specific behavior.
 
-### For the GM
+1. Open **Add-on Modules > Install Module** in Foundry VTT.
+2. Paste the manifest URL below and install the module.
+3. Enable **SC - Venaerys's Initiative** in your world.
 
-- **Next phase** advances even if someone hasn't marked Done. **Complete phase** marks everyone in the current phase done and advances. **Previous phase** goes back and keeps the marks; automatic advance then waits for the next mark in that phase.
-- Move a combatant to another phase with the select on its row, by dragging the row onto another phase, or with **Move to phase…** in its right-click menu. The move pins them to that phase for this combat only ("Automatic" goes back to the rules). Moves never take a turn away or give an extra one: someone who already acted moves next round.
-- On a creature's sheet, the GM picks its **Combat phase** in the header menu (…): Enemies by default, or any creature phase (Epic Boss, Boss…). It enters every phased combat there, unpinned, so "Automatic" in the tracker goes back to it. A phase later deleted from the template sends it back to Enemies. On an unlinked token's sheet, the choice is for that token only.
-- An enemy whose actor has an item named exactly like a creature phase (ignoring case) enters in that phase, the earliest one if several match, without being pinned; "Automatic" goes back to it. The name is the phase's name as the GM sees it, so a renamed or translated phase needs the item renamed too.
-- Foundry's turn marker (the ring under the token) shows under every member of the current phase who is still acting, and leaves each token as that member marks Done. A world setting turns this off to keep Foundry's single marker.
-- An hourglass marks the member that Foundry treats as the current turn: only they get the system's end-of-turn automation, when the phase ends.
-- With the DC set to **Base + CR**, the DC follows the enemies until the combat starts and then stays put; the calculator button next to the DC recalculates it at any time. A DC typed by hand stays as typed.
-- **Skip this round** on a combatant of a later phase (surprise, stunned) marks them done in advance.
-- With **Movement and actions** on (World tab: players' phases, or every creature phase), each of those phases runs in two halves: **Fast · Movement**, where everyone moves and marks **Moved**, then **Fast · Actions**, where everyone acts and marks **Done**. Leftover movement is not used in the actions half; the module does not lock tokens. "Previous phase" goes back half a phase. The setting applies to new combats.
-- The **+** on an event phase (Lair Actions, by default after Slow) adds an event marker to it: a combatant with no actor that never rolls. The combat stops at that phase until the GM marks the marker done; a combat without a marker skips the phase. Markers move only between event phases, and only markers go there.
-- Identical creatures are grouped inside their phase; the double-check button on the group marks all of them done at once.
-- Automatic advance waits while the GM has a dialog open (rolls, activity use, reactions) and can be turned off.
+```text
+https://github.com/Shattered-Codex/sc-venaerys-initiative/releases/latest/download/module.json
+```
 
-### Settings
+## Quick Start
 
-Module settings → **SC - Venaerys's Initiative** → **Configure**. The window has a tab rail and a footer with **Reset tab**, **Close** and **Save**; a dot marks every tab with unsaved changes.
+| Phase | Who acts |
+| --- | --- |
+| **Fast** | Player characters whose initiative meets or beats the DC |
+| **Enemies** | Regular enemies, without an initiative roll |
+| **Slow** | Player characters whose initiative falls below the DC |
 
-- **World** (GM): phases in new combats, automatic advance, the phase suggested by an enemy's sheet, the roll against the DC (the system's initiative roll or a formula such as `1d20 + @abilities.dex.mod`; an empty formula uses the system's default, shown in the field), what a critical or a fumble does (automatic, or one degree as in Pathfinder 2e), where the DC comes from (typed, or a base plus the highest CR among the enemies of the Enemies phase; a fractional CR counts 0), default DC and base, and showing the DC to players.
-- **Appearance** (GM): the theme of the module's screens and phase sections, one of the sixteen Shattered Codex themes (dark, light and stone; Verdant by default), with a sample of the phased tracker and a preview on your screen before you save. The combatant rows keep Foundry's own look.
-- **Phases** (GM): the phase order of new combats. Drag phases (or use the arrows) anywhere around Fast, Enemies and Slow, whose order is fixed. Add, rename, recolor or delete extra phases; **Add event phase** creates one that only event markers act in. Worlds that saved their phase order before Lair Actions existed can add it this way. Each phase can have **actions when it starts**: a message, a sound, a hook, a chat message, a macro, a roll table, and, with those modules active, an SC Jump Scare, an SC Puzzle or an SC Resources change. Macros only run if a GM wrote them, and actions that show or play something are not run for players who cannot see the phase. Combats in progress keep their own copy.
-- **This client**: showing the combat tracker when a phased combat starts, and being asked to roll initiative.
-- **Help** (GM): how turn events, moving combatants, pending combatants and other modules behave with phases.
+1. Create a combat and add combatants as usual. New combats use phases by default; the GM can toggle **Phases on** before combat starts.
+2. Set the **DC** at the top of the tracker. With the default D&D 5e settings, a natural 20 places a character in Fast and a natural 1 in Slow.
+3. Players roll initiative when prompted, or use their row's roll button. The GM can use **Roll PCs** to roll all player characters still without initiative.
+4. Start combat. Everyone in the current phase acts at the same time, each with a full turn.
+5. Mark **Done** when finished. Once everyone in the phase is done, the next occupied phase begins.
 
-### Keybindings
+A player's native **End Turn** also marks their combatants done. The GM's next and previous turn controls navigate phases. With phases disabled before combat starts, the encounter uses the native tracker and turn order.
 
-Under **Configure Controls**, with no key assigned by default: **Mark my combatants done** (for the GM, the combatants no player owns), **Advance phase** and **Previous phase** (GM), and **Show the combat tracker**. Outside a running phased combat the first three do nothing and leave the key to other bindings.
+For detailed guidance, visit the [Venaerys's Initiative wiki](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative).
 
-### For macros and other modules
+## Configuration
 
-Two hooks are called on every client after the combat updates:
+Open **Configure Settings > Module Settings > SC - Venaerys's Initiative > Configure**, then select **Save** after editing. Dots mark tabs with unsaved changes.
 
-- `sc-venaerys-initiative.phaseChange(combat, {round, phaseId, previous: {round, phaseId}, reason})` when the combat enters another phase or round. `reason` is `advance`, `round`, `start`, `back` or `anchor` when the module moved the combat, `null` otherwise.
-- `sc-venaerys-initiative.combatantDone(combatant, {done, round, phaseId})` when a combatant is marked done or unmarked.
+| Tab | Options |
+| --- | --- |
+| **World** | Phases in new combats, automatic advancement, shared turn markers, movement/action halves, empty-phase visibility, initiative rolls, critical rules, DC calculation, and player DC visibility |
+| **Appearance** | Sixteen Shattered Codex themes or a custom palette made from accent, background, and text colors, with a live preview |
+| **Phases** | Phase order, extra creature and event phases, phase sounds, actions when a phase starts, and JSON import/export |
+| **Banners** | Preview built-in banner styles, create custom banner themes, and import/export your custom themes |
+| **This client** | Bring the combat tracker forward when combat starts and show initiative roll prompts |
+| **Help** | Turn events, pending rolls, combatant movement, and compatibility guidance |
 
-On a player's client, a phase in which that player sees no one is reported as `null`, and hidden combatants are never reported.
+Only the GM sees the World, Appearance, Phases, Banners, and Help tabs. Phase order and movement/action settings apply to new combats; existing combats keep their own phase plan.
 
-## Systems
+## Bosses and Extra Phases
 
-The core works with any system that uses Foundry's initiative order: the roll against the DC is the system's own initiative roll, or the GM's formula. Each supported system brings its own defaults:
+In **Phases**, drag phases or use their arrows to position them around **Fast**, **Enemies**, and **Slow**. Those three retain their relative order. Extra phases can be named, recolored, and given their own icons.
 
-- **D&D 5e** (5.x on v13, 6.x on v14): enemies show their initiative score, which also keeps identical creatures grouped; the CR of NPCs can set the DC; a natural 20 or 1 is read from the kept d20. Default formula `1d20 + @attributes.init.total`.
-- **Pathfinder 2e**: the system's initiative roll (the statistic chosen on the sheet), without the modifiers dialog when the GM rolls for players. A natural 20 or 1 moves the result one degree by default. Default formula `1d20 + @actor.initiative.mod`.
-- **Call of Cthulhu 7e**: with the system's optional initiative rule (a DEX roll), the DC is the difficulty the Keeper asks for: 1 Regular, 2 Hard, 3 Extreme, shown by name. With the basic rule nothing is rolled and the GM is warned; use the optional rule or a formula (`@characteristics.dex.value - 1d100` against DC 0).
-- **Daggerheart** (experimental): it has no initiative of its own, so the module rolls a reaction roll, `1d12 + 1d12 + @system.traits.agility.value`; matching dice are a critical. It never gives Hope or Fear. Its own tracker passes the spotlight and may move turns and rounds by itself.
-- Any other system: its initiative formula; enemies show 0 as their initiative and the DC is typed.
+Move a combatant using its row's phase selector, drag it onto another phase, or choose **Move to phase…** from its context menu. This pins the assignment for that combat; **Automatic** restores classification. A move that would grant another turn or remove an available turn is deferred until the next round.
 
-Systems that replace the combat tracker's row template (for example pf2e) lose their own row extras while a combat runs in phases; with phases off their tracker is untouched.
+On a creature's sheet, the GM can select **Combat phase** from the header menu. This sets its default creature phase for future combats. When item-based suggestions are enabled, an actor item named exactly like a creature phase, ignoring case, can also suggest its assignment. The sheet's explicit choice takes priority.
 
-A formula roll is the module's own: it reads the actor's data but not the sheet's situational bonuses (advantage, feats, bonus dice). Use the system's roll to keep them.
+Use **Add event phase** for lair actions or other encounter events. The phase's **+** adds an event marker: a combatant with no actor that never rolls initiative. The GM marks it done after resolving the event. An event phase without a marker is skipped.
 
-## Known limitations
+## Movement and GM Controls
 
-- Only one combatant is "the current turn" for Foundry. When a phase starts, start-of-turn automation (recharges, ongoing damage, reactions) runs for every member; end-of-turn automation runs only for the member marked with the hourglass, at the end of the phase. The others resolve end-of-turn effects by hand when they mark Done.
-- Combatants who haven't rolled sit at the end of Foundry's order and receive the system's turn events at each round change.
-- midi-qol's "reroll initiative each round" and "record attacks of opportunity", and Combat Tracker Dock's "hide enemies until their first turn", conflict with phases; turn them off in phased combats. When a phased combat starts with any of them on, every GM gets a warning.
-- The natural 20 or 1 reaches the combat right after the roll's total, so a combatant may show in one phase for an instant before moving to the right one.
-- On Foundry v14, the movement history of every combatant is cleared at each turn start, which with phases means at the start of each phase.
+The GM can use **Next phase**, **Complete phase**, and **Previous phase** at any time during combat. **Complete phase** marks its members done and advances; **Previous phase** preserves marks and suspends automatic advancement until another mark is changed there.
 
-The module needs no other module.
+Enable **Movement and actions** for player phases or all creature phases to run each in two halves. Everyone moves and marks **Moved**, then acts and marks **Done**. Under this table rule, leftover movement is not used in the actions half. The module does not lock tokens or enforce movement allowances.
+
+Additional controls help manage larger encounters:
+
+- Mark or unmark individual combatants done, or use a group header to complete identical creatures together.
+- Use **Skip this round** on a future-phase combatant to mark them done in advance.
+- Show native turn markers under every member of the current phase still acting, or disable this option to retain Foundry's single marker.
+- Hide empty creature phases on the GM's tracker. Event phases remain available so markers can be added.
+- Turn off automatic advancement when the table needs manual pacing. While enabled, it waits for dialogs open on the active GM's client.
+
+## Sounds, Banners, and Automation
+
+Each phase can use **No sound**, **Foundry's combat sound**, or **My own file**, with volume and a local preview. Phases are silent by default; Foundry's encounter-start sound remains separate.
+
+Under **actions when it starts**, add a **Message on screen** to announce the phase. Choose a built-in banner style or one created in **Banners**, enter optional text, and set its duration. New default phases announce their names with a banner.
+
+Other actions include sounds, hooks, chat messages, macros, and roll tables. Actions run once per phase per round; going back to a phase does not replay them. Macros must be authored by a GM. Sounds and banners do not run on a player's client when that player cannot see anyone in the phase.
+
+Export **Phases** to share a plan with its sounds and actions. Importing phases replaces the draft plan. Export **Banners** to share custom styles; importing banners merges them by ID. Imports remain unsaved until **Save**. Transfer custom banner themes along with any phase plan that uses them.
+
+## Supported Systems
+
+The core uses Foundry's native combat data. Dedicated adapters provide system rolls and defaults; other systems use their initiative formula or a formula chosen by the GM.
+
+| System | Behavior |
+| --- | --- |
+| **D&D 5e** | Uses the system initiative roll, NPC CR for an optional **Base + CR** DC, and the kept d20 for natural 20/1 rules. Default formula: `1d20 + @attributes.init.total`. |
+| **Pathfinder 2e** | Uses the character's chosen initiative statistic. Natural 20/1 adjusts the result one degree by default. The GM's bulk roll skips the modifiers dialog. |
+| **Call of Cthulhu 7e** | Uses the system's optional DEX-roll initiative rule. DC 1, 2, or 3 represents Regular, Hard, or Extreme. With the basic initiative rule, use the optional rule or a formula such as `@characteristics.dex.value - 1d100` against DC 0. |
+| **Daggerheart — experimental** | Uses `1d12 + 1d12 + @system.traits.agility.value`; matching dice count as a critical. It does not award Hope or Fear. The system's own spotlight tracker can change turns and rounds independently. |
+| **Other systems** | Uses the system's initiative roll where available, or a custom formula; the GM sets the DC manually. |
+
+With **Base + CR**, the DC is the base plus the highest non-defeated enemy CR in Enemies, falling back to all non-defeated enemies when that phase has none. Fractional CR contributes 0. It follows enemies before combat starts, then freezes. Use the calculator beside the DC to recalculate, or type a manual value.
+
+A custom formula reads actor roll data but does not include the system roll dialog's situational bonuses. Use the system roll when those bonuses matter. Systems with custom tracker row templates may lose their row extras while phases are enabled.
+
+## Related Modules
+
+These optional Shattered Codex modules can run from a phase's start actions:
+
+| Module | Phase action |
+| --- | --- |
+| [SC - Jump Scare](https://wiki.shattered-codex.com/modules/sc-jump-scare) | Play a scare selected from its library |
+| [SC - Puzzle Engine](https://wiki.shattered-codex.com/modules/sc-puzzle-engine) | Open, arm, or trigger a puzzle |
+| [SC - Resources](https://wiki.shattered-codex.com/modules/sc-resources) | Change or restore configured resources |
+
+Explore the [Shattered Codex wiki](https://wiki.shattered-codex.com) and [Patreon](https://www.patreon.com/c/shatteredcodex?utm_source=sc-venaerys-initiative&utm_medium=github&utm_campaign=support_readme) for more modules.
+
+## Keybindings and Integration
+
+Under **Configure Controls**, assign **Mark my combatants done**, **Advance phase**, **Previous phase**, or **Show the combat tracker**. No keys are assigned by default. Phase navigation is GM-only; marking done respects ownership.
+
+Two hooks are available to macros and other modules:
+
+| Hook | Arguments |
+| --- | --- |
+| `sc-venaerys-initiative.phaseChange` | `combat, { round, phaseId, previous: { round, phaseId }, reason }` |
+| `sc-venaerys-initiative.combatantDone` | `combatant, { done, round, phaseId }` |
+
+Hooks fire on each client. A phase invisible to a player is reported as `null`, and hidden combatants are not reported to that player.
+
+## Screenshots
+
+### Phased Combat Tracker
+
+Player characters are sorted into Fast and Slow around the Enemies phase. The GM can change the DC, assign phases, and manage groups directly in the native tracker.
+
+<img src="assets/screenshots/combat-tracker.png" alt="Combat tracker before the encounter starts, showing DC 15, Fast and Slow characters, a collapsed Zombie group, and phase selectors" width="345" />
+
+### Phase Order and Creature Defaults
+
+Configure extra phases around Fast, Enemies, and Slow, with a sound and start actions for each phase. A creature's **Combat phase** dialog sets its default assignment for future encounters.
+
+![Phases configuration with Fast, Enemies, Boss, and Slow, plus sound and action controls](assets/screenshots/phase-configuration.png)
+
+<img src="assets/screenshots/creature-phase.png" alt="Combat phase dialog for a Zombie, with Enemies, Epic Boss, Mini-Boss, and Boss choices" width="404" />
+
+### Appearance and Banner Themes
+
+The Appearance tab previews the selected theme on a sample tracker. In Banners, customize colors and corner marks, then preview a message on screen.
+
+![Appearance tab with the Verdant theme selected and a combat tracker preview](assets/screenshots/appearance-preview.png)
+
+![Banners tab with custom color controls and a New banner theme message preview at the top of the screen](assets/screenshots/banner-themes.png)
+
+### Shared Turn Markers
+
+Turn markers highlight multiple tokens still acting in the same phase.
+
+![Foundry scene with turn markers beneath three player tokens at the same time](assets/screenshots/shared-turn-markers.png)
+
+Screenshots from the [module's Imgur album](https://imgur.com/a/mdjIozg), stored in this repository.
+
+## Troubleshooting
+
+| Problem | What to check |
+| --- | --- |
+| Combat waits for initiative | Roll the remaining characters with their row buttons or **Roll PCs**. The GM can choose **Advance anyway** when offered. |
+| A completed phase does not advance | Check automatic advancement, dialogs open on the active GM's client, and whether the phase was revisited with **Previous phase**. |
+| A boss enters the wrong phase | Check its sheet's **Combat phase**, item-based suggestions, and the exact phase name. An item called “Boss Fight” does not match “Boss.” |
+| A lair phase is skipped | Add an event marker with **+**. Empty event phases do not stop combat. |
+| An imported banner style is missing | Import the custom banner themes as well as the phase plan, then save. |
+| Initiative uses the wrong bonuses | Select the system roll instead of a custom formula to include system dialog bonuses. |
+
+### Known Limitations
+
+- Foundry still has one current combatant. Start-of-turn automation runs for every member when a phase starts; end-of-turn automation runs only for the member marked by the hourglass. Resolve other members' end-of-turn effects manually when they mark Done.
+- Combatants without initiative remain at the end of Foundry's order and can receive system turn events at round changes.
+- Disable midi-qol's initiative reroll each round and attack-of-opportunity recording, and Combat Tracker Dock's enemy hiding until the first turn, in phased combats. The module warns GMs about these conflicts.
+- A natural 20/1 can reach the combat after its initiative total, briefly showing the character in another phase.
+- In Foundry v14, movement history clears when a phase starts.
+
+## Support and Feedback
+
+Questions and ideas are welcome on [Discord](https://discord.gg/6mWCQEJEwG). For bugs or feature requests, open a [GitHub issue](https://github.com/Shattered-Codex/sc-venaerys-initiative/issues). Documentation is available in the [official wiki](https://wiki.shattered-codex.com/modules/sc-venaerys-initiative).
+
+For release automation and the required GitHub secrets, see [Release Setup](https://github.com/Shattered-Codex/sc-venaerys-initiative/blob/main/.github/RELEASE.md).

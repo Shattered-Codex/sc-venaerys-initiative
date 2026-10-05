@@ -198,14 +198,3 @@ export const PHASE_COLORS = Object.freeze([
   "#9184d9",
   "#b56fb0",
 ]);
-
-/**
- * The outbound links of the module, in the order the settings strip shows
- * them. Their addresses live in the manifest (`flags.<module id>.links`), with
- * the module's other URLs: the scripts name no remote address.
- */
-export const COMMUNITY_LINKS = Object.freeze([
-  { id: "wiki", icon: "fa-solid fa-hat-wizard" },
-  { id: "patreon", icon: "fa-solid fa-heart" },
-  { id: "discord", icon: "fa-brands fa-discord" },
-].map(Object.freeze));

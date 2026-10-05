@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   release:
-    if: github.actor != 'github-actions[bot]'
+    if: github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -110,9 +110,10 @@ jobs:
         shell: bash
         run: |
           LATEST_TAG=$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n1)
+          LATEST_COMMIT=$(git rev-parse "${LATEST_TAG}^{commit}" 2>/dev/null || true)
           LATEST_PARENT=$(git rev-parse "${LATEST_TAG}^" 2>/dev/null || true)
 
-          if [[ -n "$LATEST_TAG" && "$LATEST_PARENT" == "$GITHUB_SHA" ]]; then
+          if [[ -n "$LATEST_TAG" && ("$LATEST_COMMIT" == "$GITHUB_SHA" || "$LATEST_PARENT" == "$GITHUB_SHA") ]]; then
             REUSE_RELEASE=true
             NEW_TAG="$LATEST_TAG"
             NEW_VERSION="${LATEST_TAG#v}"
@@ -197,23 +198,51 @@ jobs:
               handle.write("\n")
           PY
 
+      - name: Install ZIP tooling
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip unzip
+
       - name: Create ZIP archive
         shell: bash
         run: |
           FILES=(module.json module-tiers.json lang scripts styles templates README.md CHANGELOG.md)
+          if [[ -d assets ]]; then FILES+=(assets); fi
           if [[ -f LICENSE ]]; then FILES+=(LICENSE); fi
-          zip -r "./${MODULE_ID}.zip" "${FILES[@]}"
+          rm -f "./${MODULE_ID}.zip"
+          zip -r "./${MODULE_ID}.zip" "${FILES[@]}" \
+            -x '*/AGENTS.md' '*/CLAUDE.md' '*/.agents/*' '*/.claude/*' '*/.codex/*' \
+            '*/docs/*' '*/test/*' '*/tools/*' 'assets/screenshots/*' 'assets/cover/*'
 
       - name: Validate package assets
         shell: bash
         run: |
-          unzip -l "./${MODULE_ID}.zip" | grep -q "module-tiers.json"
-          unzip -l "./${MODULE_ID}.zip" | grep -q "scripts/module.js"
-          unzip -l "./${MODULE_ID}.zip" | grep -q "templates/combat-tracker/tracker.hbs"
-          if unzip -l "./${MODULE_ID}.zip" | grep -qE " (docs/|test/|tools/)"; then
-            echo "The package must not ship docs, tests or tools." >&2
-            exit 1
-          fi
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import PurePosixPath
+          from zipfile import ZipFile
+
+          with ZipFile(f'{os.environ["MODULE_ID"]}.zip') as archive:
+              assert archive.testzip() is None, "The ZIP archive is corrupt."
+              names = set(archive.namelist())
+              required = {"module.json", "module-tiers.json", "README.md", "CHANGELOG.md",
+                          "scripts/module.js", "templates/combat-tracker/tracker.hbs"}
+              manifest = json.loads(archive.read("module.json"))
+              required.update(manifest.get("esmodules", []))
+              required.update(manifest.get("styles", []))
+              required.update(language["path"] for language in manifest.get("languages", []))
+              assert required <= names, f"Missing package files: {sorted(required - names)}"
+              allowed_roots = {"assets", "lang", "scripts", "styles", "templates",
+                               "module.json", "module-tiers.json", "README.md", "CHANGELOG.md", "LICENSE"}
+              forbidden = {"docs", "test", "tools", ".agents", ".claude", ".codex", "AGENTS.md", "CLAUDE.md"}
+              for name in names:
+                  parts = PurePosixPath(name).parts
+                  assert parts and parts[0] in allowed_roots, f"Unexpected package path: {name}"
+                  assert not forbidden.intersection(parts), f"Development material in package: {name}"
+                  assert parts[:2] not in {("assets", "screenshots"), ("assets", "cover")}, f"Documentation or cover image in package: {name}"
+          PY
 
       - name: Commit manifest and publish tag
         if: steps.tag_version.outputs.reuse_release != 'true'
@@ -271,6 +300,7 @@ jobs:
           RELEASE_TOKEN: ${{ secrets.FOUNDRY_RELEASE_TOKEN }}
           VERSION: ${{ steps.tag_version.outputs.new_version }}
           TAG: ${{ steps.tag_version.outputs.new_tag }}
+          REUSE_RELEASE: ${{ steps.tag_version.outputs.reuse_release }}
         shell: bash
         run: |
           if [[ -z "$RELEASE_TOKEN" ]]; then
@@ -285,7 +315,23 @@ jobs:
             --arg min "$(python3 -c 'import json; print(json.load(open("module.json"))["compatibility"]["minimum"])')" \
             --arg verified "$(python3 -c 'import json; print(json.load(open("module.json"))["compatibility"]["verified"])')" \
             '{id:$id,release:{version:$version,manifest:$manifest,notes:$notes,compatibility:{minimum:$min,verified:$verified}}}')
-          curl -sSf -X POST -H "Content-Type: application/json" -H "Authorization: ${RELEASE_TOKEN}" -d "${payload}" https://foundryvtt.com/_api/packages/release_version/
+          response_file=$(mktemp)
+          trap 'rm -f "$response_file"' EXIT
+          status=$(curl -sS -o "$response_file" -w '%{http_code}' -X POST \
+            -H "Content-Type: application/json" -H "Authorization: ${RELEASE_TOKEN}" \
+            -d "${payload}" https://foundryvtt.com/_api/packages/release_version/)
+          if [[ "$status" == "200" ]] && jq -e '.status == "success"' "$response_file" >/dev/null; then
+            echo "Foundry package version published."
+          elif [[ "$REUSE_RELEASE" == "true" && "$status" == "400" ]] && jq -e \
+            '.status == "error" and (.errors | keys == ["__all__"]) and
+             (.errors.__all__ | length > 0 and all(.[]; .code == "unique_together"))' \
+            "$response_file" >/dev/null; then
+            echo "This version is already published in Foundry; continuing the release rerun."
+          else
+            echo "Foundry publication failed (HTTP $status)." >&2
+            cat "$response_file" >&2
+            exit 1
+          fi
 
       - name: Notify Discord
         if: success() && env.NOTIFY_DISCORD == 'true'
@@ -308,7 +354,12 @@ jobs:
             --arg title "${MODULE_TITLE} v${VERSION}" \
             --arg version "${VERSION}" \
             --arg commit "${COMMIT_MESSAGE}" \
-            '{content:"@everyone", allowed_mentions:{parse:["everyone"]}, embeds:[{title:$title, url:"https://app.shattered-codex.com/", description:("**A new release has been published.**\n\n**Version:** `" + $version + "`\n\n" + $commit), color:16096779}]}')
+            '{content:"@everyone", allowed_mentions:{parse:["everyone"]}, embeds:[{title:$title, url:"https://app.shattered-codex.com/", description:("**A new release has been published.**\n\n**Version:** `" + $version + "`\n\n" + $commit), color:16738740}]}')
+
+          COVER_URL=$(jq -r '[.media[]? | select(.type == "cover")][0].url // ""' module.json)
+          if [[ "$COVER_URL" == https://* ]]; then
+            payload=$(jq --arg cover "$COVER_URL" '.embeds[0].image = {url:$cover}' <<< "$payload")
+          fi
 
           response_file=$(mktemp)
           trap 'rm -f "$response_file"' EXIT

@@ -2,19 +2,22 @@
   "id": "sc-venaerys-initiative",
   "title": "SC - Venaerys's Initiative",
   "version": "1.0.0",
+  "media": [
+    {
+      "type": "setup",
+      "url": "https://i.imgur.com/szqGqZ1.png"
+    },
+    {
+      "type": "cover",
+      "url": "https://i.imgur.com/szqGqZ1.png"
+    }
+  ],
   "compatibility": {
     "minimum": "13",
     "verified": "14"
   },
   "flags": {
-    "canUpload": true,
-    "sc-venaerys-initiative": {
-      "links": {
-        "wiki": "https://wiki.shattered-codex.com/modules/sc-venaerys-initiative",
-        "patreon": "https://www.patreon.com/c/shatteredcodex?utm_source=sc-venaerys-initiative&utm_medium=foundry_module&utm_campaign=support_settings",
-        "discord": "https://discord.gg/6mWCQEJEwG"
-      }
-    }
+    "canUpload": true
   },
   "description": "Phased initiative for any system: characters roll against a DC and act together in Fast or Slow, enemies act together between them, and the GM places bosses in their own phases.",
   "authors": [

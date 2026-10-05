@@ -1,4 +1,5 @@
-import { COMMUNITY_LINKS, I18N_ROOT, MODULE_ID } from "../constants/module-constants.js";
+import { COMMUNITY_LINKS } from "../constants/community-links.js";
+import { I18N_ROOT, MODULE_ID } from "../constants/module-constants.js";
 
 const STRIP_CLASS = "svi-community-links";
 
@@ -7,16 +8,13 @@ const STRIP_CLASS = "svi-community-links";
  * at the end of its own section in Foundry's settings window, the same strip
  * the other Shattered Codex modules show. Foundry renders one
  * `section[data-category="<module id>"]` per package, so the strip is
- * anchored there. The addresses come from the module's manifest; a link
- * with no address there is left out.
+ * anchored there.
  */
 export default class CommunityLinks {
   /** The links with their labels in the client's language. */
   static links(localize = (key) => game.i18n.localize(key)) {
-    const urls = game.modules.get(MODULE_ID)?.flags?.[MODULE_ID]?.links ?? {};
-    return COMMUNITY_LINKS.filter((link) => typeof urls[link.id] === "string" && urls[link.id]).map((link) => ({
+    return COMMUNITY_LINKS.map((link) => ({
       ...link,
-      url: urls[link.id],
       label: localize(`${I18N_ROOT}.Links.${link.id}.Label`),
       hint: localize(`${I18N_ROOT}.Links.${link.id}.Hint`),
     }));
@@ -36,9 +34,7 @@ export default class CommunityLinks {
     strip.className = `${MODULE_ID} ${STRIP_CLASS}`;
     strip.setAttribute("role", "group");
     strip.setAttribute("aria-label", game.i18n.localize(`${I18N_ROOT}.Links.Aria`));
-    const links = CommunityLinks.links();
-    if (!links.length) return null;
-    for (const link of links) strip.append(CommunityLinks.#button(link));
+    for (const link of CommunityLinks.links()) strip.append(CommunityLinks.#button(link));
     section.append(strip);
     return strip;
   }

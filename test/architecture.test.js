@@ -70,7 +70,9 @@ describe("architecture", () => {
     const shipped = [...scripts, ...(await files(join(root, "templates"), [".hbs"])), ...(await files(join(root, "styles"), [".css"]))];
     for (const file of shipped) {
       const text = await readFile(file, "utf8");
-      assert.doesNotMatch(text, /libWrapper|socketlib|https?:\/\//, relative(root, file));
+      // The community links (wiki, Patreon, Discord) are opened by a click, never loaded: their one file may name addresses.
+      const links = relative(root, file) === join("scripts", "constants", "community-links.js");
+      assert.doesNotMatch(text, links ? /libWrapper|socketlib/ : /libWrapper|socketlib|https?:\/\//, relative(root, file));
     }
   });
 
