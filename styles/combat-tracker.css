@@ -305,6 +305,7 @@
 /* Rows: the core's own row, with the module's notes and controls inside */
 .sc-venaerys-initiative .svi-members,
 .sc-venaerys-initiative .svi-children { display: flex; flex-direction: column; margin: 0; padding: 0 2px 4px; list-style: none; }
+.sc-venaerys-initiative .svi-single-member { margin: 0; padding: 0; list-style: none; }
 .sc-venaerys-initiative .svi-children { margin-left: 16px; padding-left: 6px; border-left: 1px solid var(--svi-line); }
 .sc-venaerys-initiative .svi-group-row { display: flex; align-items: center; gap: 8px; min-height: var(--svi-row-h); padding: 0 6px; }
 .sc-venaerys-initiative .svi-portrait {

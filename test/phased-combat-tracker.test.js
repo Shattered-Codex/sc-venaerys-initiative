@@ -129,13 +129,13 @@ function fakeFrame(rowPhase) {
   };
   const element = {
     addEventListener: (type, listener) => (listeners[type] = listener),
-    querySelector: (selector) => (selector.startsWith("li.combatant") ? { closest: () => section(rowPhase) } : null),
+    querySelector: (selector) => (selector.startsWith("li.combatant") ? { closest: (phaseSelector) => phaseSelector === ".svi-phase" ? section(rowPhase) : null } : null),
     querySelectorAll: (selector) => [...sections.values()].filter((s) => selector !== ".svi-drop-target" || s.classList.has("svi-drop-target")),
   };
   const dragOn = (phaseId, data = {}) => {
     const store = { ...data };
     return {
-      target: { closest: (selector) => (selector.startsWith("li.svi-phase") ? section(phaseId) : null) },
+      target: { closest: (selector) => (selector.startsWith(".svi-phase") ? section(phaseId) : null) },
       dataTransfer: { types: Object.keys(store), getData: (type) => store[type] ?? "", dropEffect: "" },
       prevented: false,
       preventDefault() {
@@ -232,6 +232,24 @@ describe("tracker templates", () => {
 
   it("never give a phase section the combatant class", async () => {
     const tracker = await read("tracker.hbs");
-    for (const tag of tracker.match(/<li class="[^"]*svi-[^"]*"/g) ?? []) assert.doesNotMatch(tag, /\bcombatant\b/, tag);
+    for (const tag of tracker.match(/<[a-z]+ [^>]*class="[^"]*svi-(phase|group|waiting)\b[^"]*"/g) ?? []) assert.doesNotMatch(tag, /\bcombatant\b/, tag);
+  });
+
+  it("make only combatant rows <li>: pf2e looks up a combatant for every <li> in the tracker", async () => {
+    const tracker = (await read("tracker.hbs")).replace(/\{\{!--[\s\S]*?--\}\}/g, "");
+    assert.deepEqual(tracker.match(/<li\b/g) ?? [], []);
+    assert.doesNotMatch(tracker, /<ol class="combat-tracker/, "pf2e makes ol.combat-tracker sortable by initiative");
+  });
+
+  it("keeps group containers outside native lists and combatant rows inside them", async () => {
+    const tracker = await read("tracker.hbs");
+    assert.match(tracker, /<div class="plain svi-members">/);
+    assert.match(tracker, /<div role="group" aria-label="\{\{ name \}\}" class="svi-group"/);
+    const lists = tracker.match(/<ol\b[^>]*>[\s\S]*?<\/ol>/g) ?? [];
+    assert.equal(lists.length, 3, "group children, single members and pending combatants");
+    for (const list of lists) {
+      assert.doesNotMatch(list, /<div\b/);
+      assert.match(list, /combat-tracker\/row\.hbs/);
+    }
   });
 });
