@@ -345,7 +345,7 @@ export default class PhasedCombatTracker {
       /** The phase section under a drag of a combatant row, or null. */
       #sviDropPhase(event) {
         if (!game.user.isGM || !this.sviPhased || !event.dataTransfer?.types.includes(DRAG_TYPE)) return null;
-        return event.target.closest?.("li.svi-phase[data-phase-id]") ?? null;
+        return event.target.closest?.(".svi-phase[data-phase-id]") ?? null;
       }
 
       #sviOnDragStart(event) {
@@ -375,7 +375,7 @@ export default class PhasedCombatTracker {
         if (!phase) return;
         event.preventDefault();
         const combatantId = event.dataTransfer.getData(DRAG_TYPE);
-        const from = this.element.querySelector(`li.combatant[data-combatant-id="${combatantId}"]`)?.closest("li.svi-phase");
+        const from = this.element.querySelector(`li.combatant[data-combatant-id="${combatantId}"]`)?.closest(".svi-phase");
         if (!combatantId || from === phase) return;
         services().commands.execute("assign", combatOf(this), { combatantId, phaseId: phase.dataset.phaseId });
       }

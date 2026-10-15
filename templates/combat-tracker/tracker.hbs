@@ -1,11 +1,12 @@
-<ol class="combat-tracker plain svi-phased-tracker">
+{{!-- Only combatant rows are <li>: systems such as pf2e look up a combatant for every <li> in the tracker. --}}
+<div class="combat-tracker plain svi-phased-tracker">
     {{#each sviPhases}}
     {{#if waitingForGm}}
-    <li class="sc-venaerys-initiative svi-waiting" data-theme="{{ @root.sviTheme }}" role="status">
+    <div class="sc-venaerys-initiative svi-waiting" data-theme="{{ @root.sviTheme }}" role="status">
         <i class="fa-solid fa-hourglass-half" inert></i><span>{{ label }}</span>
-    </li>
+    </div>
     {{else}}
-    <li class="sc-venaerys-initiative svi-phase svi-state-{{ state }}{{#if isEmpty}} svi-phase-empty{{/if}}{{#if complete}} svi-complete{{/if}}"
+    <div role="group" class="sc-venaerys-initiative svi-phase svi-state-{{ state }}{{#if isEmpty}} svi-phase-empty{{/if}}{{#if complete}} svi-complete{{/if}}"
         data-theme="{{ @root.sviTheme }}" data-phase-id="{{ id }}" style="--svi-phase-color: {{ color }}" aria-label="{{ name }}"{{#if isCurrent}} aria-current="step"{{/if}}>
         <header class="svi-phase-header">
             <span class="svi-phase-icon" aria-hidden="true"><i class="{{ icon }}"></i></span>
@@ -33,10 +34,10 @@
         <p class="svi-compact">{{ compact }}</p>
         {{else}}
         {{#unless isEmpty}}
-        <ol class="plain svi-members">
+        <div class="plain svi-members">
             {{#each rows}}
             {{#if isGroup}}
-            <li class="svi-group" data-group-key="{{ key }}">
+            <div role="group" aria-label="{{ name }}" class="svi-group" data-group-key="{{ key }}">
                 <div class="svi-group-row">
                     <button type="button" class="svi-chevron" data-action="sviToggleExpand" data-key="{{ key }}"
                             aria-expanded="{{ expanded }}" aria-label="{{ toggleLabel }}" data-tooltip="{{ toggleLabel }}">
@@ -55,20 +56,22 @@
                 {{#if expanded}}
                 <ol class="plain svi-children">{{#each children}}{{> "modules/sc-venaerys-initiative/templates/combat-tracker/row.hbs"}}{{/each}}</ol>
                 {{/if}}
-            </li>
+            </div>
             {{else}}
+            <ol class="plain svi-single-member">
             {{> "modules/sc-venaerys-initiative/templates/combat-tracker/row.hbs"}}
+            </ol>
             {{/if}}
             {{/each}}
-        </ol>
+        </div>
         {{/unless}}
         {{/if}}
-    </li>
+    </div>
     {{/if}}
     {{/each}}
 
     {{#if svi.hasPending}}
-    <li class="sc-venaerys-initiative svi-phase svi-pending" data-theme="{{ @root.sviTheme }}" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}">
+    <div role="group" class="sc-venaerys-initiative svi-phase svi-pending" data-theme="{{ @root.sviTheme }}" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}">
         <header class="svi-phase-header">
             <span class="svi-phase-icon" aria-hidden="true"><i class="fa-solid fa-dice-d20"></i></span>
             <span class="svi-phase-name">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.AwaitingRoll" }}</span>
@@ -80,6 +83,6 @@
             {{> "modules/sc-venaerys-initiative/templates/combat-tracker/row.hbs"}}
             {{/each}}
         </ol>
-    </li>
+    </div>
     {{/if}}
-</ol>
+</div>
