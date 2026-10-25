@@ -127,6 +127,7 @@ export default class CombatSnapshot {
       hasToken: !!token,
       disposition: Number.isInteger(token?.disposition) ? token.disposition : null,
       groupKey: token?.baseActor?.id ?? combatant.actorId ?? null,
+      extraTurnOf: typeof flags[COMBATANT_FLAGS.extraTurnOf] === "string" ? flags[COMBATANT_FLAGS.extraTurnOf] : null,
     };
   }
 }

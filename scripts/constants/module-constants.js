@@ -2,6 +2,9 @@ export const MODULE_ID = "sc-venaerys-initiative";
 export const I18N_ROOT = "SC_VENAERYS_INITIATIVE";
 export const TEMPLATE_ROOT = `modules/${MODULE_ID}/templates`;
 
+/** The module's stylesheets, in load order; StyleLoader adds them to the page (never the manifest). */
+export const STYLESHEETS = Object.freeze(["styles/tokens.css", "styles/themes.css", "styles/combat-tracker.css", "styles/phase-config.css"]);
+
 /** Every write the module makes carries this operation option: `{[OPERATION_KEY]: {reason}}`. */
 export const OPERATION_KEY = MODULE_ID;
 export const SOCKET_NAME = `module.${MODULE_ID}`;
@@ -35,6 +38,7 @@ export const REASONS = Object.freeze({
   natural: "natural",
   marker: "marker",
   half: "half",
+  extraTurn: "extraTurn",
 });
 
 export const SETTINGS = Object.freeze({
@@ -61,6 +65,8 @@ export const SETTINGS = Object.freeze({
   customAccent: "customAccent",
   customBackground: "customBackground",
   customText: "customText",
+  criticalExtraTurn: "criticalExtraTurn",
+  defeatedDisplay: "defeatedDisplay",
 });
 
 /** Combat flags. */
@@ -87,6 +93,7 @@ export const COMBATANT_FLAGS = Object.freeze({
   done: "done",
   moved: "moved",
   natural: "natural",
+  extraTurnOf: "extraTurnOf",
 });
 
 /** `event` is an event marker: a combatant with no actor that the GM adds to an event phase. */
@@ -129,6 +136,15 @@ export const NATURAL_RULES = Object.freeze({ none: "none", autoSuccess: "autoSuc
 
 /** A roll's extreme result, read by the system adapter (a natural 20 or 1, matching duality dice, a d100 01). */
 export const CRITICALS = Object.freeze({ critical: "critical", fumble: "fumble" });
+
+/**
+ * How the tracker shows a defeated combatant: struck through for everyone, or
+ * left out of the players' tracker, or out of everyone's (crowds of minions).
+ */
+export const DEFEATED_DISPLAY = Object.freeze({ strike: "strike", hidePlayers: "hidePlayers", hideAll: "hideAll" });
+
+/** The rounds a critical player acts in both players' phases: never, the first only, or every round. */
+export const EXTRA_TURN_ROUNDS = Object.freeze({ off: "off", firstRound: "firstRound", everyRound: "everyRound" });
 
 /** Which phases split into a movement half and an actions half; event phases never do. */
 export const SPLIT_MODES = Object.freeze({ off: "off", players: "players", all: "all" });

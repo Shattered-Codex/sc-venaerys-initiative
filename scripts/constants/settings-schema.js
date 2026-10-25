@@ -1,4 +1,4 @@
-import { DC_RANGE, DC_SOURCES, NATURAL_RULES, PROMPT_IMAGES, ROLL_SOURCES, SETTINGS, SPLIT_MODES } from "./module-constants.js";
+import { DC_RANGE, DC_SOURCES, DEFEATED_DISPLAY, EXTRA_TURN_ROUNDS, NATURAL_RULES, PROMPT_IMAGES, ROLL_SOURCES, SETTINGS, SPLIT_MODES } from "./module-constants.js";
 import { DEFAULT_PHASES } from "./default-phases.js";
 import { normalizeBannerThemes } from "../helpers/banner-themes.js";
 import { normalizePlan } from "../helpers/phase-plan.js";
@@ -32,6 +32,7 @@ export const SETTINGS_SCHEMA = Object.freeze([
   { key: SETTINGS.phaseTurnMarkers, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: "markers" },
   { key: SETTINGS.splitPhases, scope: "world", type: "choice", choices: Object.values(SPLIT_MODES), default: SPLIT_MODES.off, tab: "world", section: "combat", react: null },
   { key: SETTINGS.hideEmptyPhases, scope: "world", type: "boolean", default: false, tab: "world", section: "combat", react: "view" },
+  { key: SETTINGS.defeatedDisplay, scope: "world", type: "choice", choices: Object.values(DEFEATED_DISPLAY), default: DEFEATED_DISPLAY.strike, tab: "world", section: "combat", react: "view" },
   { key: SETTINGS.suggestFromSheet, scope: "world", type: "boolean", default: true, tab: "world", section: "combat", react: null },
   { key: SETTINGS.rollSource, scope: "world", type: "choice", choices: Object.values(ROLL_SOURCES), default: ROLL_SOURCES.system, tab: "world", section: "roll", react: null },
   // Empty means the system adapter's own default formula.
@@ -43,6 +44,8 @@ export const SETTINGS_SCHEMA = Object.freeze([
   { key: SETTINGS.showDcToPlayers, scope: "world", type: "boolean", default: false, tab: "world", section: "dc", react: "view" },
   { key: SETTINGS.natural20, scope: "world", type: "choice", choices: [NATURAL_RULES.none, NATURAL_RULES.autoSuccess, NATURAL_RULES.oneDegree], default: NATURAL_RULES.autoSuccess, tab: "world", section: "roll", react: null },
   { key: SETTINGS.natural1, scope: "world", type: "choice", choices: [NATURAL_RULES.none, NATURAL_RULES.autoFail, NATURAL_RULES.oneDegree], default: NATURAL_RULES.autoFail, tab: "world", section: "roll", react: null },
+  // A critical on the roll also grants a turn in the other players' phase, in the first round only.
+  { key: SETTINGS.criticalExtraTurn, scope: "world", type: "choice", choices: Object.values(EXTRA_TURN_ROUNDS), default: EXTRA_TURN_ROUNDS.off, tab: "world", section: "roll", react: "extraTurns" },
   { key: SETTINGS.openOnStart, scope: "client", type: "boolean", default: true, tab: "client", section: "window", react: null },
   { key: SETTINGS.rollPrompt, scope: "client", type: "boolean", default: true, tab: "client", section: "window", react: null },
   { key: SETTINGS.phaseTemplate, scope: "world", type: "array", default: DEFAULT_PHASES, tab: null, section: null, react: null },

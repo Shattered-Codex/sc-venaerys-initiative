@@ -52,6 +52,8 @@ describe("settings schema", () => {
       customAccent: ["world", "#1fa971"],
       customBackground: ["world", "#15181a"],
       customText: ["world", "#e6e8ea"],
+      criticalExtraTurn: ["world", "off"],
+      defeatedDisplay: ["world", "strike"],
     };
     assert.deepEqual(SETTINGS_SCHEMA.map((e) => e.key).sort(), Object.keys(expected).sort());
     for (const [key, [scope, value]] of Object.entries(expected)) {
@@ -63,6 +65,8 @@ describe("settings schema", () => {
     assert.deepEqual(schemaEntry("dcSource").choices, ["manual", "baseCr"]);
     assert.deepEqual(schemaEntry("natural20").choices, ["none", "autoSuccess", "oneDegree"]);
     assert.deepEqual(schemaEntry("natural1").choices, ["none", "autoFail", "oneDegree"]);
+    assert.deepEqual(schemaEntry("defeatedDisplay").choices, ["strike", "hidePlayers", "hideAll"]);
+    assert.deepEqual(schemaEntry("criticalExtraTurn").choices, ["off", "firstRound", "everyRound"]);
   });
 
   it("labels every choice of the generated select rows in both languages", async () => {

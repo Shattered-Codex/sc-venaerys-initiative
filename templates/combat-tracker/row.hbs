@@ -6,6 +6,7 @@
         <div class="sc-venaerys-initiative svi-row-notes{{#if svi.done}} svi-done{{/if}}" data-theme="{{ @root.sviTheme }}">
             {{#if svi.deferred}}<span class="svi-sub svi-deferred"><i class="fa-solid fa-clock-rotate-left" inert></i>{{ svi.deferred }}</span>{{/if}}
             {{#if svi.noRoll}}<span class="svi-sub"><i class="fa-solid fa-dice-d20" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.NoRoll" }}</span>{{/if}}
+            {{#if svi.extraTurn}}<span class="svi-sub svi-extra-turn" role="img" aria-label="{{ svi.extraTurn.label }}" data-tooltip="{{ svi.extraTurn.label }}"><i class="fa-solid fa-bolt" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.ExtraTurn" }}</span>{{/if}}
             {{#if svi.skipButton}}<span class="svi-sub svi-when-done"><i class="fa-solid fa-forward" inert></i>{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Skipped" }}</span>{{/if}}
         </div>
     </div>
@@ -35,7 +36,8 @@
         {{/if}}
     </div>
 
-    {{!-- Second line: the core's controls; third line: the module's (only when it has any). --}}
+    {{!-- Second line: the core's controls, then the module's; the module's wrap below only when the row is too narrow. --}}
+    <div class="svi-row-line">
     <div class="combatant-controls svi-row-icons">
         {{#if @root.user.isGM}}
         <button type="button" class="inline-control combatant-control icon fa-solid fa-eye-slash {{#if hidden}}active{{/if}}"
@@ -60,10 +62,19 @@
     <div class="sc-venaerys-initiative svi-row-controls{{#if svi.done}} svi-done{{/if}}" data-theme="{{ @root.sviTheme }}">
         {{#if svi.pointer}}<span class="svi-flag" role="img" aria-label="{{ svi.pointer.label }}" data-tooltip="{{ svi.pointer.label }}"><i class="fa-solid fa-hourglass-end" inert></i></span>{{/if}}
         {{#if svi.pinned}}<span class="svi-flag svi-flag-accent" role="img" aria-label="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Pinned" }}" data-tooltip="{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Pinned" }}"><i class="fa-solid fa-thumbtack" inert></i></span>{{/if}}
+        {{!-- The GM's phase select: a small icon over an invisible native select, so the row keeps room for the turn's button. --}}
+        {{#if svi.select}}
+        <span class="svi-phase-pick" data-tooltip="{{ svi.select.label }}">
+            <i class="fa-solid fa-arrow-right-arrow-left" inert></i>
+            <select class="svi-phase-select" data-action="sviNoop" name="svi-phase-{{ id }}" aria-label="{{ svi.select.label }}">
+                {{#each svi.select.options}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
+            </select>
+        </span>
+        {{/if}}
         {{#if svi.doneButton}}
         <button type="button" class="svi-done-btn{{#if svi.doneButton.big}} svi-big{{/if}}" data-action="sviToggleDone" name="svi-done-{{ id }}"
                 aria-pressed="{{ svi.doneButton.pressed }}" aria-label="{{ svi.doneButton.label }}" data-tooltip="{{ svi.doneButton.label }}">
-            <i class="fa-regular fa-circle svi-when-todo" inert></i><i class="fa-solid fa-circle-check svi-when-done" inert></i>
+            <i class="fa-solid fa-check svi-when-todo" inert></i><i class="fa-solid fa-circle-check svi-when-done" inert></i>
             <span class="svi-when-todo">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.MarkDone" }}</span>
             <span class="svi-when-done">{{ localize "SC_VENAERYS_INITIATIVE.Tracker.Done" }}</span>
         </button>
@@ -98,10 +109,6 @@
             <i class="fa-solid fa-forward" inert></i>
         </button>
         {{/if}}
-        {{#if svi.select}}
-        <select class="svi-phase-select" data-action="sviNoop" name="svi-phase-{{ id }}" aria-label="{{ svi.select.label }}" data-tooltip="{{ svi.select.label }}">
-            {{#each svi.select.options}}<option value="{{ value }}"{{#if selected}} selected{{/if}}>{{ label }}</option>{{/each}}
-        </select>
-        {{/if}}
+    </div>
     </div>
 </li>

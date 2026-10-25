@@ -38,6 +38,7 @@ import { firstPlayerPhaseRank, phaseRank } from "./phase-plan.js";
  * @property {boolean} hasToken
  * @property {number|null} disposition
  * @property {string|null} groupKey               identical creatures share it
+ * @property {string|null} [extraTurnOf]          an extra turn: the id of the combatant it belongs to
  *
  * @typedef {object} CombatView
  * @property {string} id

@@ -18,7 +18,7 @@
         "Hint": "Combates novos começam com a iniciativa em fases ligada. Dá para trocar em cada combate antes de ele começar."
       },
       "autoAdvance": {
-        "Name": "Avançar a fase automaticamente quando todos marcarem Feito",
+        "Name": "Avançar a fase automaticamente quando todos encerrarem o turno",
         "Hint": "Desligado, o Mestre avança cada fase na mão."
       },
       "defaultDc": {
@@ -71,9 +71,27 @@
           "oneDegree": "Um grau pior"
         }
       },
+      "criticalExtraTurn": {
+        "Name": "Crítico: agir em Rápida e Lenta",
+        "Hint": "Um jogador cuja rolagem é crítica age nas duas fases dos jogadores, Rápida e Lenta. O segundo turno é uma linha extra do mesmo personagem, com o próprio marcador de feito. Só a primeira rodada: a linha some quando a rodada 2 começa. Todas as rodadas: ela fica enquanto a iniciativa mantiver o crítico.",
+        "Choices": {
+          "off": "Nunca",
+          "firstRound": "Só a primeira rodada",
+          "everyRound": "Todas as rodadas"
+        }
+      },
       "hideEmptyPhases": {
         "Name": "Ocultar fases vazias",
         "Hint": "O tracker do Mestre deixa de fora as fases sem ninguém. As fases de evento continuam, para ainda dar para adicionar um marcador. Para mover alguém para uma fase oculta, use o seletor de fase na linha."
+      },
+      "defeatedDisplay": {
+        "Name": "Combatentes derrotados",
+        "Hint": "Como o tracker mostra um combatente derrotado. Ocultar ajuda com muitos lacaios; o Mestre ainda desfaz a derrota pelo HUD do token.",
+        "Choices": {
+          "strike": "Riscado",
+          "hidePlayers": "Oculto dos jogadores (riscado para o Mestre)",
+          "hideAll": "Oculto de todos"
+        }
       },
       "customAccent": {
         "Name": "Destaque",
@@ -121,7 +139,7 @@
       },
       "splitPhases": {
         "Name": "Movimento e ações",
-        "Hint": "Divide cada fase em duas: todos se movem primeiro e marcam Moveu, depois todos agem e marcam Feito. O deslocamento que sobrou não pode ser usado na metade de ações. Fases de evento nunca são divididas. Vale para combates novos.",
+        "Hint": "Divide cada fase em duas: todos se movem primeiro e marcam Moveu, depois todos agem e apertam Encerrar turno. O deslocamento que sobrou não pode ser usado na metade de ações. Fases de evento nunca são divididas. Vale para combates novos.",
         "Choices": {
           "off": "Desligada",
           "players": "Fases dos jogadores",
@@ -130,7 +148,7 @@
       },
       "phaseTurnMarkers": {
         "Name": "Marcador de turno na fase inteira",
-        "Hint": "O marcador de turno do Foundry aparece embaixo de todos os membros da fase atual que ainda estão agindo, e sai de cada um quando ele marca Feito. Desligado: só o combatente que o Foundry considera o turno atual tem o marcador."
+        "Hint": "O marcador de turno do Foundry aparece embaixo de todos os membros da fase atual que ainda estão agindo, e sai de cada um quando ele encerra o turno. Desligado: só o combatente que o Foundry considera o turno atual tem o marcador."
       }
     },
     "Config": {
@@ -295,7 +313,7 @@
       },
       "TurnEvents": {
         "Title": "Eventos de turno",
-        "Body": "O início de turno automático (recargas, dano contínuo, reação) acontece para todos os membros no começo da fase. O fim de turno automático só acontece para o membro marcado com a ampulheta (só o Mestre vê), no fim da fase. Os demais resolvem os efeitos de fim de turno (testes de resistência, efeitos que duram até o fim do próximo turno) à mão, ao marcar Feito."
+        "Body": "O início de turno automático (recargas, dano contínuo, reação) acontece para todos os membros no começo da fase. O fim de turno automático só acontece para o membro marcado com a ampulheta (só o Mestre vê), no fim da fase. Os demais resolvem os efeitos de fim de turno (testes de resistência, efeitos que duram até o fim do próximo turno) à mão, ao apertar Encerrar turno."
       },
       "Unconfirmed": {
         "Title": "Início sem confirmação",
@@ -326,21 +344,23 @@
       "NoCombatants": "sem combatentes",
       "GmOnly": "só o Mestre vê",
       "Done": "Feito",
-      "MarkDone": "Marcar feito",
-      "MarkDoneLabel": "Marcar {name} como feito em {phase}",
-      "UnmarkDoneLabel": "Desmarcar {name} como feito em {phase}",
+      "MarkDone": "Encerrar turno",
+      "MarkDoneLabel": "Encerrar o turno de {name} em {phase}",
+      "UnmarkDoneLabel": "Reabrir o turno de {name} em {phase}",
       "Acting": "Agindo",
       "Hidden": "Oculto",
       "Defeated": "Derrotado",
       "Pinned": "Fase fixada pelo Mestre",
       "NextRound": "Na próxima rodada: {phase}",
       "NoRoll": "Sem rolagem",
+      "ExtraTurn": "Turno extra",
+      "ExtraTurnLabel": "{name} tirou um crítico e também age em {phase} nesta rodada.",
       "NoInitiative": "Não rola iniciativa",
       "Skip": "Pular nesta rodada",
       "SkipLabel": "Pular {name} nesta rodada",
       "UnskipLabel": "Deixar de pular {name} nesta rodada",
       "Skipped": "Pulado nesta rodada",
-      "PhaseSelectLabel": "Fase de {name} neste combate",
+      "PhaseSelectLabel": "Fase de {name} neste combate: {phase}",
       "Automatic": "Automático",
       "AwaitingRoll": "Aguardando rolagem",
       "YouPending": "Você ainda não rolou iniciativa. Role pelo tracker ou pela ficha.",
@@ -368,7 +388,7 @@
       "MarkMovedLabel": "Marcar que {name} terminou de se mover em {phase}",
       "UnmarkMovedLabel": "Desmarcar o movimento de {name} em {phase}",
       "Moving": "Movendo",
-      "NotStartedHint": "O combate ainda não começou. Quando o Mestre iniciar, marque Feito aqui quando o seu turno na sua fase acabar.",
+      "NotStartedHint": "O combate ainda não começou. Quando o Mestre iniciar, aperte Encerrar turno aqui quando o seu turno na sua fase acabar.",
       "RollPlayers": "Rolar PJs"
     },
     "Gm": {
@@ -387,7 +407,7 @@
       "Back": "Voltar fase",
       "BackLabel": "Voltar de {phase} para a fase anterior",
       "Help": "Ajuda",
-      "NotStartedHint": "O combate ainda não começou. Clique em Iniciar Combate, no rodapé do tracker: a fase atual passa a mostrar Feito em cada membro, e as fases seguintes mostram Pular.",
+      "NotStartedHint": "O combate ainda não começou. Clique em Iniciar Combate, no rodapé do tracker: a fase atual passa a mostrar Encerrar turno em cada membro, e as fases seguintes mostram Pular.",
       "AwaitingRollsOne": "Aguardando 1 rolagem",
       "AwaitingRollsMany": "Aguardando {count} rolagens",
       "AdvanceAnyway": "Avançar mesmo assim",

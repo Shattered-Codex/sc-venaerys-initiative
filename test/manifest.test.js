@@ -3,6 +3,7 @@ import { access, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
+import { STYLESHEETS } from "../scripts/constants/module-constants.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const manifest = JSON.parse(await readFile(join(root, "module.json"), "utf8"));
@@ -15,14 +16,16 @@ describe("module manifest", () => {
   });
 
   it("points only at files that exist", async () => {
-    const listed = [...manifest.esmodules, ...manifest.styles, ...manifest.languages.map((l) => l.path)];
+    const listed = [...manifest.esmodules, ...STYLESHEETS, ...manifest.languages.map((l) => l.path)];
     for (const path of listed) await access(join(root, path));
     assert.deepEqual(manifest.languages.map((l) => l.lang).sort(), ["en", "pt-BR"]);
   });
 
-  it("lists every stylesheet the module ships", async () => {
+  it("loads every stylesheet the module ships, and none through the manifest", async () => {
     const sheets = (await readdir(join(root, "styles"))).filter((f) => f.endsWith(".css")).map((f) => `styles/${f}`);
-    assert.deepEqual([...manifest.styles].sort(), sheets.sort());
+    assert.deepEqual([...STYLESHEETS].sort(), sheets.sort());
+    // Manifest styles land in Foundry's "modules" cascade layer, where any unlayered theme rule beats them.
+    assert.equal(manifest.styles, undefined);
   });
 
   it("depends on no system and no other module", () => {
@@ -45,7 +48,7 @@ describe("stylesheets", () => {
   }
 
   it("scopes every selector under .sc-venaerys-initiative with svi-* classes and --svi-* variables", async () => {
-    for (const file of manifest.styles) {
+    for (const file of STYLESHEETS) {
       const css = await readFile(join(root, file), "utf8");
       for (const selector of selectors(css)) {
         assert.ok(selector.startsWith(".sc-venaerys-initiative"), `${file}: ${selector}`);
@@ -60,10 +63,28 @@ describe("stylesheets", () => {
   });
 
   it("loads nothing from outside", async () => {
-    for (const file of manifest.styles) {
+    for (const file of STYLESHEETS) {
       const css = await readFile(join(root, file), "utf8");
       assert.doesNotMatch(css, /url\(\s*["']?https?:/i, file);
       assert.doesNotMatch(css, /@import/i, file);
+    }
+  });
+});
+
+describe("StyleLoader", () => {
+  it("adds every stylesheet once, unlayered, with the version against stale caches", async () => {
+    const { default: StyleLoader } = await import("../scripts/services/StyleLoader.js");
+    const appended = [];
+    const head = { append: (el) => appended.push(el), querySelector: (sel) => appended.find((el) => sel === `link#${el.id}`) ?? null };
+    const previous = globalThis.document;
+    globalThis.document = { head, createElement: () => ({}) };
+    try {
+      StyleLoader.inject({ version: "1.0.5" });
+      StyleLoader.inject({ version: "1.0.5" });
+      assert.deepEqual(appended.map((el) => el.href), STYLESHEETS.map((f) => `modules/sc-venaerys-initiative/${f}?v=1.0.5`));
+      assert.ok(appended.every((el) => el.rel === "stylesheet"));
+    } finally {
+      globalThis.document = previous;
     }
   });
 });

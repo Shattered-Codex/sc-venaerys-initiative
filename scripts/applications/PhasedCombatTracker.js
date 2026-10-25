@@ -4,10 +4,15 @@ import CombatPhaseProjector from "../services/CombatPhaseProjector.js";
 import CombatSnapshot from "../services/CombatSnapshot.js";
 import ErrorGuard from "../services/ErrorGuard.js";
 import FoundryCompat from "../services/FoundryCompat.js";
+import FrameScheduler from "../services/FrameScheduler.js";
 import ThemeApplier from "../services/ThemeApplier.js";
 
 /** The drag payload type of a combatant row; the canvas and sheets ignore it. */
 const DRAG_TYPE = `application/x-${MODULE_ID}-combatant`;
+
+/** The body class Carolingian UI sets while its combat carousel is on, and its "no combatants" message. */
+const CAROUSEL_BODY_CLASS = "crlngn-combat-tracker";
+const CAROUSEL_EMPTY_MESSAGE = ".crlngn-no-combatants";
 
 const TEMPLATES = Object.freeze({
   tracker: `${TEMPLATE_ROOT}/combat-tracker/tracker.hbs`,
@@ -138,6 +143,21 @@ export default class PhasedCombatTracker {
     if (phaseId) PhasedCombatTracker.#services.commands.execute("assign", combat, { combatantId, phaseId: phaseId === "auto" ? null : phaseId });
   }
 
+  /**
+   * Carolingian UI says "No combatants in encounter" when its tracker list has
+   * no row of its own; with phases the rows sit inside the phase sections. Its
+   * listener may run after this one, so the message is hidden on the next
+   * frame, and only while the phased combat does have combatants.
+   */
+  static hideCarouselEmptyMessage(app) {
+    const combat = app?.viewed ?? null;
+    if (!CombatSnapshot.isPhased(combat) || !combat.turns?.length) return;
+    FrameScheduler.requestFrame(() => {
+      const message = app.element?.querySelector?.(CAROUSEL_EMPTY_MESSAGE);
+      if (message) message.style.display = "none";
+    });
+  }
+
   /** Done marks changed and nothing else: rows, toggles and counters are patched in place, on every instance. */
   static patchDone(combatantIds) {
     const apps = PhasedCombatTracker.instances();
@@ -151,7 +171,11 @@ export default class PhasedCombatTracker {
       for (const phase of model.phases) {
         if (phase.waitingForGm) continue;
         element.querySelector(`[data-phase-id="${phase.id}"]`)?.classList.toggle("svi-complete", phase.complete);
-        if (phase.count) element.querySelector(`[data-phase-count="${phase.id}"]`)?.replaceChildren(phase.count);
+        const count = phase.count ? element.querySelector(`[data-phase-count="${phase.id}"]`) : null;
+        if (count) {
+          count.replaceChildren(phase.count);
+          count.dataset.countShort = phase.countShort;
+        }
         for (const row of phase.rows ?? []) {
           if (row.isGroup) element.querySelector(`[data-group-key="${row.key}"] .svi-group-count`)?.replaceChildren(row.count);
         }
@@ -288,6 +312,18 @@ export default class PhasedCombatTracker {
       async _onRender(context, options) {
         await super._onRender?.(context, options);
         this.#sviRenderRollPlayers(this.sviPhased ? context.svi?.rollPlayers : null);
+        this.#sviMarkCarousel();
+      }
+
+      /**
+       * Carolingian UI's combat carousel turns the tracker popout into a row of
+       * portrait cards; its rules hang on a body class and the popout's id. The
+       * module's roots get a flag there, so the phases switch to a carousel of
+       * their own: phases side by side, each with its cards in a row.
+       */
+      #sviMarkCarousel() {
+        const carousel = this.element?.id === "combat-popout" && !!globalThis.document?.body?.classList.contains(CAROUSEL_BODY_CLASS);
+        for (const root of this.element?.querySelectorAll?.(`.${MODULE_ID}`) ?? []) root.toggleAttribute("data-svi-carousel", carousel);
       }
 
       _attachFrameListeners() {

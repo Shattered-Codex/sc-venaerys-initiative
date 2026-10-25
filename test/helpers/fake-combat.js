@@ -116,6 +116,27 @@ export function fakeCombat({ id = "combat", round = 1, turn = 0, flags = {}, com
       else if (current) this.turn = this.turns.indexOf(current);
       return updates;
     },
+    /** Like the core, creating or deleting combatants keeps the current one current. */
+    async createEmbeddedDocuments(type, data, options = {}) {
+      this.calls.push({ type: "create", data: structuredClone(data), options });
+      const current = this.combatant;
+      const created = data.map(({ flags, ...fields }, index) => {
+        const combatant = fakeCombatant({ id: `new${this.turns.length + index}`, flags: flags?.[MODULE_ID] ?? {}, ...fields });
+        combatant.parent = this;
+        return combatant;
+      });
+      this.turns.push(...created);
+      sortTurns(this);
+      if (current) this.turn = this.turns.indexOf(current);
+      return created;
+    },
+    async deleteEmbeddedDocuments(type, ids, options = {}) {
+      this.calls.push({ type: "delete", ids: [...ids], options });
+      const current = this.combatant;
+      this.turns = this.turns.filter((c) => !ids.includes(c.id));
+      if (current && !ids.includes(current.id)) this.turn = this.turns.indexOf(current);
+      return ids;
+    },
     async startCombat() {
       this.calls.push({ type: "startCombat" });
       return this.update({ round: 1, turn: 0 });
