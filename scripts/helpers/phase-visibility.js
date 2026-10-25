@@ -1,3 +1,4 @@
+import { DEFEATED_DISPLAY } from "../constants/module-constants.js";
 import { isEventPhase, phaseRank } from "./phase-plan.js";
 import { currentPhaseId, isPending } from "./phase-progression.js";
 
@@ -9,6 +10,8 @@ import { currentPhaseId, isPending } from "./phase-progression.js";
  * "Waiting for the GM" with no name and no members. The GM sees everything;
  * with `hideEmptyPhases`, the GM's empty phases disappear too, except the
  * event phases, whose "+" is the only way to put a marker in them.
+ * `defeatedDisplay` leaves defeated combatants out of the players' view, or out
+ * of everyone's; struck through (the default), they stay.
  */
 
 function phaseState(view, rank, currentRank) {
@@ -20,10 +23,11 @@ function phaseState(view, rank, currentRank) {
 /**
  * @returns {{showDc: boolean, phases: Array<{phase?: object, state: string, members?: object[], waitingForGm: boolean}>, pending: object[]}}
  */
-export function visibleCombat(view, { isGM, showDcToPlayers, hideEmptyPhases = false }) {
+export function visibleCombat(view, { isGM, showDcToPlayers, hideEmptyPhases = false, defeatedDisplay = DEFEATED_DISPLAY.strike }) {
   const current = currentPhaseId(view);
   const currentRank = current === null ? null : phaseRank(view.plan, current);
-  const sees = (combatant) => isGM || combatant.visible;
+  const hidesDefeated = defeatedDisplay === DEFEATED_DISPLAY.hideAll || (defeatedDisplay === DEFEATED_DISPLAY.hidePlayers && !isGM);
+  const sees = (combatant) => (isGM || combatant.visible) && !(hidesDefeated && combatant.isDefeated);
   const phases = [];
   view.plan.forEach((phase, rank) => {
     const state = phaseState(view, rank, currentRank);

@@ -37,6 +37,33 @@ describe("GmBusyProbe", () => {
     assert.equal(timers.length, 0);
   });
 
+  it("polls through the global timers without rebinding them to the probe", () => {
+    // Browsers reject setTimeout/clearTimeout called with a receiver other than window.
+    const realSet = globalThis.setTimeout;
+    const realClear = globalThis.clearTimeout;
+    const scheduled = [];
+    globalThis.setTimeout = function (fn) {
+      if (this !== undefined && this !== globalThis) throw new TypeError("Illegal invocation");
+      scheduled.push(fn);
+      return scheduled.length;
+    };
+    globalThis.clearTimeout = function () {
+      if (this !== undefined && this !== globalThis) throw new TypeError("Illegal invocation");
+    };
+    try {
+      const realProbe = new GmBusyProbe();
+      openDialog();
+      let fired = 0;
+      realProbe.request("c", () => fired++);
+      assert.equal(scheduled.length, 1);
+      realProbe.cancel("c");
+      assert.equal(fired, 0);
+    } finally {
+      globalThis.setTimeout = realSet;
+      globalThis.clearTimeout = realClear;
+    }
+  });
+
   it("ignores the main menu and counts legacy dialogs", () => {
     foundry.applications.instances.set("menu", { id: "menu", options: { tag: "dialog" } });
     assert.equal(probe.isBusy(), false);

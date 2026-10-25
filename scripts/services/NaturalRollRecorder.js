@@ -24,7 +24,8 @@ export default class NaturalRollRecorder {
     for (const combat of game.combats ?? []) {
       if (!CombatSnapshot.isPhased(combat)) continue;
       const bySpeaker = speaker?.token ? combat.getCombatantsByToken(speaker.token) : combat.getCombatantsByActor(speaker?.actor);
-      found.push(...bySpeaker.filter((c) => c.isOwner && c.initiative === total));
+      // An extra turn shares the token and the total; the natural belongs to the original.
+      found.push(...bySpeaker.filter((c) => c.isOwner && c.initiative === total && !CombatSnapshot.flagsOf(c)[COMBATANT_FLAGS.extraTurnOf]));
     }
     return found;
   }

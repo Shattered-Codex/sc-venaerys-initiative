@@ -9,14 +9,14 @@
     <div role="group" class="sc-venaerys-initiative svi-phase svi-state-{{ state }}{{#if isEmpty}} svi-phase-empty{{/if}}{{#if complete}} svi-complete{{/if}}"
         data-theme="{{ @root.sviTheme }}" data-phase-id="{{ id }}" style="--svi-phase-color: {{ color }}" aria-label="{{ name }}"{{#if isCurrent}} aria-current="step"{{/if}}>
         <header class="svi-phase-header">
-            <span class="svi-phase-icon" aria-hidden="true"><i class="{{ icon }}"></i></span>
+            <span class="svi-phase-icon" aria-hidden="true" data-tooltip="{{ name }}"><i class="{{ icon }}"></i></span>
             <span class="svi-phase-name">{{ name }}</span>
             {{#if isCurrent}}<span class="svi-now"><i class="fa-solid fa-play" inert></i>{{ nowLabel }}</span>{{/if}}
             {{#if isPast}}{{#unless isEmpty}}<span class="svi-flag" role="img" aria-label="{{ pastLabel }}" data-tooltip="{{ pastLabel }}"><i class="fa-solid fa-circle-check" inert></i></span>{{/unless}}{{/if}}
             {{#if isEmpty}}<span class="svi-empty-label">{{ emptyLabel }}</span>{{/if}}
             <span class="svi-spacer"></span>
             {{#if isEmpty}}<span class="svi-gm-only"><i class="fa-solid fa-eye" inert></i>{{ gmOnlyLabel }}</span>{{/if}}
-            {{#if count}}<span class="svi-count" data-phase-count="{{ id }}">{{ count }}</span>{{/if}}
+            {{#if count}}<span class="svi-count" data-phase-count="{{ id }}" data-count-short="{{ countShort }}">{{ count }}</span>{{/if}}
             {{#if addMarker}}
             <button type="button" class="svi-icon-btn svi-add-marker" data-action="sviAddMarker" data-phase-id="{{ id }}"
                     aria-label="{{ addMarker.label }}" data-tooltip="{{ addMarker.label }}">

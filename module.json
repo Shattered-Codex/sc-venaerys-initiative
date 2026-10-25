@@ -31,12 +31,6 @@
   "esmodules": [
     "scripts/module.js"
   ],
-  "styles": [
-    "styles/tokens.css",
-    "styles/themes.css",
-    "styles/combat-tracker.css",
-    "styles/phase-config.css"
-  ],
   "languages": [
     {
       "lang": "en",

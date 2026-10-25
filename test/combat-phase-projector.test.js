@@ -47,6 +47,7 @@ describe("CombatPhaseProjector for a player", () => {
     const model = project(view, false);
     const enemies = model.phases.find((p) => p.id === "enemies");
     assert.equal(enemies.count, 'F(SC_VENAERYS_INITIATIVE.Tracker.DoneCount:{"done":0,"total":1})');
+    assert.equal(enemies.countShort, "0/1");
     const fast = model.phases.find((p) => p.id === "fast");
     assert.equal(fast.compact, "Ana, Bruno");
   });
@@ -76,6 +77,8 @@ describe("CombatPhaseProjector for the GM", () => {
     assert.equal(bruno.pinned, true);
     assert.match(bruno.deferred, /NextRound/);
     assert.equal(bruno.select.options.find((o) => o.selected).value, "slow");
+    // The select is an icon on the row: its label names the phase it holds.
+    assert.match(bruno.select.label, /PhaseSelectLabel.*"phase":"[^"]+"/);
     assert.ok(model.gm);
     assert.equal(model.dc.value, 15);
   });

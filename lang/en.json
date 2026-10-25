@@ -18,7 +18,7 @@
         "Hint": "New combats start with phased initiative turned on. It can be switched per combat before it starts."
       },
       "autoAdvance": {
-        "Name": "Advance the phase automatically when everyone marks Done",
+        "Name": "Advance the phase automatically when everyone ends their turn",
         "Hint": "When off, the GM advances every phase by hand."
       },
       "defaultDc": {
@@ -71,9 +71,27 @@
           "oneDegree": "One degree worse"
         }
       },
+      "criticalExtraTurn": {
+        "Name": "Critical: act in Fast and Slow",
+        "Hint": "A player whose roll is a critical acts in both players' phases, Fast and Slow. The second turn is an extra row of the same character with its own done mark. First round only: the row is removed when round 2 starts. Every round: it stays while the initiative keeps its critical.",
+        "Choices": {
+          "off": "Never",
+          "firstRound": "First round only",
+          "everyRound": "Every round"
+        }
+      },
       "hideEmptyPhases": {
         "Name": "Hide empty phases",
         "Hint": "The GM's tracker leaves out the phases with nobody in them. Event phases stay, so a marker can still be added. To move someone to a hidden phase, use the phase select on the row."
+      },
+      "defeatedDisplay": {
+        "Name": "Defeated combatants",
+        "Hint": "How the tracker shows a defeated combatant. Hiding helps with crowds of minions; the GM can still undo a defeat from the token HUD.",
+        "Choices": {
+          "strike": "Struck through",
+          "hidePlayers": "Hidden from players (struck through for the GM)",
+          "hideAll": "Hidden from everyone"
+        }
       },
       "customAccent": {
         "Name": "Accent",
@@ -121,7 +139,7 @@
       },
       "splitPhases": {
         "Name": "Movement and actions",
-        "Hint": "Splits each phase in two: everyone moves first and marks Moved, then everyone acts and marks Done. Leftover movement cannot be used in the actions half. Event phases never split. Applies to new combats.",
+        "Hint": "Splits each phase in two: everyone moves first and marks Moved, then everyone acts and presses End turn. Leftover movement cannot be used in the actions half. Event phases never split. Applies to new combats.",
         "Choices": {
           "off": "Off",
           "players": "Players' phases",
@@ -130,7 +148,7 @@
       },
       "phaseTurnMarkers": {
         "Name": "Turn marker on the whole phase",
-        "Hint": "Foundry's turn marker shows under every member of the current phase who is still acting, and leaves each one as they mark Done. Off: only the combatant Foundry treats as the current turn has it."
+        "Hint": "Foundry's turn marker shows under every member of the current phase who is still acting, and leaves each one as they end their turn. Off: only the combatant Foundry treats as the current turn has it."
       }
     },
     "Config": {
@@ -295,7 +313,7 @@
       },
       "TurnEvents": {
         "Title": "Turn events",
-        "Body": "Automatic start-of-turn effects (recharges, ongoing damage, reaction) happen for every member at the start of the phase. Automatic end-of-turn effects only happen for the member marked with the hourglass (GM only), at the end of the phase. Everyone else resolves end-of-turn effects (saving throws, effects that last until the end of their next turn) by hand when marking Done."
+        "Body": "Automatic start-of-turn effects (recharges, ongoing damage, reaction) happen for every member at the start of the phase. Automatic end-of-turn effects only happen for the member marked with the hourglass (GM only), at the end of the phase. Everyone else resolves end-of-turn effects (saving throws, effects that last until the end of their next turn) by hand when pressing End turn."
       },
       "Unconfirmed": {
         "Title": "Starting without confirmation",
@@ -326,21 +344,23 @@
       "NoCombatants": "no combatants",
       "GmOnly": "GM only",
       "Done": "Done",
-      "MarkDone": "Mark done",
-      "MarkDoneLabel": "Mark {name} done in {phase}",
-      "UnmarkDoneLabel": "Unmark {name} as done in {phase}",
+      "MarkDone": "End turn",
+      "MarkDoneLabel": "End {name}'s turn in {phase}",
+      "UnmarkDoneLabel": "Reopen {name}'s turn in {phase}",
       "Acting": "Acting",
       "Hidden": "Hidden",
       "Defeated": "Defeated",
       "Pinned": "Phase pinned by the GM",
       "NextRound": "Next round: {phase}",
       "NoRoll": "No roll",
+      "ExtraTurn": "Extra turn",
+      "ExtraTurnLabel": "{name} rolled a critical and also acts in {phase} this round.",
       "NoInitiative": "Doesn't roll initiative",
       "Skip": "Skip this round",
       "SkipLabel": "Skip {name} this round",
       "UnskipLabel": "Stop skipping {name} this round",
       "Skipped": "Skipped this round",
-      "PhaseSelectLabel": "Phase of {name} in this combat",
+      "PhaseSelectLabel": "Phase of {name} in this combat: {phase}",
       "Automatic": "Automatic",
       "AwaitingRoll": "Awaiting roll",
       "YouPending": "You haven't rolled initiative yet. Roll from the tracker or your sheet.",
@@ -368,7 +388,7 @@
       "MarkMovedLabel": "Mark that {name} finished moving in {phase}",
       "UnmarkMovedLabel": "Unmark {name}'s movement in {phase}",
       "Moving": "Moving",
-      "NotStartedHint": "The combat hasn't started yet. Once the GM starts it, mark Done here when your turn in your phase is over.",
+      "NotStartedHint": "The combat hasn't started yet. Once the GM starts it, press End turn here when your turn in your phase is over.",
       "RollPlayers": "Roll PCs"
     },
     "Gm": {
@@ -387,7 +407,7 @@
       "Back": "Previous phase",
       "BackLabel": "Go back from {phase} to the previous phase",
       "Help": "Help",
-      "NotStartedHint": "The combat hasn't started. Press Begin Combat at the bottom of the tracker: the current phase then shows Done on each member, and later phases show Skip.",
+      "NotStartedHint": "The combat hasn't started. Press Begin Combat at the bottom of the tracker: the current phase then shows End turn on each member, and later phases show Skip.",
       "AwaitingRollsOne": "Awaiting 1 roll",
       "AwaitingRollsMany": "Awaiting {count} rolls",
       "AdvanceAnyway": "Advance anyway",

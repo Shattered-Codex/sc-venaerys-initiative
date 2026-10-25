@@ -13,6 +13,7 @@ import {
   isPhaseComplete,
   pendingOf,
 } from "../helpers/phase-progression.js";
+import { isExtraTurn } from "../helpers/extra-turns.js";
 import { visibleCombat } from "../helpers/phase-visibility.js";
 
 const T = (key) => `${I18N_ROOT}.${key}`;
@@ -27,7 +28,7 @@ export default class CombatPhaseProjector {
   /**
    * @param {object} view                         CombatSnapshot.from(combat)
    * @param {{isGM: boolean}} user
-   * @param {{showDcToPlayers: boolean, autoAdvance: boolean, dcSource?: string, hideEmptyPhases?: boolean}} settings
+   * @param {{showDcToPlayers: boolean, autoAdvance: boolean, dcSource?: string, hideEmptyPhases?: boolean, defeatedDisplay?: string}} settings
    * @param {object} [options]
    * @param {(key: string) => string} options.localize
    * @param {(key: string, data: object) => string} options.format
@@ -39,7 +40,12 @@ export default class CombatPhaseProjector {
    */
   static project(view, user, settings, { localize, format, decimals = 2, waitingForDialog = false, expanded = new Set(), dcName = () => null, rollProblem = null }) {
     const isGM = !!user.isGM;
-    const visible = visibleCombat(view, { isGM, showDcToPlayers: settings.showDcToPlayers, hideEmptyPhases: settings.hideEmptyPhases });
+    const visible = visibleCombat(view, {
+      isGM,
+      showDcToPlayers: settings.showDcToPlayers,
+      hideEmptyPhases: settings.hideEmptyPhases,
+      defeatedDisplay: settings.defeatedDisplay,
+    });
     const phaseName = (id) => displayName(phaseById(view.plan, id), localize);
     const current = currentPhaseId(view);
     const half = currentHalf(view);
@@ -104,6 +110,8 @@ export default class CombatPhaseProjector {
       isPast,
       isEmpty: members.length === 0,
       count: showCount ? format(T(moving ? "Tracker.MovedCount" : "Tracker.DoneCount"), { done: isPast ? total : done, total }) : null,
+      // The bare "2/3", for the narrow phase tab of the carousel.
+      countShort: showCount ? `${isPast ? total : done}/${total}` : null,
       complete: state === "current" && (moving ? isMovementComplete(view, phase.id) : isPhaseComplete(view, phase.id)),
       half,
       compact: isPast && !(isGM && expanded.has(pastKey)) ? members.map((c) => c.name).join(", ") : null,
@@ -164,6 +172,8 @@ export default class CombatPhaseProjector {
     const canToggle = canToggleDone(view, c, { isGM });
     const current = state === "current";
     const marker = c.side === SIDES.event;
+    // A critical's extra turn: the module keeps its phase, so the GM gets no select and no pin for it.
+    const extra = isExtraTurn(c);
     const rollsNot = c.side === SIDES.enemies || marker;
     const doneLabel = format(T(done ? "Tracker.UnmarkDoneLabel" : "Tracker.MarkDoneLabel"), { name: c.name, phase });
     // Whoever may roll it: its owner, or a GM rolling for an absent player.
@@ -179,8 +189,9 @@ export default class CombatPhaseProjector {
       done,
       defeated: c.isDefeated,
       hidden: isGM && c.hidden,
-      // A marker is always pinned to its event phase: nothing to point out.
-      pinned: isGM && c.pinned && !marker,
+      // A marker is always pinned to its event phase, an extra turn to its players' phase: nothing to point out.
+      pinned: isGM && c.pinned && !marker && !extra,
+      extraTurn: extra ? { label: format(T("Tracker.ExtraTurnLabel"), { name: c.name, phase: phaseName(c.phase) }) } : null,
       // The core's end of turn reaches this member alone, when the phase ends.
       pointer: c.id === pointerId ? { label: format(T("Tracker.PointerLabel"), { name: c.name }) } : null,
       deferred: isGM && c.nextPhase ? format(T("Tracker.NextRound"), { phase: phaseName(c.nextPhase) }) : null,
@@ -199,7 +210,7 @@ export default class CombatPhaseProjector {
       rollButton: canRoll ? { label: format(T("Tracker.RollFor"), { name: c.name }) } : null,
       // Someone else's character with no phase yet: nothing to click, only the wait.
       awaiting: state === "pending" && !canRoll,
-      select: isGM ? CombatPhaseProjector.#select(c, ctx) : null,
+      select: isGM && !extra ? CombatPhaseProjector.#select(c, ctx) : null,
     };
     return row;
   }
@@ -209,13 +220,12 @@ export default class CombatPhaseProjector {
     const marker = c.side === SIDES.event;
     const chosen = c.pinned ? c.nextPhase ?? c.phase : "auto";
     const phases = view.plan.filter((p) => canEnterPhase(c, p));
-    return {
-      label: format(T("Tracker.PhaseSelectLabel"), { name: c.name }),
-      options: [
-        ...(marker ? [] : [{ value: "auto", label: localize(T("Tracker.Automatic")), selected: chosen === "auto" }]),
-        ...phases.map((p) => ({ value: p.id, label: phaseName(p.id), selected: chosen === p.id })),
-      ],
-    };
+    const options = [
+      ...(marker ? [] : [{ value: "auto", label: localize(T("Tracker.Automatic")), selected: chosen === "auto" }]),
+      ...phases.map((p) => ({ value: p.id, label: phaseName(p.id), selected: chosen === p.id })),
+    ];
+    const phase = options.find((o) => o.selected)?.label ?? "";
+    return { label: format(T("Tracker.PhaseSelectLabel"), { name: c.name, phase }), options };
   }
 
   static #dcText(dc, { format, dcName }) {

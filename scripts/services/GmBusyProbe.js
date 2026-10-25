@@ -13,7 +13,9 @@ export default class GmBusyProbe {
   #freeCount = 0;
   #timer = null;
 
-  constructor({ onChange = () => {}, setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
+  // The defaults wrap the globals: stored bare and called as `this.setTimer()`,
+  // the browser's setTimeout throws "Illegal invocation" (its receiver must be window).
+  constructor({ onChange = () => {}, setTimer = (fn, ms) => setTimeout(fn, ms), clearTimer = (id) => clearTimeout(id) } = {}) {
     this.onChange = onChange;
     this.setTimer = setTimer;
     this.clearTimer = clearTimer;

@@ -37,6 +37,32 @@ function setup({ phased = true, isGM = true, combatants, commands = {} } = {}) {
 describe("PhasedCombatTracker", () => {
   beforeEach(() => PhasedCombatTracker.expanded.clear());
 
+  it("flags its roots for Carolingian UI's carousel only in the popout and only while the carousel is on", async () => {
+    const { tracker } = setup();
+    const roots = [0, 1].map(() => {
+      const attributes = new Set();
+      return { attributes, toggleAttribute: (name, on) => (on ? attributes.add(name) : attributes.delete(name)) };
+    });
+    const element = (id) => ({ id, querySelector: () => null, querySelectorAll: (selector) => (selector === ".sc-venaerys-initiative" ? roots : []) });
+    const bodyClasses = new Set();
+    const previous = globalThis.document;
+    globalThis.document = { body: { classList: { contains: (name) => bodyClasses.has(name) } } };
+    try {
+      const render = async (id) => {
+        Object.defineProperty(tracker, "element", { value: element(id), configurable: true });
+        await tracker._onRender({ svi: null }, {});
+        return roots.map((root) => root.attributes.has("data-svi-carousel"));
+      };
+      bodyClasses.add("crlngn-combat-tracker");
+      assert.deepEqual(await render("combat-popout"), [true, true]);
+      assert.deepEqual(await render("combat"), [false, false]);
+      bodyClasses.clear();
+      assert.deepEqual(await render("combat-popout"), [false, false]);
+    } finally {
+      globalThis.document = previous;
+    }
+  });
+
   it("extends the tracker class the system registered", () => {
     setup();
     assert.ok(new CONFIG.ui.combat() instanceof CoreTracker);

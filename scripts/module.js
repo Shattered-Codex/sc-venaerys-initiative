@@ -17,6 +17,7 @@ import DcSuggester from "./services/DcSuggester.js";
 import DoneMarkers from "./services/DoneMarkers.js";
 import ErrorGuard from "./services/ErrorGuard.js";
 import EventMarkers from "./services/EventMarkers.js";
+import ExtraTurns from "./services/ExtraTurns.js";
 import GmBusyProbe from "./services/GmBusyProbe.js";
 import GmCommands from "./services/GmCommands.js";
 import InitiativeRoller from "./services/InitiativeRoller.js";
@@ -29,6 +30,7 @@ import PhasePlacementWriter from "./services/PhasePlacementWriter.js";
 import PhaseSoundGuard from "./services/PhaseSoundGuard.js";
 import PhaseTurnMarkers from "./services/PhaseTurnMarkers.js";
 import RollPrompter from "./services/RollPrompter.js";
+import StyleLoader from "./services/StyleLoader.js";
 import ThemeApplier from "./services/ThemeApplier.js";
 import TurnInterceptor from "./services/TurnInterceptor.js";
 import AdapterFactory from "./services/adapters/AdapterFactory.js";
@@ -42,7 +44,7 @@ const services = {};
 function build(adapter) {
   const commands = new GmCommands();
   const writer = new PhasePlacementWriter({ adapter, advance: (combat, options) => advancer.advance(combat, options) });
-  const advancer = new PhaseAdvancer({ adapter, writer });
+  const advancer = new PhaseAdvancer({ adapter, writer, extraTurnRounds: () => getSetting(SETTINGS.criticalExtraTurn) });
   const doneMarkers = new DoneMarkers({ adapter });
   const classifier = new CombatantClassifier({ adapter, writer, naturals: naturalRules, suggestFromSheet });
   const dcSuggester = new DcSuggester({ adapter, classifier, base: () => getSetting(SETTINGS.dcBase) });
@@ -58,6 +60,7 @@ function build(adapter) {
   const soundGuard = new PhaseSoundGuard({ adapter });
   const integration = new IntegrationHooks({ adapter });
   const markers = new EventMarkers();
+  const extraTurns = new ExtraTurns({ adapter, rounds: () => getSetting(SETTINGS.criticalExtraTurn) });
   const turnMarkers = new PhaseTurnMarkers({ adapter, enabled: () => getSetting(SETTINGS.phaseTurnMarkers) });
   const tracker = { adapter, commands, doneMarkers, probe, roller, openHelp: () => PhaseConfigApp.open("help") };
   const view = new CombatWatcher({ patchDone: (ids) => PhasedCombatTracker.patchDone(ids) });
@@ -72,7 +75,7 @@ function build(adapter) {
   commands.register("assign", (combat, payload) => classifier.assign(combat, payload));
   commands.register("addMarker", (combat, payload) => markers.add(combat, payload));
 
-  Object.assign(services, { adapter, roller, prompter, turnMarkers, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, soundGuard, integration });
+  Object.assign(services, { adapter, roller, prompter, turnMarkers, extraTurns, commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, tracker, automation, soundGuard, integration });
 }
 
 /** The keybinding actions: each answers whether it acted, so an unused key reaches other bindings. */
@@ -103,6 +106,7 @@ function keybindingActions() {
 }
 
 Hooks.once("init", () => {
+  StyleLoader.install();
   const adapter = AdapterFactory.create(game.system.id);
   registerSettings({
     onViewChange: () => services.view?.render(),
@@ -111,6 +115,7 @@ Hooks.once("init", () => {
       services.view?.render();
     },
     onMarkersChange: () => services.turnMarkers?.refresh(),
+    onExtraTurnsChange: () => services.extraTurns?.markAll(),
     SettingsMenu: PhaseConfigApp,
     defaults: adapter.settingDefaults(),
   });
@@ -134,7 +139,7 @@ Hooks.once("setup", () => {
 });
 
 Hooks.once("ready", () => {
-  const { commands, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, automation, integration, prompter } = services;
+  const { commands, doneMarkers, advancer, classifier, dcSuggester, naturals, setup, probe, watcher, interceptor, startGuard, view, automation, integration, prompter, extraTurns } = services;
   startGuard.check();
   // The custom theme's palette is a rule of the module's own, written once the settings can be read.
   ThemeApplier.refresh();
@@ -145,6 +150,9 @@ Hooks.once("ready", () => {
     close: () => view.close(),
     toggle: () => view.toggle(),
     openSettings: (tab) => PhaseConfigApp.open(tab),
+    // Done marks for other modules (the SC Combat Wheel strip), under the tracker's own permission rules.
+    setDone: (combat, combatantId, done) => doneMarkers.setDone(combat, combatantId, done),
+    setMoved: (combat, combatantId, moved) => doneMarkers.setMoved(combat, combatantId, moved),
   };
 
   // Combat rules: the active GM writes, the requesting client intercepts.
@@ -181,12 +189,22 @@ Hooks.once("ready", () => {
     ErrorGuard.on(hook, "defeat", (effect) => watcher.onActiveEffect(effect));
   }
   ErrorGuard.on("updateActiveEffect", "defeat", (effect, changes) => watcher.onActiveEffect(effect, changes));
-  ErrorGuard.on("userConnected", "active-gm", () => watcher.onUserConnected());
+  ErrorGuard.on("userConnected", "active-gm", () => {
+    watcher.onUserConnected();
+    extraTurns.markAll();
+  });
+  // A critical's extra turn in round 1, on the active GM: any change of the combat or its combatants may add, move or remove one.
+  ErrorGuard.on("updateCombat", "extra-turns", (combat, _changed, options) => extraTurns.mark(combat, options));
+  ErrorGuard.on("createCombatant", "extra-turns", (combatant, options) => extraTurns.mark(combatant.parent, options));
+  ErrorGuard.on("updateCombatant", "extra-turns", (combatant, _changes, options) => extraTurns.mark(combatant.parent, options));
+  ErrorGuard.on("deleteCombatant", "extra-turns", (combatant, options) => extraTurns.mark(combatant.parent, options));
   ErrorGuard.on("closeApplicationV2", "busy", () => probe.poke());
   ErrorGuard.on("closeDialog", "busy", () => probe.poke());
 
   // The combat tracker, on every client: the core renders it; the module shows it and patches done marks.
   ErrorGuard.on("updateCombat", "view", (combat) => view.onUpdateCombat(combat));
+  // Carolingian UI's carousel counts only rows straight under the list and calls a phased combat empty.
+  ErrorGuard.on("renderCombatTracker", "carousel", (app) => PhasedCombatTracker.hideCarouselEmptyMessage(app));
   // A phase's actions when it starts, on every client: GM actions on the active GM, local ones where the phase is seen.
   ErrorGuard.on("updateCombat", "automation", (combat, changed, options) => automation.onUpdateCombat(combat, changed, options));
   ErrorGuard.on("updateCombatant", "view", (combatant, changes) => view.onUpdateCombatant(combatant, changes));
@@ -215,7 +233,10 @@ Hooks.once("ready", () => {
   // Wiki, Patreon and Discord, at the end of the module's section in Foundry's settings window.
   ErrorGuard.on("renderSettingsConfig", "community-links", (_app, html) => CommunityLinks.inject(html));
 
-  if (game.user.isActiveGM) watcher.reviewAll();
+  if (game.user.isActiveGM) {
+    watcher.reviewAll();
+    extraTurns.markAll();
+  }
   if (game.user.isGM && services.adapter.experimental) ui.notifications.warn(game.i18n.localize(`${I18N_ROOT}.Roll.Experimental`));
   view.openIfRunning();
   prompter.queue(game.combat);

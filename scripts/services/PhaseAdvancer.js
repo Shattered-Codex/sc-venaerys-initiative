@@ -1,4 +1,5 @@
-import { ADVANCE_LOCK_MS, COMBATANT_FLAGS, COMBAT_FLAGS, HALVES, MODULE_ID, OPERATION_KEY, REASONS } from "../constants/module-constants.js";
+import { ADVANCE_LOCK_MS, COMBATANT_FLAGS, COMBAT_FLAGS, EXTRA_TURN_ROUNDS, HALVES, MODULE_ID, OPERATION_KEY, REASONS } from "../constants/module-constants.js";
+import { withoutExtraTurns } from "../helpers/extra-turns.js";
 import { rolloverPlan } from "../helpers/phase-placement.js";
 import {
   advanceTarget,
@@ -32,9 +33,10 @@ const ACTIONS_PATH = `flags.${MODULE_ID}.${COMBAT_FLAGS.actionsHalf}`;
 export default class PhaseAdvancer {
   #locks = new Map();
 
-  constructor({ adapter, writer }) {
+  constructor({ adapter, writer, extraTurnRounds = () => EXTRA_TURN_ROUNDS.off }) {
     this.adapter = adapter;
     this.writer = writer;
+    this.extraTurnRounds = extraTurnRounds;
   }
 
   snapshot(combat) {
@@ -170,7 +172,8 @@ export default class PhaseAdvancer {
       view = this.snapshot(combat);
     }
     // Last round's done marks stop counting by themselves: done holds a round number.
-    const target = roundStartTarget(view, view.round + 1);
+    // Extra turns removed as the round turns are no place for the pointer to land.
+    const target = roundStartTarget(withoutExtraTurns(view, this.extraTurnRounds()), view.round + 1);
     if (!target) return;
     await this.#move(combat, view, { round: view.round + 1, turn: target.turn }, { direction: 1, reason: REASONS.round, hook: "combatRound" });
   }
